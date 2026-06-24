@@ -1,0 +1,85 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f4f4f4;
+    color: #222;
+}
+
+#app {
+    padding: 40px;
+}
+
+/* =========================
+   Product Dialog
+========================= */
+
+.hidden {
+    display: none;
+}
+
+.dialog {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, .45);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    z-index: 9999;
+}
+
+.dialog-content {
+    width: 520px;
+    max-width: 95%;
+
+    background: #ffffff;
+
+    border-radius: 12px;
+
+    padding: 20px;
+
+    box-shadow: 0 10px 40px rgba(0, 0, 0, .25);
+}
+
+.dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    margin-bottom: 20px;
+}
+
+.dialog-body {
+    display: flex;
+    flex-direction: column;
+
+    gap: 12px;
+}
+
+.dialog-body input {
+    padding: 10px;
+    font-size: 15px;
+}
+
+.dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+
+    gap: 10px;
+
+    margin-top: 20px;
+}
+
+/* =========================
+   Hidden Override
+========================= */
+
+.dialog.hidden {
+    display: none !important;
+}
