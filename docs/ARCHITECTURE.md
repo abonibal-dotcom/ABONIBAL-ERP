@@ -271,3 +271,80 @@ Every module follows exactly the same architecture.
 # Goal
 
 Build an Enterprise Platform capable of growing for many years without architectural degradation.
+
+# Naming Convention
+
+Classes
+
+ProductController
+
+ProductService
+
+ProductRepository
+
+ProductDialog
+
+ProductTable
+
+Files always match class names.
+
+---
+
+# Error Handling
+
+Business errors never use alert().
+
+Controllers return Result objects.
+
+UI decides how to display errors.
+
+---
+
+# Persistence Rule
+
+Repositories never know if data comes from:
+
+- LocalStorage
+- IndexedDB
+- SQLite
+- Firebase
+- REST API
+
+Repositories only use Drivers.
+
+---
+
+# Testing Rule
+
+Every Service must be testable without UI.
+
+Business logic must never depend on DOM.
+
+---
+
+# Performance Rule
+
+Never re-render the whole page if only one component changes.
+
+Update only the affected component.
+
+---
+
+# Golden Module Rule
+
+Products is the reference implementation.
+
+Every future module must follow Products architecture.
+
+Never invent a different architecture for Customers or Suppliers.
+
+# ABONIBAL Rule
+
+If a feature cannot be implemented without breaking the architecture,
+
+the architecture wins.
+
+Features may wait.
+
+Architecture never breaks.
+

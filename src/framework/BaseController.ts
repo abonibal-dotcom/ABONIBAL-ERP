@@ -1,4 +1,5 @@
 import { EventBus } from "../core/EventBus";
+import type { EventListener } from "../core/EventBus";
 
 export abstract class BaseController {
 
@@ -11,6 +12,30 @@ export abstract class BaseController {
             event,
             payload
         );
+
+    }
+
+    protected on<T>(
+        event: string,
+        listener: (payload: T) => void
+    ): void {
+
+        EventBus.on(
+            event,
+            listener
+        );
+
+    }
+
+protected off(
+    event: string,
+    listener: EventListener
+): void {
+
+    EventBus.off(
+        event,
+        listener
+    );
 
     }
 
