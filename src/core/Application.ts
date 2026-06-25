@@ -1,8 +1,8 @@
 import { Container } from "./Container";
+import { Router } from "./Router";
 
 import { MainLayout } from "../layouts/MainLayout";
-
-import { Router } from "./Router";
+import { UIManager } from "../framework/UIManager";
 
 export class Application {
 
@@ -16,9 +16,15 @@ export class Application {
 
         layout.bind();
 
-        const router = Container.get<Router>("router");
+        const ui =
+            Container.get<UIManager>("ui");
 
-        router.start()
+        ui.boot();
+
+        const router =
+            Container.get<Router>("router");
+
+        router.start();
 
         console.log("ABONIBAL ERP Started");
 

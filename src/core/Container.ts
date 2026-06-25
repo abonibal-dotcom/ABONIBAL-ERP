@@ -1,71 +1,63 @@
-import { Config } from "./Config";
-import { Storage } from "./Storage";
-import { Router } from "./Router";
-
-import { LocalStorageDriver } from "./persistence/LocalStorageDriver";
-
-import { ProductRepository } from "../modules/products/repositories/ProductRepository";
-import { ProductValidator } from "../modules/products/validators/ProductValidator";
-import { ProductService } from "../modules/products/services/ProductService";
+import { CoreServiceProvider } from "./providers/CoreServiceProvider";
+import { ProductServiceProvider } from "./providers/ProductServiceProvider";
 
 export class Container {
 
-    private static services = new Map<string, any>();
+    private static services =
+        new Map<string, unknown>();
 
     public static boot(): void {
 
-        this.register("config", Config);
+        new CoreServiceProvider()
+            .register();
 
-        this.register("storage", new Storage());
+        new ProductServiceProvider()
+            .register();
 
-        this.register("router", new Router());
+    }
 
-        const driver = new LocalStorageDriver();
+    public static register(
+        name: string,
+        service: unknown
+    ): void {
 
-        this.register("driver", driver);
-
-        const productRepository = new ProductRepository(driver);
-
-        this.register("productRepository", productRepository);
-
-        const productValidator = new ProductValidator();
-
-        this.register("productValidator", productValidator);
-
-        const productService = new ProductService(
-            productRepository,
-            productValidator
+        this.services.set(
+            name,
+            service
         );
 
-        this.register("productService", productService);
-
     }
 
-    public static register(name: string, service: any): void {
+    public static get<T>(
+        name: string
+    ): T {
 
-        this.services.set(name, service);
+        const service =
+            this.services.get(name);
 
-    }
+        if (!service) {
 
-    public static get<T>(name: string): T {
-
-        if (!this.services.has(name)) {
-
-            throw new Error(`Service "${name}" is not registered.`);
+            throw new Error(
+                `Service "${name}" is not registered.`
+            );
 
         }
 
-        return this.services.get(name);
+        return service as T;
 
     }
 
-    public static has(name: string): boolean {
+    public static has(
+        name: string
+    ): boolean {
 
         return this.services.has(name);
 
     }
 
-    public static remove(name: string): void {
+    public static remove(
+        name: string
+    ): void {
 
         this.services.delete(name);
 

@@ -1,29 +1,71 @@
+import type { Dialog } from "../../../framework/dialogs/Dialog";
+import { DialogMode } from "../../../framework/dialogs/DialogMode";
+import { Button } from "../../../ui/buttons/Button";
+
+import type { Product } from "../Product";
 import type { ProductData } from "../dto/ProductData";
+
 import { GeneralTab } from "./tabs/GeneralTab";
 
-export class ProductDialog {
+export class ProductDialog
+implements Dialog<Product> {
 
-    private generalTab: GeneralTab;
+    private readonly generalTab: GeneralTab;
+
+    private readonly saveButton: Button;
+
+    private readonly cancelButton: Button;
 
     constructor() {
 
         this.generalTab = new GeneralTab();
+
+        this.saveButton = new Button({
+
+            id: "save-product",
+
+            text: "حفظ",
+
+            icon: "💾",
+
+            variant: "success"
+
+        });
+
+        this.cancelButton = new Button({
+
+            id: "cancel-product",
+
+            text: "إلغاء",
+
+            variant: "secondary"
+
+        });
 
     }
 
     public render(): string {
 
         return `
-            <div id="product-dialog" class="dialog hidden">
+            <div
+                id="product-dialog"
+                class="dialog hidden"
+            >
 
                 <div class="dialog-content">
 
                     <div class="dialog-header">
 
-                        <h2>📦 منتج جديد</h2>
+                        <h2 id="product-dialog-title">
+
+                            📦 منتج جديد
+
+                        </h2>
 
                         <button id="close-product-dialog">
+
                             ✕
+
                         </button>
 
                     </div>
@@ -36,13 +78,9 @@ export class ProductDialog {
 
                     <div class="dialog-footer">
 
-                        <button id="save-product">
-                            حفظ
-                        </button>
+                        ${this.saveButton.render()}
 
-                        <button id="cancel-product">
-                            إلغاء
-                        </button>
+                        ${this.cancelButton.render()}
 
                     </div>
 
@@ -50,6 +88,60 @@ export class ProductDialog {
 
             </div>
         `;
+
+    }
+
+    public open(): void {
+
+        document
+            .getElementById("product-dialog")
+            ?.classList.remove("hidden");
+
+    }
+
+    public close(): void {
+
+        document
+            .getElementById("product-dialog")
+            ?.classList.add("hidden");
+
+    }
+
+    public clear(): void {
+
+        this.generalTab.clear();
+
+        this.setMode(DialogMode.CREATE);
+
+    }
+
+    public fill(product: Product): void {
+
+        this.generalTab.fill(product);
+
+        this.setMode(DialogMode.EDIT);
+
+    }
+
+    public setMode(
+        mode: DialogMode
+    ): void {
+
+        const title =
+            document.getElementById(
+                "product-dialog-title"
+            );
+
+        if (!title) {
+
+            return;
+
+        }
+
+        title.textContent =
+            mode === DialogMode.CREATE
+                ? "📦 منتج جديد"
+                : "✏️ تعديل المنتج";
 
     }
 
