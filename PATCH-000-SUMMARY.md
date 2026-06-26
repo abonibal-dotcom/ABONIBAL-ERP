@@ -8,6 +8,7 @@ Completed Engineering Change Sets:
 
 - `PATCH-000-ECS-001 - Route Registry Stabilization`
 - `PATCH-000-ECS-002 - Product Page Listener Lifecycle Stabilization`
+- `PATCH-000-ECS-003A - Dashboard Copy Stabilization`
 
 ## ECS-001 Summary
 
@@ -60,6 +61,40 @@ After evidence:
 Result:
 
 - Listener lifecycle is stable.
+- Root cause fully disappeared.
+
+## ECS-003A Summary
+
+Root cause:
+
+- `DashboardPage.render()` exposed internal implementation/progress copy to users.
+
+Baseline evidence:
+
+- Dashboard loaded successfully.
+- Implementation/progress heading was visible.
+- Extra progress instruction paragraph was visible.
+- Separator was visible.
+- Browser console errors: 0.
+- Page exceptions: 0.
+
+Resolution:
+
+- Removed the internal implementation/progress heading, separator, and instruction paragraph from `DashboardPage.render()`.
+- Kept the Dashboard route, architecture, and existing welcome copy unchanged.
+
+After evidence:
+
+- Dashboard loaded successfully.
+- Implementation/progress heading is no longer visible.
+- Extra progress instruction paragraph is no longer visible.
+- Separator is no longer visible.
+- Browser console errors: 0.
+- Page exceptions: 0.
+
+Result:
+
+- Dashboard no longer exposes implementation/progress copy to users.
 - Root cause fully disappeared.
 
 ## Required Before Final PATCH-000 Delivery

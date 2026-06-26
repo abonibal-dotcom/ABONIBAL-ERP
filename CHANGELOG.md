@@ -14,3 +14,9 @@
 - Replaced anonymous dialog button listeners with retained callback references.
 - Added `onLeave()` cleanup for `create-product`, `cancel-product`, and `close-product-dialog`.
 - Verified listener stability over 50 navigation/dialog cycles.
+
+### PATCH-000-ECS-003A - Dashboard Copy Stabilization
+
+- Removed internal implementation/progress copy from the Dashboard page.
+- Kept the Dashboard route, layout ownership, and user-facing welcome copy unchanged.
+- Verified the Dashboard with DOM-based runtime evidence, clean browser console, and no page exceptions.

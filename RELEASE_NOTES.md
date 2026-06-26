@@ -2,12 +2,13 @@
 
 ## PATCH-000 Current Delivery Snapshot
 
-This snapshot contains the completed stabilization work through `PATCH-000-ECS-002`.
+This snapshot contains the completed stabilization work through `PATCH-000-ECS-003A`.
 
 ### Completed
 
 - `PATCH-000-ECS-001`: Route Registry Stabilization.
 - `PATCH-000-ECS-002`: Product Page Listener Lifecycle Stabilization.
+- `PATCH-000-ECS-003A`: Dashboard Copy Stabilization.
 
 ### Verification
 
@@ -15,6 +16,7 @@ This snapshot contains the completed stabilization work through `PATCH-000-ECS-0
 - Build passed with `pnpm run build`.
 - Runtime verification passed for ECS-001.
 - Listener stability verification passed for ECS-002 over 50 cycles.
+- DOM-based Dashboard runtime verification passed for ECS-003A.
 - Browser console errors: none in ECS runtime evidence.
 - Page exceptions: none in ECS runtime evidence.
 
@@ -24,3 +26,5 @@ This snapshot contains the completed stabilization work through `PATCH-000-ECS-0
 - ECS-002 commit: `c7557d3`
 - ECS-002 branch: `patch/000-ecs-002-listener-lifecycle`
 - ECS-002 tag: `patch-000-ecs-002`
+- ECS-003A branch: `patch/000-ecs-003a-baseline-regeneration`
+- ECS-003A tag: `patch-000-ecs-003a`

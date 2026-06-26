@@ -14,12 +14,6 @@ export class DashboardPage extends Page {
 
             <p>مرحباً بك في نظام ABONIBAL ERP</p>
 
-            <hr>
-
-            <h2>هذه الصفحة أصبحت تُدار بواسطة PageManager.</h2>
-
-            <p>الخطوة التالية هي ربط عناصر القائمة الجانبية بالتنقل.</p>
-
         `;
 
     }
