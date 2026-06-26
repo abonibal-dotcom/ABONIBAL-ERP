@@ -9,3 +9,27 @@ export const routes = {
     products: ProductListPage,
 
 };
+
+export type RouteName = keyof typeof routes;
+
+export interface NavigationRoute {
+
+    name: RouteName;
+
+    label: string;
+
+}
+
+export const navigationRoutes: NavigationRoute[] = [
+
+    {
+        name: "dashboard",
+        label: "🏠 الرئيسية"
+    },
+
+    {
+        name: "products",
+        label: "📦 المنتجات"
+    },
+
+];

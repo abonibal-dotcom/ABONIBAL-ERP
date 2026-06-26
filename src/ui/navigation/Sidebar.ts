@@ -1,5 +1,7 @@
 import { Container } from "../../core/Container";
 import { Router } from "../../core/Router";
+import { navigationRoutes } from "../../router/routes";
+
 export class Sidebar {
 
     public render(): string {
@@ -11,23 +13,11 @@ export class Sidebar {
 
                 <ul class="menu">
 
-                    <li class="menu-item" data-page="dashboard">🏠 الرئيسية</li>
-
-                    <li class="menu-item" data-page="products">📦 المنتجات</li>
-
-                    <li class="menu-item" data-page="sales">🛒 المبيعات</li>
-
-                    <li class="menu-item" data-page="purchases">📥 المشتريات</li>
-
-                    <li class="menu-item" data-page="customers">👥 العملاء</li>
-
-                    <li class="menu-item" data-page="suppliers">🚚 الموردون</li>
-
-                    <li class="menu-item" data-page="cash">💰 الصندوق</li>
-
-                    <li class="menu-item" data-page="reports">📊 التقارير</li>
-
-                    <li class="menu-item" data-page="settings">⚙ الإعدادات</li>
+                    ${navigationRoutes.map(route => `
+                        <li class="menu-item" data-page="${route.name}">
+                            ${route.label}
+                        </li>
+                    `).join("")}
 
                 </ul>
 
