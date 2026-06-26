@@ -20,3 +20,9 @@
 - Removed internal implementation/progress copy from the Dashboard page.
 - Kept the Dashboard route, layout ownership, and user-facing welcome copy unchanged.
 - Verified the Dashboard with DOM-based runtime evidence, clean browser console, and no page exceptions.
+
+### PATCH-000-ECS-004 - Dashboard Text Encoding Investigation
+
+- Investigated the Dashboard text encoding hypothesis with runtime evidence.
+- Rejected the hypothesis because the Dashboard rendered valid Arabic text at runtime.
+- Closed ECS-004 without source-code changes.

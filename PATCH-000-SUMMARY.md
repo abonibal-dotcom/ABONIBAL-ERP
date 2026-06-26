@@ -9,6 +9,7 @@ Completed Engineering Change Sets:
 - `PATCH-000-ECS-001 - Route Registry Stabilization`
 - `PATCH-000-ECS-002 - Product Page Listener Lifecycle Stabilization`
 - `PATCH-000-ECS-003A - Dashboard Copy Stabilization`
+- `PATCH-000-ECS-004 - Dashboard Text Encoding Investigation`
 
 ## ECS-001 Summary
 
@@ -96,6 +97,27 @@ Result:
 
 - Dashboard no longer exposes implementation/progress copy to users.
 - Root cause fully disappeared.
+
+## ECS-004 Summary
+
+Hypothesis:
+
+- Dashboard text encoding might be corrupted in `src/pages/DashboardPage.ts`.
+
+Investigation evidence:
+
+- Runtime loaded the Dashboard route successfully.
+- The browser DOM contained valid Arabic Unicode text for the document title, heading, and welcome paragraph.
+- Runtime source matching showed the Dashboard text came from `src/pages/DashboardPage.ts`.
+- No matching Dashboard title, heading, or welcome text was found in other source files.
+- Browser console errors: 0.
+- Page exceptions: 0.
+
+Result:
+
+- Hypothesis rejected.
+- The observed issue was attributed to tool or terminal text rendering, not an application bug.
+- ECS-004 closed without source-code changes.
 
 ## Required Before Final PATCH-000 Delivery
 
