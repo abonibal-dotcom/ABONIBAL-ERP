@@ -5,6 +5,26 @@ export class ProductListPage extends Page {
 
     private dialog: ProductDialog;
 
+    private openButton: HTMLElement | null = null;
+
+    private closeButton: HTMLElement | null = null;
+
+    private cancelButton: HTMLElement | null = null;
+
+    private dialogElement: HTMLElement | null = null;
+
+    private readonly openDialog = (): void => {
+
+        this.dialogElement?.classList.remove("hidden");
+
+    };
+
+    private readonly closeDialog = (): void => {
+
+        this.dialogElement?.classList.add("hidden");
+
+    };
+
     constructor() {
 
         super();
@@ -90,22 +110,36 @@ export class ProductListPage extends Page {
 
     public onEnter(): void {
 
-        const openButton = document.getElementById("create-product");
-        const dialog = document.getElementById("product-dialog");
-        const closeButton = document.getElementById("close-product-dialog");
-        const cancelButton = document.getElementById("cancel-product");
+        this.onLeave();
 
-        openButton?.addEventListener("click", () => {
-            dialog?.classList.remove("hidden");
-        });
+        this.openButton = document.getElementById("create-product");
+        this.dialogElement = document.getElementById("product-dialog");
+        this.closeButton = document.getElementById("close-product-dialog");
+        this.cancelButton = document.getElementById("cancel-product");
 
-        closeButton?.addEventListener("click", () => {
-            dialog?.classList.add("hidden");
-        });
+        this.openButton?.addEventListener("click", this.openDialog);
 
-        cancelButton?.addEventListener("click", () => {
-            dialog?.classList.add("hidden");
-        });
+        this.closeButton?.addEventListener("click", this.closeDialog);
+
+        this.cancelButton?.addEventListener("click", this.closeDialog);
+
+    }
+
+    public onLeave(): void {
+
+        this.openButton?.removeEventListener("click", this.openDialog);
+
+        this.closeButton?.removeEventListener("click", this.closeDialog);
+
+        this.cancelButton?.removeEventListener("click", this.closeDialog);
+
+        this.openButton = null;
+
+        this.closeButton = null;
+
+        this.cancelButton = null;
+
+        this.dialogElement = null;
 
     }
 

@@ -13,7 +13,15 @@ export class Storage {
             return null;
         }
 
-        return JSON.parse(value) as T;
+        try {
+            return JSON.parse(value) as T;
+        } catch (error) {
+            if (error instanceof SyntaxError) {
+                return null;
+            }
+
+            throw error;
+        }
     }
 
     public remove(key: string): void {
