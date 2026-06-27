@@ -26,6 +26,8 @@ V1-AUTH-003 Auth Provider Decision Finalization is complete from execution side 
 
 V1-AUTH-004 Auth Interfaces And Session Contract is complete from execution side and ready for Architect / Owner review.
 
+V1-AUTH-005 Managed Auth Integration Planning is complete from execution side and ready for Architect / Owner review.
+
 Completed stabilization work:
 
 - `PATCH-000-ECS-001 - Route Registry Stabilization`
@@ -60,6 +62,9 @@ Completed stabilization work:
 - V1-AUTH-003 finalized provider decision documentation.
 - V1-AUTH-004 introduced minimal provider-neutral Auth/session TypeScript contracts under `src/modules/auth/`.
 - V1-AUTH-004 did not add dependencies, provider code, login/logout behavior, route guards, routing changes, persistence changes, localStorage migration, Product changes, or UI changes.
+- V1-AUTH-005 recommended Firebase Auth as the first Managed Auth provider for V1, with the concrete provider decision still pending owner approval.
+- V1-AUTH-005 documented dependency/config, provider adapter, Auth state, login/logout, route guard, `accountId`, legacy storage compatibility, and account-scoped persistence planning sequence.
+- V1-AUTH-005 did not change source code, dependencies, package/build/config files, runtime behavior, routing, persistence, Products, or ECS-006.
 - Products module is partial.
 - Product dialog lifecycle was stabilized.
 - Malformed product localStorage read failures were contained.
@@ -78,24 +83,24 @@ Completed stabilization work:
 
 Current mission:
 
-`V1-AUTH-004 - Auth Interfaces And Session Contract`
+`V1-AUTH-005 - Managed Auth Integration Planning`
 
 Current next mission:
 
-Owner / Architect review after V1-AUTH-004.
+Owner / Architect review after V1-AUTH-005.
 
 Classification:
 
-`ECS`
+`INF`
 
 Allowed scope:
 
-Minimal provider-neutral Auth/session contract files under `src/modules/auth/`, plus mission verification and closure documentation.
+Managed Auth integration planning documentation only.
 
 Forbidden scope:
 
-No dependency installation, no provider SDK, no login/logout implementation, no login UI, no route guards, no routing behavior changes, no navigation behavior changes, no persistence behavior changes, no localStorage migration, no Product work, no permission matrix, no advanced roles, and no ECS-006.
+No source-code changes, no dependency installation, no package/build/config changes, no provider SDK code, no Auth implementation, no login/logout implementation, no login UI, no route guards, no routing behavior changes, no persistence behavior changes, no localStorage migration, no Product work, and no ECS-006.
 
 ## Next State
 
-After V1-AUTH-004 is reviewed and approved, the owner or architect will decide the next mission. The recommended next candidate is `V1-AUTH-005 - Managed Auth Integration Planning` before login UI, route guards, persistence changes, and product-module expansion.
+After V1-AUTH-005 is reviewed and approved, the owner or architect will decide whether Firebase Auth is approved as the concrete V1 provider. The recommended next candidate is `V1-AUTH-006 - Managed Auth Dependency & Config Skeleton` before provider adapter implementation, login UI, route guards, persistence changes, and product-module expansion.

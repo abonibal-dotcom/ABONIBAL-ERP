@@ -1,5 +1,13 @@
 # Changelog
 
+## V1-AUTH-005 - Managed Auth Integration Planning
+
+- Created the Managed Auth integration plan for future V1 Auth implementation.
+- Recommended Firebase Auth as the primary first provider while marking the concrete provider decision as pending owner approval.
+- Documented dependency, environment/config, `AuthProvider` mapping, session restoration, `accountId` resolution, role, route guard, and persistence-scope plans.
+- Recorded the future Auth ECS sequence from dependency/config skeleton through account-scoped persistence planning.
+- Confirmed no source, dependency, package, provider implementation, login/logout, route guard, persistence, localStorage migration, Product, or ECS-006 work was performed.
+
 ## V1-AUTH-004 - Auth Interfaces And Session Contract
 
 - Added minimal provider-neutral Auth/session TypeScript contracts under `src/modules/auth/`.
