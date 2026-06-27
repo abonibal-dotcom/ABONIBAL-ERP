@@ -6,7 +6,7 @@ This is the official Version 1.0 roadmap baseline for repository governance.
 
 ECS-006 is not started.
 
-No product-code work may begin until V1-INF-002 is reviewed and approved by the owner or architect.
+No product-code work may begin until the Auth / Multi-user Foundation contract is approved and the required Auth foundation steps are complete.
 
 ## V1 Definition
 
@@ -117,6 +117,21 @@ The first mission after V1-INF-002 should not automatically be Products.
 The next candidate should be selected from Foundation Verification, Persistence Safety, or Auth / Multi-user Foundation based on evidence and owner approval.
 
 ECS-006 remains blocked until explicitly approved by the owner or architect.
+
+## Auth / Multi-user Foundation Gate
+
+Before Products or other business modules continue, V1 must approve and implement the minimum Auth foundation:
+
+- User identity.
+- Session state.
+- Protected business routes.
+- Account/workspace data boundary.
+- Record ownership metadata.
+- Runtime user/account isolation verification.
+
+Auth provider decision is pending owner / architect approval.
+
+Product-code work remains blocked until this gate is satisfied.
 
 ## Verification Expectation
 

@@ -1,5 +1,13 @@
 # Changelog
 
+## V1-AUTH-002 - Auth Foundation Architecture Decision & User Scope Contract
+
+- Defined the proposed V1 Auth / multi-user architecture contract.
+- Recommended current user identity, session state, protected business routes, account/workspace boundary, and record ownership metadata for V1.
+- Deferred advanced roles, permission matrix, SSO, MFA, and advanced security policies to V2.
+- Recorded Auth provider decision as pending owner / architect approval.
+- Confirmed no source, dependency, package, routing, persistence, or Product implementation changes were made.
+
 ## V1-AUTH-001 - Auth / Multi-user Foundation Baseline
 
 - Verified Auth / multi-user foundation baseline without source-code changes.

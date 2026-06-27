@@ -20,6 +20,8 @@ V1-PER-002 Storage Wrapper Read Resilience is complete from execution side and r
 
 V1-AUTH-001 Auth / Multi-user Foundation Baseline is complete from execution side and ready for Architect / Owner review.
 
+V1-AUTH-002 Auth Foundation Architecture Decision & User Scope Contract is complete from execution side and ready for Architect / Owner review.
+
 Completed stabilization work:
 
 - `PATCH-000-ECS-001 - Route Registry Stabilization`
@@ -46,6 +48,8 @@ Completed stabilization work:
 - Persistence safety baseline confirmed `Storage.get<T>()` had a malformed JSON read-path safety issue.
 - V1-PER-002 contained malformed JSON failures inside `Storage.get<T>()` while preserving valid and missing-key behavior.
 - Auth / multi-user foundation baseline confirmed no Auth dependency, user identity model, session model, route guard, or user-scoped persistence currently exists.
+- V1-AUTH-002 defined the proposed Auth/user scope contract: user identity, session state, protected business routes, account/workspace boundary, and ownership metadata.
+- Auth provider decision remains pending owner / architect approval.
 - Products module is partial.
 - Product dialog lifecycle was stabilized.
 - Malformed product localStorage read failures were contained.
@@ -64,24 +68,24 @@ Completed stabilization work:
 
 Current mission:
 
-`V1-AUTH-001 - Auth / Multi-user Foundation Baseline`
+`V1-AUTH-002 - Auth Foundation Architecture Decision & User Scope Contract`
 
 Current next mission:
 
-Owner / Architect review after V1-AUTH-001.
+Owner / Architect review after V1-AUTH-002.
 
 Classification:
 
-`ECS`
+`INF`
 
 Allowed scope:
 
-Auth / multi-user foundation baseline verification only.
+Auth / multi-user architecture decision and user scope contract documentation only.
 
 Forbidden scope:
 
-No source code changes, no Auth implementation, no product fixes, no ECS-006, no routing changes, no persistence redesign, no repository contract changes, no storage key changes, no sync behavior changes, no UI behavior changes, and no feature work.
+No source code changes, no Auth implementation, no dependencies, no product fixes, no ECS-006, no routing changes, no persistence redesign, no repository contract changes, no storage key changes, no sync behavior changes, no UI behavior changes, and no feature work.
 
 ## Next State
 
-After V1-AUTH-001 is reviewed and approved, the owner or architect will decide the next mission. The recommended next candidate is `V1-AUTH-002 - Auth Foundation Architecture Decision & User Scope Contract` before Auth implementation and product-module expansion.
+After V1-AUTH-002 is reviewed and approved, the owner or architect will decide the next mission. The recommended next candidate is `V1-AUTH-003 - Auth Provider Decision Finalization` before Auth implementation and product-module expansion.

@@ -14,6 +14,34 @@ Impact:
 
 Auth / Multi-user Foundation belongs in V1 before Products development continues deeply.
 
+### DEC-013 - V1 Auth User Scope Contract
+
+Decision:
+
+V1 Auth must define user identity and session behavior before Products, Inventory, Sales, or other business modules continue.
+
+V1 must use an account/workspace boundary for shared ERP data unless the owner or architect explicitly rejects that direction.
+
+Future business records should follow the minimum ownership metadata contract:
+
+```text
+BaseRecord
+- id: string
+- accountId: string
+- createdAt: string
+- updatedAt: string
+- createdBy: string
+- updatedBy?: string
+```
+
+Advanced roles and permission matrix are deferred to V2.
+
+Auth provider decision is pending owner / architect approval.
+
+Impact:
+
+Product-module expansion remains blocked until the Auth provider direction, session contract, route guard behavior, and user/account persistence boundary are approved and implemented through future missions.
+
 ### DEC-002 - Product Images Optional In V1
 
 Decision:
