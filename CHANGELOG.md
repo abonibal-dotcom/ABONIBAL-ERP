@@ -1,5 +1,14 @@
 # Changelog
 
+## V1-AUTH-004 - Auth Interfaces And Session Contract
+
+- Added minimal provider-neutral Auth/session TypeScript contracts under `src/modules/auth/`.
+- Added `AuthRole` with only `owner` and `user`.
+- Added `UserIdentity`, `AccountIdentity`, `AuthSession`, `AuthState`, `SignInCredentials`, `AuthProvider`, and `OwnershipMetadata` contracts.
+- Preserved the approved `accountId` account/workspace boundary without applying it to existing Product records in this mission.
+- Confirmed no Auth provider dependency, provider implementation, login/logout flow, login UI, route guard, persistence migration, Product change, package change, or routing change was added.
+- Confirmed TypeScript, build, and runtime non-regression verification passed with zero console errors and zero page exceptions.
+
 ## V1-AUTH-003 - Auth Provider Decision Finalization
 
 - Finalized V1 Auth provider direction as Managed Auth.

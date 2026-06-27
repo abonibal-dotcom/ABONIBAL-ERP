@@ -2,75 +2,76 @@
 
 ## Mission
 
-`V1-AUTH-003 - Auth Provider Decision Finalization`
+`V1-AUTH-004 - Auth Interfaces And Session Contract`
 
 ## Classification
 
-`INF`
+`ECS`
 
-This is an architecture, governance, and decision finalization mission.
+This is an application architecture/source-code foundation ECS.
 
-This is not an ECS implementation mission, not Product work, and not ECS-006.
+This is not login implementation, Auth provider integration, Product work, or ECS-006.
 
 ## Objective
 
-Finalize the official Auth provider and V1 multi-user direction for ABONIBAL ERP before any Auth implementation begins.
+Introduce minimal provider-neutral TypeScript contracts for the V1 Auth foundation after the approved V1-AUTH-002 and V1-AUTH-003 decisions.
 
-The owner has approved:
+The contracts express:
 
-- `accountId` as the official V1 data boundary.
-- Managed Auth as the V1 provider direction.
-- Minimal `owner` / `user` roles without a permission matrix.
-- No automatic deletion or migration of existing global localStorage data.
+- `accountId` as the V1 account/workspace boundary.
+- Minimal V1 roles: `owner` and `user`.
+- User identity.
+- Account identity.
+- Auth session.
+- Auth state.
+- Provider-neutral Auth provider interface.
+- Generic ownership metadata for future account-scoped records.
 
 ## Allowed
 
-- Inspect existing documents.
-- Inspect V1-AUTH-002 architecture decision and closure reports.
-- Update `DECISIONS.md`.
-- Update `ROADMAP.md`.
-- Update `PROJECT_STATUS.md`.
-- Update `CURRENT_MISSION.md`.
-- Update `CHANGELOG.md`.
-- Create `PATCHES/V1-AUTH-003/architecture-decision.md`.
-- Create `PATCHES/V1-AUTH-003/closure-report.md`.
-- Commit documentation-only changes.
-- Tag and push when remote access is available.
+- Add minimal Auth/session contract files under `src/modules/auth/`.
+- Update mission and status documentation.
+- Create V1-AUTH-004 verification and closure reports.
+- Run TypeScript, build, and runtime non-regression verification.
+- Commit, tag, and push after all verification gates pass.
 
 ## Forbidden
 
-- No Auth implementation.
-- No dependency install.
+- No dependency installation.
 - No `package.json` changes.
-- No files under `src/` may be modified.
-- No Firebase/Auth or provider code.
+- No provider SDK or Firebase/Auth code.
+- No login/logout implementation.
 - No login screens.
-- No source-code user models.
+- No route guards.
 - No routing behavior changes.
+- No navigation behavior changes.
 - No persistence behavior changes.
 - No localStorage migration.
-- No ECS-006.
 - No Product work.
-- No feature work.
+- No permission matrix.
+- No advanced roles.
+- No ECS-006.
 
 ## Completion Criteria
 
-- `DECISIONS.md` records all owner-approved Auth decisions.
-- `ROADMAP.md` keeps Auth / Multi-user before Products.
-- `ROADMAP.md` states ECS-006 remains blocked.
-- `ROADMAP.md` states localStorage migration is not automatic and requires a separate ECS.
-- `PROJECT_STATUS.md` reflects approved Auth decisions.
-- `CURRENT_MISSION.md` reflects V1-AUTH-003.
-- `CHANGELOG.md` records V1-AUTH-003.
-- `PATCHES/V1-AUTH-003/architecture-decision.md` exists.
-- `PATCHES/V1-AUTH-003/closure-report.md` exists.
-- No files under `src/` changed.
-- No package/build/config files changed.
-- No dependency installed.
-- Branch and tag are pushed if a commit is created.
+- Source changes limited to Auth contract files.
+- No Product, routing, persistence, UI, package, build, or config files changed.
+- TypeScript verification passes.
+- Build verification passes.
+- Runtime non-regression verification passes.
+- Console errors = 0.
+- Page exceptions = 0.
+- No Auth UI appears.
+- No login route appears.
+- No route guard behavior changes.
+- No localStorage migration occurs.
+- `CHANGELOG.md` records V1-AUTH-004.
+- `PATCHES/V1-AUTH-004/verification.md` exists.
+- `PATCHES/V1-AUTH-004/closure-report.md` exists.
+- Branch, tag, and push complete when remote access is available.
 
 ## Next Mission
 
 ECS-006 remains blocked.
 
-The recommended next mission is `V1-AUTH-004 - Auth Interfaces And Session Contract`, subject to Architect / Owner approval.
+The recommended next mission is `V1-AUTH-005 - Managed Auth Integration Planning`, subject to Architect / Owner approval.

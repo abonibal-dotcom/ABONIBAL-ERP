@@ -24,6 +24,8 @@ V1-AUTH-002 Auth Foundation Architecture Decision & User Scope Contract is compl
 
 V1-AUTH-003 Auth Provider Decision Finalization is complete from execution side and ready for Architect / Owner review.
 
+V1-AUTH-004 Auth Interfaces And Session Contract is complete from execution side and ready for Architect / Owner review.
+
 Completed stabilization work:
 
 - `PATCH-000-ECS-001 - Route Registry Stabilization`
@@ -56,6 +58,8 @@ Completed stabilization work:
 - Owner approved minimal `owner` / `user` roles for V1.
 - Owner approved no automatic deletion or migration of existing global localStorage data.
 - V1-AUTH-003 finalized provider decision documentation.
+- V1-AUTH-004 introduced minimal provider-neutral Auth/session TypeScript contracts under `src/modules/auth/`.
+- V1-AUTH-004 did not add dependencies, provider code, login/logout behavior, route guards, routing changes, persistence changes, localStorage migration, Product changes, or UI changes.
 - Products module is partial.
 - Product dialog lifecycle was stabilized.
 - Malformed product localStorage read failures were contained.
@@ -74,24 +78,24 @@ Completed stabilization work:
 
 Current mission:
 
-`V1-AUTH-003 - Auth Provider Decision Finalization`
+`V1-AUTH-004 - Auth Interfaces And Session Contract`
 
 Current next mission:
 
-Owner / Architect review after V1-AUTH-003.
+Owner / Architect review after V1-AUTH-004.
 
 Classification:
 
-`INF`
+`ECS`
 
 Allowed scope:
 
-Auth provider decision finalization documentation only.
+Minimal provider-neutral Auth/session contract files under `src/modules/auth/`, plus mission verification and closure documentation.
 
 Forbidden scope:
 
-No source code changes, no Auth implementation, no dependencies, no product fixes, no ECS-006, no routing changes, no persistence redesign, no repository contract changes, no storage key changes, no sync behavior changes, no UI behavior changes, and no feature work.
+No dependency installation, no provider SDK, no login/logout implementation, no login UI, no route guards, no routing behavior changes, no navigation behavior changes, no persistence behavior changes, no localStorage migration, no Product work, no permission matrix, no advanced roles, and no ECS-006.
 
 ## Next State
 
-After V1-AUTH-003 is reviewed and approved, the owner or architect will decide the next mission. The recommended next candidate is `V1-AUTH-004 - Auth Interfaces And Session Contract` before provider integration, login UI, route guards, persistence changes, and product-module expansion.
+After V1-AUTH-004 is reviewed and approved, the owner or architect will decide the next mission. The recommended next candidate is `V1-AUTH-005 - Managed Auth Integration Planning` before login UI, route guards, persistence changes, and product-module expansion.
