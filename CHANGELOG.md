@@ -1,5 +1,15 @@
 # Changelog
 
+## V1-AUTH-003 - Auth Provider Decision Finalization
+
+- Finalized V1 Auth provider direction as Managed Auth.
+- Recorded `accountId` as the official V1 account/workspace data boundary.
+- Recorded minimal V1 roles as `owner` and `user`.
+- Confirmed permission matrix remains deferred to V2.
+- Confirmed existing global localStorage data must not be deleted or migrated automatically.
+- Confirmed global-to-account storage migration requires a separate ECS with runtime evidence, no-data-loss plan, rollback plan, and owner / architect approval.
+- Confirmed no source, dependency, package, routing, persistence, localStorage migration, or Product implementation changes were made.
+
 ## V1-AUTH-002 - Auth Foundation Architecture Decision & User Scope Contract
 
 - Defined the proposed V1 Auth / multi-user architecture contract.

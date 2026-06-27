@@ -26,6 +26,10 @@ V1 must prioritize reliable business operation, data safety, basic auditability,
 - V1 sync scope is data safety and no silent overwrite.
 - Advanced conflict resolution is V2.
 - V1 reports are basic only.
+- V1 uses `accountId` as the account/workspace data boundary.
+- V1 uses Managed Auth direction.
+- V1 role model is limited to `owner` and `user`.
+- Existing global localStorage data must not be deleted automatically.
 
 ## V1 Scope
 
@@ -129,7 +133,13 @@ Before Products or other business modules continue, V1 must approve and implemen
 - Record ownership metadata.
 - Runtime user/account isolation verification.
 
-Auth provider decision is pending owner / architect approval.
+Auth provider direction is Managed Auth.
+
+`accountId` boundary is required before business modules become user-safe.
+
+Advanced roles and permission matrix are V2.
+
+localStorage migration is not automatic and must be a separate ECS with runtime evidence, no-data-loss plan, rollback plan, and owner / architect approval.
 
 Product-code work remains blocked until this gate is satisfied.
 

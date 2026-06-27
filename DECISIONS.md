@@ -36,11 +36,31 @@ BaseRecord
 
 Advanced roles and permission matrix are deferred to V2.
 
-Auth provider decision is pending owner / architect approval.
+V1 uses Managed Auth as the approved provider direction.
+
+Custom Auth is rejected for V1.
+
+Concrete Managed Auth provider selection remains implementation-planning detail unless the owner explicitly chooses one.
+
+V1 role model is limited to:
+
+- `owner`
+- `user`
+
+Permission matrix remains deferred to V2.
+
+Existing global localStorage data must not be deleted automatically.
+
+Any migration from global storage to account-scoped storage requires a separate ECS with:
+
+- Runtime evidence.
+- No-data-loss plan.
+- Rollback plan.
+- Owner / architect approval.
 
 Impact:
 
-Product-module expansion remains blocked until the Auth provider direction, session contract, route guard behavior, and user/account persistence boundary are approved and implemented through future missions.
+Product-module expansion remains blocked until the approved Managed Auth direction, session contract, route guard behavior, and user/account persistence boundary are implemented through future missions.
 
 ### DEC-002 - Product Images Optional In V1
 
