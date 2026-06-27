@@ -1,0 +1,24 @@
+{
+  "currentUrl": "http://127.0.0.1:5173/",
+  "documentTitle": "المنتجات",
+  "activeRoute": "products",
+  "selectors": {
+    "sidebar": true,
+    "workspace": true,
+    "productsHeading": true,
+    "productsTable": true,
+    "productsBody": true,
+    "productDialog": true
+  },
+  "headingText": "📦 المنتجات",
+  "sidebarVisibleItems": [
+    {
+      "route": "dashboard",
+      "text": "🏠 الرئيسية"
+    },
+    {
+      "route": "products",
+      "text": "📦 المنتجات"
+    }
+  ]
+}

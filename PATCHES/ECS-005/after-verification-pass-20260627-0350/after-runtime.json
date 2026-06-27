@@ -1,0 +1,106 @@
+{
+  "phase": "after-ecs-005-verification-final",
+  "target": "Product persistence read-path resilience for malformed localStorage data",
+  "verificationEnvironment": {
+    "runtime": "Vite dev server on http://127.0.0.1:5173/",
+    "browser": "Google Chrome headless",
+    "verificationTool": "Chrome DevTools Protocol direct WebSocket client",
+    "reasonForSelection": "Playwright module resolution failed in the current toolchain; CDP verifies the same browser runtime outcomes without changing application source.",
+    "knownLimitations": "CDP evidence is based on runtime results, DOM selectors, console events, page exceptions, network failures, and screenshot capture."
+  },
+  "server": {
+    "pid": 10732,
+    "port": 5173,
+    "http200": true,
+    "startupStdout": "External Vite dev server supplied by verification harness.",
+    "startupStderr": "",
+    "startupLogsClean": true
+  },
+  "scenario": {
+    "steps": [
+      "Load Dashboard route",
+      "Inject malformed localStorage.products value",
+      "Navigate to Products through the visible Sidebar item",
+      "Invoke the active product service read path in browser runtime",
+      "Verify malformed JSON is contained and safe default is returned",
+      "Verify valid JSON read behavior remains unchanged",
+      "Capture DOM, console, exceptions, network errors, and screenshot"
+    ],
+    "navigationResult": {
+      "clicked": true
+    },
+    "serviceRead": {
+      "attempted": true,
+      "threw": false,
+      "resultType": "array",
+      "resultLength": 0,
+      "result": []
+    },
+    "validRead": {
+      "attempted": true,
+      "threw": false,
+      "resultType": "array",
+      "resultLength": 1,
+      "firstName": "Valid product"
+    }
+  },
+  "pageLoad": {
+    "currentUrl": "http://127.0.0.1:5173/",
+    "documentTitle": "المنتجات",
+    "activeRoute": "products",
+    "selectors": {
+      "sidebar": true,
+      "workspace": true,
+      "productsHeading": true,
+      "productsTable": true,
+      "productsBody": true,
+      "productDialog": true
+    },
+    "headingText": "📦 المنتجات",
+    "tableText": "الصورة\n                                الاسم\n                                الباركود\n                                الكمية\n                                السعر\n                                الإجراءات\n\n                            \n\n                        \n\n                        \n\n                            \n\n                                \n\n                                    لا توجد منتجات حتى الآن.",
+    "sidebarVisibleItems": [
+      {
+        "route": "dashboard",
+        "text": "🏠 الرئيسية"
+      },
+      {
+        "route": "products",
+        "text": "📦 المنتجات"
+      }
+    ],
+    "productsValueAfterValidRead": "[{\"id\":\"p1\",\"name\":\"Valid product\"}]"
+  },
+  "browserConsoleOutput": [
+    {
+      "type": "debug",
+      "text": "[vite] connecting..."
+    },
+    {
+      "type": "log",
+      "text": "ABONIBAL ERP Started"
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connected."
+    }
+  ],
+  "browserConsoleErrors": [],
+  "networkErrors": [],
+  "pageExceptions": [],
+  "screenshotPath": "C:\\Users\\aboni\\Documents\\Codex\\2026-06-26\\abonibal-dotcom-abonibal-erp-https-github-3\\outputs\\PATCHES\\ECS-005\\after-verification-pass-20260627-0350\\after-screenshot.png",
+  "domEvidencePath": "C:\\Users\\aboni\\Documents\\Codex\\2026-06-26\\abonibal-dotcom-abonibal-erp-https-github-3\\outputs\\PATCHES\\ECS-005\\after-verification-pass-20260627-0350\\after-dom.json",
+  "assertions": {
+    "scenarioCompleted": true,
+    "productsRouteLoaded": true,
+    "malformedReadAttempted": true,
+    "malformedReadContained": true,
+    "malformedReadReturnedArray": true,
+    "malformedReadReturnedEmptyArray": true,
+    "validReadStillWorks": true,
+    "noBrowserConsoleErrors": true,
+    "noNetworkErrors": true,
+    "noPageExceptions": true,
+    "screenshotCaptured": true
+  },
+  "decision": "Runtime PASS"
+}

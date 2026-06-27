@@ -1,0 +1,26 @@
+{
+  "currentUrl": "http://127.0.0.1:5173/",
+  "documentTitle": "المنتجات",
+  "activeRoute": "products",
+  "selectors": {
+    "sidebar": true,
+    "workspace": true,
+    "productsHeading": true,
+    "productsTable": true,
+    "productsBody": true,
+    "productDialog": true
+  },
+  "headingText": "📦 المنتجات",
+  "tableText": "الصورة\n                                الاسم\n                                الباركود\n                                الكمية\n                                السعر\n                                الإجراءات\n\n                            \n\n                        \n\n                        \n\n                            \n\n                                \n\n                                    لا توجد منتجات حتى الآن.",
+  "sidebarVisibleItems": [
+    {
+      "route": "dashboard",
+      "text": "🏠 الرئيسية"
+    },
+    {
+      "route": "products",
+      "text": "📦 المنتجات"
+    }
+  ],
+  "malformedProductsValue": "{malformed-products-json"
+}

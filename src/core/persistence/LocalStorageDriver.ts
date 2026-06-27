@@ -10,7 +10,19 @@ export class LocalStorageDriver implements Driver {
             return null;
         }
 
-        return JSON.parse(json) as T;
+        try {
+
+            return JSON.parse(json) as T;
+
+        } catch (error) {
+
+            if (error instanceof SyntaxError) {
+                return null;
+            }
+
+            throw error;
+
+        }
 
     }
 

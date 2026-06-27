@@ -26,3 +26,10 @@
 - Investigated the Dashboard text encoding hypothesis with runtime evidence.
 - Rejected the hypothesis because the Dashboard rendered valid Arabic text at runtime.
 - Closed ECS-004 without source-code changes.
+
+### PATCH-000-ECS-005 - LocalStorage Read Resilience
+
+- Contained malformed JSON failures inside `LocalStorageDriver.read<T>()`.
+- Preserved existing successful JSON read behavior.
+- Returned the existing contract-compatible safe default `null` for invalid JSON.
+- Verified TypeScript, build, and runtime behavior with clean console and no page exceptions.

@@ -10,6 +10,7 @@ Completed Engineering Change Sets:
 - `PATCH-000-ECS-002 - Product Page Listener Lifecycle Stabilization`
 - `PATCH-000-ECS-003A - Dashboard Copy Stabilization`
 - `PATCH-000-ECS-004 - Dashboard Text Encoding Investigation`
+- `PATCH-000-ECS-005 - LocalStorage Read Resilience`
 
 ## ECS-001 Summary
 
@@ -118,6 +119,39 @@ Result:
 - Hypothesis rejected.
 - The observed issue was attributed to tool or terminal text rendering, not an application bug.
 - ECS-004 closed without source-code changes.
+
+## ECS-005 Summary
+
+Root cause:
+
+- `LocalStorageDriver.read<T>()` executed `JSON.parse(json)` without an exception boundary.
+
+Baseline evidence:
+
+- Malformed `localStorage.products` caused the product read path to throw `SyntaxError`.
+- The exception originated in `LocalStorageDriver.read<T>()`.
+- Browser console errors: 0.
+- Page exceptions: 0.
+
+Resolution:
+
+- Wrapped `JSON.parse(json)` in an exception boundary.
+- Returned `null` for `SyntaxError`, matching the existing `T | null` driver contract.
+- Rethrew non-`SyntaxError` exceptions.
+
+After evidence:
+
+- Malformed persisted JSON no longer escapes the persistence read path.
+- Safe default result flows through the existing repository fallback as an empty array.
+- Valid JSON read behavior remains unchanged.
+- Browser console errors: 0.
+- Page exceptions: 0.
+- Runtime Verification: PASS.
+
+Result:
+
+- Root cause fully disappeared.
+- ECS-005 closed with one source file modified.
 
 ## Required Before Final PATCH-000 Delivery
 
