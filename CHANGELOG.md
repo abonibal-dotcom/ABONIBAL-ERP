@@ -1,5 +1,14 @@
 # Changelog
 
+## V1-AUTH-007 - Managed Auth Provider Adapter
+
+- Added a Firebase-backed `AuthProvider` adapter under `src/modules/auth/firebase/`.
+- Kept Firebase SDK usage behind the Auth provider boundary.
+- Required explicit session resolution before returning a project `AuthSession`.
+- Preserved the approved `accountId` boundary by avoiding any `firebaseUser.uid === accountId` assumption.
+- Confirmed the adapter is not wired into app startup, routing, persistence, Products, or runtime Auth behavior.
+- Confirmed TypeScript, build, and runtime non-regression verification passed with zero console errors, zero page exceptions, and zero Firebase startup network requests.
+
 ## V1-AUTH-006 - Managed Auth Dependency & Config Skeleton
 
 - Recorded Firebase Auth as the owner-approved concrete V1 Managed Auth provider.
