@@ -1,5 +1,13 @@
 # Changelog
 
+## V1-INF-001 - Repository Governance & Baseline Lock
+
+- Added the approved complete Engineering Constitution v1.0.
+- Added repository governance documents for project orientation, project status, current mission, V1 roadmap, and owner decisions.
+- Marked the active mission as INF documentation/governance only.
+- Confirmed ECS-006 remains blocked until governance baseline approval.
+- Updated release documentation to avoid stale PATCH-000 status ambiguity.
+
 ## PATCH-000 - Project Stabilization
 
 ### PATCH-000-ECS-001 - Route Registry Stabilization

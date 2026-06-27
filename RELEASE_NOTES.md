@@ -1,5 +1,17 @@
 # Release Notes
 
+## Active Status Notice
+
+This file previously contained a stale PATCH-000 snapshot through `PATCH-000-ECS-003A`.
+
+For active project status, use:
+
+- `PROJECT_STATUS.md`
+- `CHANGELOG.md`
+- `PATCH-000-SUMMARY.md`
+
+PATCH-000 stabilization is complete through `PATCH-000-ECS-005`, and V1 governance is being locked through `V1-INF-001 - Repository Governance & Baseline Lock`.
+
 ## PATCH-000 Current Delivery Snapshot
 
 This snapshot contains the completed stabilization work through `PATCH-000-ECS-003A`.

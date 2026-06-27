@@ -2,7 +2,11 @@
 
 ## Status
 
-PATCH-000 is in progress.
+PATCH-000 stabilization is complete through ECS-005.
+
+V1 governance is now handled by `V1-INF-001 - Repository Governance & Baseline Lock`.
+
+ECS-006 is not started.
 
 Completed Engineering Change Sets:
 
@@ -153,11 +157,9 @@ Result:
 - Root cause fully disappeared.
 - ECS-005 closed with one source file modified.
 
-## Required Before Final PATCH-000 Delivery
+## Post PATCH-000 Transition
 
-- Complete all remaining ECS work.
-- Merge all ECS branches into the PATCH-000 branch.
-- Run full TypeScript, build, and runtime verification on the combined PATCH-000 branch.
-- Create final PATCH-000 tag.
-- Merge PATCH-000 into `main`.
-- Create final `ABONIBAL-ERP-PATCH-000.zip` delivery package.
+- Lock repository governance documents.
+- Review and approve the V1 roadmap baseline.
+- Select the next mission from Foundation Verification, Persistence Safety, or Auth / Multi-user Foundation.
+- Keep ECS-006 blocked until governance baseline approval.
