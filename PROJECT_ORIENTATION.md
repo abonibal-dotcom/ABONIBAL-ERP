@@ -26,12 +26,12 @@ Codex must not act as product owner or architect of record. Owner decisions and 
 - Runtime evidence has priority over terminal output and assumptions.
 - Tool failures must not be treated as application failures.
 - V1 roadmap order must be followed after governance approval.
-- ECS-006 remains blocked until governance baseline is approved.
+- ECS-006 remains blocked until V1-INF-002 is reviewed and approved.
 
 ## Current Project Phase
 
 PATCH-000 stabilization is complete through ECS-005.
 
-The current mission is `V1-INF-001 - Repository Governance & Baseline Lock`.
+The current mission is `V1-INF-002 - Governance Baseline Review & Integration`.
 
-The next engineering work must be selected only after this governance baseline is reviewed and approved.
+The next engineering work must be selected only after V1-INF-002 is reviewed and approved by the owner or architect.

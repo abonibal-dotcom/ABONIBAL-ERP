@@ -6,7 +6,7 @@ This is the official Version 1.0 roadmap baseline for repository governance.
 
 ECS-006 is not started.
 
-No product-code work may begin until V1-INF-001 is reviewed and approved by the owner or architect.
+No product-code work may begin until V1-INF-002 is reviewed and approved by the owner or architect.
 
 ## V1 Definition
 
@@ -110,13 +110,13 @@ Foundation Verification
 
 -> V1 Release Candidate
 
-## First Execution Candidate After Governance Lock
+## First Execution Candidate After Governance Integration
 
-The first mission after V1-INF-001 should not automatically be Products.
+The first mission after V1-INF-002 should not automatically be Products.
 
 The next candidate should be selected from Foundation Verification, Persistence Safety, or Auth / Multi-user Foundation based on evidence and owner approval.
 
-ECS-006 remains blocked until governance baseline approval.
+ECS-006 remains blocked until V1-INF-002 approval.
 
 ## Verification Expectation
 

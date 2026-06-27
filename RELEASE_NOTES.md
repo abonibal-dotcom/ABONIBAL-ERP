@@ -10,7 +10,7 @@ For active project status, use:
 - `CHANGELOG.md`
 - `PATCH-000-SUMMARY.md`
 
-PATCH-000 stabilization is complete through `PATCH-000-ECS-005`, and V1 governance is being locked through `V1-INF-001 - Repository Governance & Baseline Lock`.
+PATCH-000 stabilization is complete through `PATCH-000-ECS-005`, and V1 governance integration is handled through `V1-INF-002 - Governance Baseline Review & Integration`.
 
 ## PATCH-000 Current Delivery Snapshot
 

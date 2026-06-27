@@ -4,7 +4,7 @@
 
 PATCH-000 stabilization is complete through ECS-005.
 
-V1 governance is now handled by `V1-INF-001 - Repository Governance & Baseline Lock`.
+V1 governance integration is now handled by `V1-INF-002 - Governance Baseline Review & Integration`.
 
 ECS-006 is not started.
 
@@ -162,4 +162,4 @@ Result:
 - Lock repository governance documents.
 - Review and approve the V1 roadmap baseline.
 - Select the next mission from Foundation Verification, Persistence Safety, or Auth / Multi-user Foundation.
-- Keep ECS-006 blocked until governance baseline approval.
+- Keep ECS-006 blocked until V1-INF-002 approval.

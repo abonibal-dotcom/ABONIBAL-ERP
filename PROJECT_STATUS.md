@@ -8,6 +8,10 @@ V1 roadmap preparation is in progress through repository governance locking.
 
 No ECS-006 has started.
 
+V1-INF-001 has been executed and integrated into the active baseline branch.
+
+V1-INF-002 governance baseline review and integration is the current mission.
+
 Completed stabilization work:
 
 - `PATCH-000-ECS-001 - Route Registry Stabilization`
@@ -48,11 +52,11 @@ Completed stabilization work:
 
 Current mission:
 
-`V1-INF-001 - Repository Governance & Baseline Lock`
+`V1-INF-002 - Governance Baseline Review & Integration`
 
 Current next mission:
 
-`V1-INF-001 - Repository Governance & Baseline Lock`
+Owner / Architect review after V1-INF-002.
 
 Classification:
 
@@ -68,4 +72,4 @@ No source code changes, no product fixes, no ECS-006, no routing changes, no per
 
 ## Next State
 
-After V1-INF-001 is reviewed and approved, the next mission should be selected from the V1 roadmap. Foundation, persistence, and auth/multi-user preparation must be considered before Products work continues.
+After V1-INF-002 is reviewed and approved, the owner or architect will decide the next mission. Possible future candidates include Foundation Verification, Persistence Safety, and Auth / Multi-user Foundation.

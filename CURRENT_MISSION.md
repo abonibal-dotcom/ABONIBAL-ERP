@@ -2,33 +2,32 @@
 
 ## Mission
 
-`V1-INF-001 - Repository Governance & Baseline Lock`
+`V1-INF-002 - Governance Baseline Review & Integration`
 
 ## Classification
 
 `INF`
 
-This is an Engineering Infrastructure and repository governance mission.
+This is an Engineering Infrastructure and repository governance integration mission.
 
 This is not an ECS.
 
 ## Objective
 
-Lock the official governance baseline in the repository before any new Version 1.0 product-code work begins.
+Review and integrate the completed V1 governance baseline from `v1/inf-001-repository-governance-baseline` into the active baseline branch.
 
-After this mission, Codex and human contributors must be able to find the current governance rules, project status, current mission, roadmap, and owner decisions inside the repository rather than relying only on chat context.
+The mission confirms that the repository officially contains the approved Version 1.0 governance documents before any new engineering execution begins.
 
 ## Allowed
 
 - Inspect repository state.
-- Update governance documentation.
-- Update roadmap documentation.
-- Update current status documentation.
-- Update decision records.
-- Update changelog and release notes where needed.
-- Commit documentation/governance changes.
+- Review branches, commits, tags, and documentation.
+- Verify governance document consistency.
+- Integrate the V1-INF-001 governance baseline into the active baseline branch.
+- Update governance/status/current mission documentation only.
+- Commit documentation/governance integration updates.
 - Tag this INF mission.
-- Push the branch and tag when remote access is available.
+- Push the integration branch and tag when remote access is available.
 
 ## Forbidden
 
@@ -36,7 +35,9 @@ After this mission, Codex and human contributors must be able to find the curren
 - No files under `src/` may be modified.
 - No product fixes.
 - No ECS-006.
+- No product branch.
 - No feature work.
+- No runtime product investigation.
 - No refactor.
 - No routing change.
 - No persistence implementation change.
@@ -45,22 +46,20 @@ After this mission, Codex and human contributors must be able to find the curren
 
 ## Completion Criteria
 
-- `ENGINEERING_CONSTITUTION.md` contains the approved complete Engineering Constitution v1.0 and is tracked.
-- `PROJECT_ORIENTATION.md` exists.
-- `PROJECT_STATUS.md` exists.
-- `CURRENT_MISSION.md` exists and points to V1-INF-001.
-- `ROADMAP.md` exists and states ECS-006 is not started.
-- `DECISIONS.md` exists and records owner decisions.
-- `CHANGELOG.md` records V1-INF-001.
-- `RELEASE_NOTES.md` is updated or clearly marked stale/superseded.
+- V1-INF-001 governance baseline is integrated into the active baseline branch.
+- Required governance documents are present and tracked.
+- `ROADMAP.md` includes Auth / Multi-user Foundation in V1.
+- `ROADMAP.md` states ECS-006 is not started.
+- `DECISIONS.md` records all owner decisions.
+- `PROJECT_STATUS.md` reflects governance baseline integration.
+- `CHANGELOG.md` records V1-INF-002.
 - No files under `src/` changed.
 - Documentation files do not contradict each other.
-- Commit is created.
-- Tag `v1-inf-001-governance-baseline` is created.
+- Integration tag `v1-inf-002-governance-integrated` is created.
 - Branch and tag are pushed when remote access is available.
 
 ## Next Mission
 
 ECS-006 remains blocked.
 
-The next mission will be selected only after this governance baseline is reviewed and approved by the owner or architect.
+The owner or architect will decide the next mission after V1-INF-002 review.

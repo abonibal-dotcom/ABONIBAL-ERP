@@ -1,5 +1,11 @@
 # Changelog
 
+## V1-INF-002 - Governance Baseline Review & Integration
+
+- Integrated the V1-INF-001 governance baseline into the active baseline branch.
+- Updated current mission and project status documentation for V1-INF-002.
+- Confirmed ECS-006 remains blocked pending Architect / Owner approval.
+
 ## V1-INF-001 - Repository Governance & Baseline Lock
 
 - Added the approved complete Engineering Constitution v1.0.
