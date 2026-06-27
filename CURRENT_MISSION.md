@@ -2,70 +2,67 @@
 
 ## Mission
 
-`V1-PER-001 - Persistence Safety Baseline`
+`V1-PER-002 - Storage Wrapper Read Resilience`
 
 ## Classification
 
 `ECS`
 
-This is an application-runtime verification and investigation ECS.
+This is an application source-code stabilization ECS.
 
-This is not a feature mission and does not authorize source-code fixes.
+This is not a feature mission, not Product work, and not ECS-006.
 
 ## Objective
 
-Establish a verified persistence safety baseline before Auth / Multi-user Foundation and product-module implementation.
+Fix the confirmed malformed JSON read-path issue in `src/core/Storage.ts`.
 
-The mission verifies localStorage driver behavior, repository persistence behavior, missing key behavior, malformed JSON behavior, refresh persistence behavior, write failure behavior where safely observable, runtime console errors, and page exceptions.
+V1-PER-001 confirmed that `Storage.get<T>()` executed `JSON.parse(value)` without an exception boundary and propagated `SyntaxError` for malformed persisted JSON.
 
 ## Allowed
 
-- Inspect repository state.
-- Read governance documents.
-- Inspect persistence source files read-only.
+- Modify `src/core/Storage.ts` only for the minimal fix.
 - Run TypeScript verification.
 - Run build verification.
 - Run application runtime verification.
 - Use isolated browser runtime storage keys for verification.
 - Capture runtime evidence.
-- Update mission tracking and closure documentation only.
-- Commit documentation/evidence reports if required.
-- Tag this verification mission if a commit is created.
+- Update required mission tracking and closure documentation only.
+- Commit the minimal source fix and required mission documentation.
+- Tag this mission after commit.
 - Push branch and tag when remote access is available.
 
 ## Forbidden
 
-- No source code changes.
-- No files under `src/` may be modified.
-- No persistence implementation fix.
-- No storage contract change.
-- No product fixes.
+- No Product code changes.
 - No ECS-006.
-- No feature work.
-- No refactor.
+- No LocalStorageDriver change unless new evidence proves it is required.
+- No persistence redesign.
+- No repository contract change.
+- No storage key change.
+- No new storage abstraction.
 - No routing change.
 - No sync behavior change.
 - No UI behavior change.
-- No real business data seeding.
+- No Auth, Inventory, Sales, Dashboard, or Product work.
+- No feature work.
 
 ## Completion Criteria
 
+- Source changes limited to `src/core/Storage.ts`.
 - TypeScript verification completed.
 - Build verification completed.
 - Runtime persistence verification completed.
-- Missing key behavior documented.
-- Valid read/write behavior documented.
-- Malformed JSON behavior documented.
-- Refresh behavior documented.
-- Write failure behavior documented where safely observable.
+- Missing key behavior remains unchanged.
+- Valid JSON behavior remains unchanged.
+- Malformed JSON no longer propagates `SyntaxError`.
+- Malformed JSON returns `null`.
 - Console errors and page exceptions documented.
-- `PROJECT_STATUS.md` reflects V1-PER-001.
-- `CHANGELOG.md` records V1-PER-001.
-- No files under `src/` changed.
+- `PROJECT_STATUS.md` reflects V1-PER-002.
+- `CHANGELOG.md` records V1-PER-002.
 - Branch and tag are pushed if a commit is created.
 
 ## Next Mission
 
 ECS-006 remains blocked.
 
-The recommended next mission is `V1-PER-002 - Storage Wrapper Read Resilience`, subject to Architect / Owner approval, because V1-PER-001 confirmed a malformed JSON read-path issue in `src/core/Storage.ts`.
+The recommended next mission is `V1-AUTH-001 - Auth / Multi-user Foundation Baseline`, subject to Architect / Owner approval.

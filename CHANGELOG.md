@@ -1,5 +1,14 @@
 # Changelog
 
+## V1-PER-002 - Storage Wrapper Read Resilience
+
+- Contained malformed JSON failures inside `Storage.get<T>()`.
+- Preserved existing valid JSON parsing behavior.
+- Preserved existing missing-key behavior by returning `null`.
+- Preserved malformed raw stored values without deletion, migration, or overwrite.
+- Verified `LocalStorageDriver` read behavior remained unchanged.
+- Confirmed TypeScript, build, and runtime verification passed with zero console errors and zero page exceptions.
+
 ## V1-PER-001 - Persistence Safety Baseline
 
 - Verified persistence safety behavior with isolated runtime localStorage keys.

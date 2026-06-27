@@ -16,6 +16,8 @@ V1-FND-001 Foundation Verification Baseline is complete from execution side and 
 
 V1-PER-001 Persistence Safety Baseline is complete from execution side and ready for Architect / Owner review.
 
+V1-PER-002 Storage Wrapper Read Resilience is complete from execution side and ready for Architect / Owner review.
+
 Completed stabilization work:
 
 - `PATCH-000-ECS-001 - Route Registry Stabilization`
@@ -39,7 +41,8 @@ Completed stabilization work:
 - Dashboard exists as a basic page.
 - Persistence exists with localStorage driver and repository abstraction.
 - Persistence safety baseline confirmed `LocalStorageDriver.read<T>()` contains malformed JSON safely.
-- Persistence safety baseline confirmed `Storage.get<T>()` has a malformed JSON read-path safety issue requiring a separate approved mission before code changes.
+- Persistence safety baseline confirmed `Storage.get<T>()` had a malformed JSON read-path safety issue.
+- V1-PER-002 contained malformed JSON failures inside `Storage.get<T>()` while preserving valid and missing-key behavior.
 - Products module is partial.
 - Product dialog lifecycle was stabilized.
 - Malformed product localStorage read failures were contained.
@@ -58,11 +61,11 @@ Completed stabilization work:
 
 Current mission:
 
-`V1-PER-001 - Persistence Safety Baseline`
+`V1-PER-002 - Storage Wrapper Read Resilience`
 
 Current next mission:
 
-Owner / Architect review after V1-PER-001.
+Owner / Architect review after V1-PER-002.
 
 Classification:
 
@@ -70,12 +73,12 @@ Classification:
 
 Allowed scope:
 
-Persistence verification only.
+Storage wrapper malformed JSON read resilience only.
 
 Forbidden scope:
 
-No source code changes, no product fixes, no ECS-006, no routing changes, no persistence implementation changes, no storage contract changes, no sync behavior changes, no UI behavior changes, and no feature work.
+No product fixes, no ECS-006, no routing changes, no persistence redesign, no repository contract changes, no storage key changes, no sync behavior changes, no UI behavior changes, and no feature work.
 
 ## Next State
 
-After V1-PER-001 is reviewed and approved, the owner or architect will decide the next mission. The recommended next candidate is `V1-PER-002 - Storage Wrapper Read Resilience` before Auth / Multi-user Foundation and Products.
+After V1-PER-002 is reviewed and approved, the owner or architect will decide the next mission. The recommended next candidate is `V1-AUTH-001 - Auth / Multi-user Foundation Baseline` before product-module expansion.
