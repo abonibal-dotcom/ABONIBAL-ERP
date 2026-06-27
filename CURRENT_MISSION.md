@@ -2,80 +2,79 @@
 
 ## Mission
 
-`V1-AUTH-005 - Managed Auth Integration Planning`
+`V1-AUTH-006 - Managed Auth Dependency & Config Skeleton`
 
 ## Classification
 
-`INF`
+`ECS`
 
-This is an architecture, planning, and implementation-design mission.
+This is a minimal Auth foundation source/config ECS.
 
-This is not an ECS implementation mission, not Product work, and not ECS-006.
-
-No Auth implementation is authorized in this mission.
+This is not login implementation, route guard implementation, Product work, or ECS-006.
 
 ## Objective
 
-Prepare the safe implementation plan for Managed Auth integration after V1-AUTH-004 introduced provider-neutral Auth/session contracts.
+Add the minimal Firebase Auth dependency and config skeleton required for future Auth implementation while preserving current runtime behavior.
 
-The plan must define:
+The owner has approved:
 
-- Recommended first Managed Auth provider.
-- Dependency and package impact for a future ECS.
-- Required environment and configuration values.
-- Mapping from the provider SDK to the existing `AuthProvider` interface.
-- Session restoration behavior.
-- `accountId` resolution strategy.
-- Minimal `owner` / `user` role handling.
-- Future route guard and persistence-scope sequence.
-- Risks and required owner decisions.
+- Firebase Auth as the official V1 Auth provider.
+- `accountId` as the official V1 data boundary.
+- Minimal V1 roles: `owner` and `user`.
+- No permission matrix in V1.
+- No automatic deletion or migration of existing global localStorage data.
 
 ## Allowed
 
-- Inspect documentation.
-- Inspect `package.json` read-only.
-- Inspect `src/modules/auth/` contracts read-only.
-- Inspect routing, container, app bootstrap, and config files read-only.
-- Create `PATCHES/V1-AUTH-005/managed-auth-integration-plan.md`.
-- Create `PATCHES/V1-AUTH-005/closure-report.md`.
-- Update mission/status/changelog documentation.
-- Update `ROADMAP.md` only to reflect the planned Auth sequence.
-- Commit documentation-only changes.
-- Tag and push when remote access is available.
+- Add the `firebase` dependency.
+- Update `pnpm-lock.yaml`.
+- Add safe Firebase environment placeholders.
+- Add import-safe Firebase config and initialization skeleton files under `src/modules/auth/firebase/`.
+- Record Firebase Auth provider approval in governance documentation.
+- Run TypeScript, build, and runtime non-regression verification.
+- Create V1-AUTH-006 verification and closure reports.
+- Commit, tag, and push after all verification gates pass.
 
 ## Forbidden
 
-- No dependencies may be installed.
-- No `package.json` changes.
-- No files under `src/` may be modified.
-- No provider SDK code.
-- No Firebase/Auth or provider implementation.
-- No login screens.
-- No login/logout implementation.
+- No login implementation.
+- No logout implementation.
+- No login UI.
 - No route guards.
-- No routing behavior changes.
-- No persistence behavior changes.
+- No authentication requirement at runtime.
+- No route accessibility changes.
+- No app startup behavior change.
+- No persistence behavior change.
 - No localStorage migration.
 - No Product work.
 - No ECS-006.
-- No runtime Auth behavior.
+- No permission matrix.
+- No custom Auth.
+- No hardcoded secrets.
+- No real Firebase credentials.
 
 ## Completion Criteria
 
-- Managed Auth integration plan exists.
-- Closure report exists.
-- Provider status is clearly labeled as recommended and pending owner decision.
-- `CURRENT_MISSION.md`, `PROJECT_STATUS.md`, `CHANGELOG.md`, and `ROADMAP.md` remain aligned.
-- No `src/` files changed.
-- No package/build/config files changed.
-- No dependencies installed.
-- ROADMAP keeps Auth before Products.
-- ECS-006 remains blocked.
-- Git diff contains documentation only.
-- Branch and tag are pushed if a commit is created.
+- Dependency changes limited to `firebase` and lockfile output.
+- Config skeleton contains placeholders only.
+- Firebase skeleton is not wired into app startup.
+- No Product, routing, persistence, UI, or app startup files changed.
+- TypeScript verification passes.
+- Build verification passes.
+- Runtime non-regression verification passes.
+- Console errors = 0.
+- Page exceptions = 0.
+- No login UI appears.
+- No route guard behavior appears.
+- No localStorage migration occurs.
+- `CHANGELOG.md` records V1-AUTH-006.
+- `DECISIONS.md` records Firebase Auth provider approval.
+- `PATCHES/V1-AUTH-006/verification.md` exists.
+- `PATCHES/V1-AUTH-006/closure-report.md` exists.
+- Branch, tag, and push complete when remote access is available.
 
 ## Next Mission
 
 ECS-006 remains blocked.
 
-The recommended next mission is `V1-AUTH-006 - Managed Auth Dependency & Config Skeleton`, subject to Architect / Owner approval.
+The recommended next mission is `V1-AUTH-007 - Managed Auth Provider Adapter`, subject to Architect / Owner approval.

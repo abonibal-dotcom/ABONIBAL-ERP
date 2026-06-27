@@ -40,7 +40,7 @@ V1 uses Managed Auth as the approved provider direction.
 
 Custom Auth is rejected for V1.
 
-Concrete Managed Auth provider selection remains implementation-planning detail unless the owner explicitly chooses one.
+Firebase Auth is the approved concrete V1 Managed Auth provider.
 
 V1 role model is limited to:
 

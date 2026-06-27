@@ -28,6 +28,7 @@ V1 must prioritize reliable business operation, data safety, basic auditability,
 - V1 reports are basic only.
 - V1 uses `accountId` as the account/workspace data boundary.
 - V1 uses Managed Auth direction.
+- V1 uses Firebase Auth as the concrete Managed Auth provider.
 - V1 role model is limited to `owner` and `user`.
 - Existing global localStorage data must not be deleted automatically.
 
@@ -145,9 +146,9 @@ Product-code work remains blocked until this gate is satisfied.
 
 ## Planned Auth Foundation Sequence
 
-The concrete Managed Auth provider remains pending owner approval.
+The concrete Managed Auth provider is approved.
 
-Current recommendation:
+Approved provider:
 
 `Firebase Auth`
 
