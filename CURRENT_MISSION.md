@@ -2,67 +2,72 @@
 
 ## Mission
 
-`V1-PER-002 - Storage Wrapper Read Resilience`
+`V1-AUTH-001 - Auth / Multi-user Foundation Baseline`
 
 ## Classification
 
 `ECS`
 
-This is an application source-code stabilization ECS.
+This is an application architecture and runtime investigation ECS.
 
-This is not a feature mission, not Product work, and not ECS-006.
+This is not a feature implementation mission, not Product work, and not ECS-006.
 
 ## Objective
 
-Fix the confirmed malformed JSON read-path issue in `src/core/Storage.ts`.
+Establish the Auth / Multi-user foundation baseline for ABONIBAL ERP Version 1.0.
 
-V1-PER-001 confirmed that `Storage.get<T>()` executed `JSON.parse(value)` without an exception boundary and propagated `SyntaxError` for malformed persisted JSON.
+This mission determines whether Auth, user identity, session state, route guards, and user-scoped persistence already exist before product-module expansion continues.
 
 ## Allowed
 
-- Modify `src/core/Storage.ts` only for the minimal fix.
+- Inspect repository state.
+- Read governance documents.
+- Inspect source files read-only.
+- Inspect dependencies and config read-only.
 - Run TypeScript verification.
 - Run build verification.
 - Run application runtime verification.
-- Use isolated browser runtime storage keys for verification.
 - Capture runtime evidence.
 - Update required mission tracking and closure documentation only.
-- Commit the minimal source fix and required mission documentation.
-- Tag this mission after commit.
+- Commit documentation/evidence reports if required.
+- Tag this verification mission if a commit is created.
 - Push branch and tag when remote access is available.
 
 ## Forbidden
 
-- No Product code changes.
+- No source code changes.
+- No files under `src/` may be modified.
+- No Auth implementation.
+- No login screens.
+- No users or permissions.
+- No Product work.
 - No ECS-006.
-- No LocalStorageDriver change unless new evidence proves it is required.
-- No persistence redesign.
-- No repository contract change.
-- No storage key change.
-- No new storage abstraction.
-- No routing change.
-- No sync behavior change.
-- No UI behavior change.
-- No Auth, Inventory, Sales, Dashboard, or Product work.
+- No persistence contract change.
+- No routing behavior change.
+- No navigation behavior change.
+- No dependency changes.
 - No feature work.
 
 ## Completion Criteria
 
-- Source changes limited to `src/core/Storage.ts`.
+- Documentation baseline completed.
+- Dependency/config baseline completed.
+- Auth-related source search completed.
+- Route guard status documented.
+- User/session model status documented.
+- Persistence user-scope status documented.
+- Runtime login requirement documented.
 - TypeScript verification completed.
 - Build verification completed.
-- Runtime persistence verification completed.
-- Missing key behavior remains unchanged.
-- Valid JSON behavior remains unchanged.
-- Malformed JSON no longer propagates `SyntaxError`.
-- Malformed JSON returns `null`.
+- Runtime verification completed.
 - Console errors and page exceptions documented.
-- `PROJECT_STATUS.md` reflects V1-PER-002.
-- `CHANGELOG.md` records V1-PER-002.
+- `PROJECT_STATUS.md` reflects V1-AUTH-001.
+- `CHANGELOG.md` records V1-AUTH-001.
+- No files under `src/` changed.
 - Branch and tag are pushed if a commit is created.
 
 ## Next Mission
 
 ECS-006 remains blocked.
 
-The recommended next mission is `V1-AUTH-001 - Auth / Multi-user Foundation Baseline`, subject to Architect / Owner approval.
+The recommended next mission is `V1-AUTH-002 - Auth Foundation Architecture Decision & User Scope Contract`, subject to Architect / Owner approval.

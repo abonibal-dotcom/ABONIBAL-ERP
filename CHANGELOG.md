@@ -1,5 +1,13 @@
 # Changelog
 
+## V1-AUTH-001 - Auth / Multi-user Foundation Baseline
+
+- Verified Auth / multi-user foundation baseline without source-code changes.
+- Confirmed no Auth dependency, Auth module, user identity model, session model, route guard, or user-scoped persistence exists.
+- Confirmed Dashboard and Products routes are accessible without login.
+- Confirmed TypeScript, build, and runtime verification passed with zero console errors and zero page exceptions.
+- Recorded Auth foundation as a confirmed V1 architecture gap before product-module expansion.
+
 ## V1-PER-002 - Storage Wrapper Read Resilience
 
 - Contained malformed JSON failures inside `Storage.get<T>()`.
