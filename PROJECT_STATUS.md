@@ -4,7 +4,7 @@
 
 PATCH-000 is complete.
 
-V1 roadmap preparation is in progress through repository governance locking.
+V1 roadmap execution is in progress through approved verification missions.
 
 No ECS-006 has started.
 
@@ -13,6 +13,8 @@ V1-INF-001 has been executed and integrated into the active baseline branch.
 V1-INF-002 governance baseline review and integration is complete.
 
 V1-FND-001 Foundation Verification Baseline is complete from execution side and ready for Architect / Owner review.
+
+V1-PER-001 Persistence Safety Baseline is complete from execution side and ready for Architect / Owner review.
 
 Completed stabilization work:
 
@@ -36,6 +38,8 @@ Completed stabilization work:
 - Routing and Sidebar route surface exist.
 - Dashboard exists as a basic page.
 - Persistence exists with localStorage driver and repository abstraction.
+- Persistence safety baseline confirmed `LocalStorageDriver.read<T>()` contains malformed JSON safely.
+- Persistence safety baseline confirmed `Storage.get<T>()` has a malformed JSON read-path safety issue requiring a separate approved mission before code changes.
 - Products module is partial.
 - Product dialog lifecycle was stabilized.
 - Malformed product localStorage read failures were contained.
@@ -54,11 +58,11 @@ Completed stabilization work:
 
 Current mission:
 
-`V1-FND-001 - Foundation Verification Baseline`
+`V1-PER-001 - Persistence Safety Baseline`
 
 Current next mission:
 
-Owner / Architect review after V1-FND-001.
+Owner / Architect review after V1-PER-001.
 
 Classification:
 
@@ -66,12 +70,12 @@ Classification:
 
 Allowed scope:
 
-Foundation verification only.
+Persistence verification only.
 
 Forbidden scope:
 
-No source code changes, no product fixes, no ECS-006, no routing changes, no persistence implementation changes, no sync behavior changes, no UI behavior changes, and no feature work.
+No source code changes, no product fixes, no ECS-006, no routing changes, no persistence implementation changes, no storage contract changes, no sync behavior changes, no UI behavior changes, and no feature work.
 
 ## Next State
 
-After V1-FND-001 is reviewed and approved, the owner or architect will decide the next mission. The recommended next candidate from roadmap order is Persistence Safety Baseline before Auth / Multi-user Foundation and Products.
+After V1-PER-001 is reviewed and approved, the owner or architect will decide the next mission. The recommended next candidate is `V1-PER-002 - Storage Wrapper Read Resilience` before Auth / Multi-user Foundation and Products.

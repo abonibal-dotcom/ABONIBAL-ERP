@@ -1,5 +1,15 @@
 # Changelog
 
+## V1-PER-001 - Persistence Safety Baseline
+
+- Verified persistence safety behavior with isolated runtime localStorage keys.
+- Confirmed TypeScript and build verification passed.
+- Confirmed `LocalStorageDriver.read<T>()` handles missing and malformed JSON safely.
+- Confirmed repository missing collection behavior returns an empty array through the existing repository contract.
+- Observed non-silent write failure behavior for simulated `setItem` and circular JSON failures.
+- Confirmed `src/core/Storage.ts` has a malformed JSON read-path safety issue in `Storage.get<T>()`.
+- Confirmed no files under `src/` were changed.
+
 ## V1-FND-001 - Foundation Verification Baseline
 
 - Verified the post-governance foundation runtime baseline.
