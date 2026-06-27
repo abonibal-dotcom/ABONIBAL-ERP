@@ -143,6 +143,28 @@ localStorage migration is not automatic and must be a separate ECS with runtime 
 
 Product-code work remains blocked until this gate is satisfied.
 
+## Planned Auth Foundation Sequence
+
+The concrete Managed Auth provider remains pending owner approval.
+
+Current recommendation:
+
+`Firebase Auth`
+
+Recommended next Auth sequence:
+
+1. `V1-AUTH-006 - Managed Auth Dependency & Config Skeleton`.
+2. `V1-AUTH-007 - Managed Auth Provider Adapter`.
+3. `V1-AUTH-008 - Auth State Service`.
+4. `V1-AUTH-009 - Login / Logout Minimal Flow`.
+5. `V1-AUTH-010 - Route Guard Foundation`.
+6. `V1-AUTH-011 - accountId Resolution Baseline`.
+7. `V1-AUTH-012 - Runtime Auth Session Verification`.
+8. `V1-AUTH-013 - Legacy Storage Compatibility Plan`.
+9. `V1-AUTH-014 - Account-scoped Persistence Planning`.
+
+No Product-code work may resume until the owner or architect confirms the Auth foundation gate is satisfied.
+
 ## Verification Expectation
 
 Each future ECS must include:
