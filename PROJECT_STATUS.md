@@ -10,7 +10,9 @@ No ECS-006 has started.
 
 V1-INF-001 has been executed and integrated into the active baseline branch.
 
-V1-INF-002 governance baseline review and integration is the current mission.
+V1-INF-002 governance baseline review and integration is complete.
+
+V1-FND-001 Foundation Verification Baseline is complete from execution side and ready for Architect / Owner review.
 
 Completed stabilization work:
 
@@ -52,19 +54,19 @@ Completed stabilization work:
 
 Current mission:
 
-`V1-INF-002 - Governance Baseline Review & Integration`
+`V1-FND-001 - Foundation Verification Baseline`
 
 Current next mission:
 
-Owner / Architect review after V1-INF-002.
+Owner / Architect review after V1-FND-001.
 
 Classification:
 
-`INF`
+`ECS`
 
 Allowed scope:
 
-Repository governance and documentation only.
+Foundation verification only.
 
 Forbidden scope:
 
@@ -72,4 +74,4 @@ No source code changes, no product fixes, no ECS-006, no routing changes, no per
 
 ## Next State
 
-After V1-INF-002 is reviewed and approved, the owner or architect will decide the next mission. Possible future candidates include Foundation Verification, Persistence Safety, and Auth / Multi-user Foundation.
+After V1-FND-001 is reviewed and approved, the owner or architect will decide the next mission. The recommended next candidate from roadmap order is Persistence Safety Baseline before Auth / Multi-user Foundation and Products.

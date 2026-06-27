@@ -1,5 +1,13 @@
 # Changelog
 
+## V1-FND-001 - Foundation Verification Baseline
+
+- Verified the post-governance foundation runtime baseline.
+- Confirmed TypeScript and build verification passed.
+- Confirmed application startup, default route rendering, registered route sweep, navigation alignment, refresh behavior, and clean runtime baseline before invalid-route observation.
+- Documented invalid-route behavior without changing application source code.
+- Confirmed no files under `src/` were changed.
+
 ## V1-INF-002 - Governance Baseline Review & Integration
 
 - Integrated the V1-INF-001 governance baseline into the active baseline branch.

@@ -116,7 +116,7 @@ The first mission after V1-INF-002 should not automatically be Products.
 
 The next candidate should be selected from Foundation Verification, Persistence Safety, or Auth / Multi-user Foundation based on evidence and owner approval.
 
-ECS-006 remains blocked until V1-INF-002 approval.
+ECS-006 remains blocked until explicitly approved by the owner or architect.
 
 ## Verification Expectation
 

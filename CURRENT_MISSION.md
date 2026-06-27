@@ -2,32 +2,35 @@
 
 ## Mission
 
-`V1-INF-002 - Governance Baseline Review & Integration`
+`V1-FND-001 - Foundation Verification Baseline`
 
 ## Classification
 
-`INF`
+`ECS`
 
-This is an Engineering Infrastructure and repository governance integration mission.
+This is an application-runtime verification ECS.
 
-This is not an ECS.
+This is not a feature mission and does not authorize source-code fixes.
 
 ## Objective
 
-Review and integrate the completed V1 governance baseline from `v1/inf-001-repository-governance-baseline` into the active baseline branch.
+Establish a verified Foundation runtime baseline after V1 governance integration.
 
-The mission confirms that the repository officially contains the approved Version 1.0 governance documents before any new engineering execution begins.
+The mission verifies application startup, routing baseline, navigation baseline, page registration, runtime initialization, TypeScript, build, runtime console errors, page exceptions, route sweep, refresh behavior, and observable listener lifecycle.
 
 ## Allowed
 
 - Inspect repository state.
-- Review branches, commits, tags, and documentation.
-- Verify governance document consistency.
-- Integrate the V1-INF-001 governance baseline into the active baseline branch.
-- Update governance/status/current mission documentation only.
-- Commit documentation/governance integration updates.
-- Tag this INF mission.
-- Push the integration branch and tag when remote access is available.
+- Read governance documents.
+- Inspect foundation source files read-only.
+- Run TypeScript verification.
+- Run build verification.
+- Run application runtime verification.
+- Capture runtime evidence.
+- Update mission tracking and closure documentation only.
+- Commit documentation/evidence reports if required.
+- Tag this verification mission if a commit is created.
+- Push branch and tag when remote access is available.
 
 ## Forbidden
 
@@ -35,9 +38,8 @@ The mission confirms that the repository officially contains the approved Versio
 - No files under `src/` may be modified.
 - No product fixes.
 - No ECS-006.
-- No product branch.
 - No feature work.
-- No runtime product investigation.
+- No product-specific investigation.
 - No refactor.
 - No routing change.
 - No persistence implementation change.
@@ -46,20 +48,20 @@ The mission confirms that the repository officially contains the approved Versio
 
 ## Completion Criteria
 
-- V1-INF-001 governance baseline is integrated into the active baseline branch.
-- Required governance documents are present and tracked.
-- `ROADMAP.md` includes Auth / Multi-user Foundation in V1.
-- `ROADMAP.md` states ECS-006 is not started.
-- `DECISIONS.md` records all owner decisions.
-- `PROJECT_STATUS.md` reflects governance baseline integration.
-- `CHANGELOG.md` records V1-INF-002.
+- TypeScript verification completed.
+- Build verification completed.
+- Runtime startup verification completed.
+- Route sweep completed.
+- Navigation alignment verified.
+- Console errors and page exceptions documented.
+- Listener lifecycle baseline documented where observable.
+- `PROJECT_STATUS.md` reflects V1-FND-001.
+- `CHANGELOG.md` records V1-FND-001.
 - No files under `src/` changed.
-- Documentation files do not contradict each other.
-- Integration tag `v1-inf-002-governance-integrated` is created.
-- Branch and tag are pushed when remote access is available.
+- Branch and tag are pushed if a commit is created.
 
 ## Next Mission
 
 ECS-006 remains blocked.
 
-The owner or architect will decide the next mission after V1-INF-002 review.
+The owner or architect will decide the next mission after V1-FND-001 review.
