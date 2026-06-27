@@ -32,6 +32,8 @@ V1-AUTH-006 Managed Auth Dependency & Config Skeleton is complete from execution
 
 V1-AUTH-007 Managed Auth Provider Adapter is complete from execution side and ready for Architect / Owner review.
 
+V1-AUTH-008 Auth State Service is complete from execution side and ready for Architect / Owner review.
+
 Completed stabilization work:
 
 - `PATCH-000-ECS-001 - Route Registry Stabilization`
@@ -75,6 +77,9 @@ Completed stabilization work:
 - V1-AUTH-007 added a Firebase-backed `AuthProvider` adapter behind the existing Auth contract.
 - V1-AUTH-007 keeps full `AuthSession` creation behind an explicit session resolver and does not assume `firebaseUser.uid === accountId`.
 - V1-AUTH-007 did not add login UI, route guards, route accessibility changes, app startup wiring, persistence changes, localStorage migration, Product work, or ECS-006.
+- V1-AUTH-008 added a provider-neutral `AuthStateService` behind the existing Auth contracts.
+- V1-AUTH-008 manages `loading`, `authenticated`, and `unauthenticated` state transitions through `AuthProvider` without app startup wiring.
+- V1-AUTH-008 did not add login UI, route guards, route accessibility changes, app startup wiring, persistence changes, localStorage migration, Product work, or ECS-006.
 - Products module is partial.
 - Product dialog lifecycle was stabilized.
 - Malformed product localStorage read failures were contained.
@@ -93,11 +98,11 @@ Completed stabilization work:
 
 Current mission:
 
-`V1-AUTH-007 - Managed Auth Provider Adapter`
+`V1-AUTH-008 - Auth State Service`
 
 Current next mission:
 
-V1-AUTH-007 execution closure and Architect / Owner review.
+V1-AUTH-008 execution closure and Architect / Owner review.
 
 Classification:
 
@@ -105,12 +110,12 @@ Classification:
 
 Allowed scope:
 
-Firebase Auth adapter behind the existing `AuthProvider` contract only.
+Auth state service behind the existing `AuthState` and `AuthProvider` contracts only.
 
 Forbidden scope:
 
-No login UI, no route guards, no route accessibility changes, no app startup behavior changes, no persistence behavior changes, no localStorage migration, no Product work, no ECS-006, no permission matrix, no account migration, no hardcoded credentials, and no real Firebase credentials.
+No login UI, no route guards, no route accessibility changes, no app startup behavior changes, no persistence behavior changes, no localStorage migration, no Product work, no ECS-006, no permission matrix, no account migration, no hardcoded credentials, and no real credentials.
 
 ## Next State
 
-After V1-AUTH-007 is reviewed and approved, the recommended next candidate is `V1-AUTH-008 - Auth State Service` before login UI, route guards, persistence changes, and product-module expansion.
+After V1-AUTH-008 is reviewed and approved, the recommended next candidate is `V1-AUTH-009 - Login / Logout Minimal Flow` before route guards, persistence changes, and product-module expansion.

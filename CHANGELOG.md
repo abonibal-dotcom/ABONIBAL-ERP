@@ -1,5 +1,15 @@
 # Changelog
 
+## V1-AUTH-008 - Auth State Service
+
+- Added a provider-neutral `AuthStateService` under `src/modules/auth/`.
+- Added explicit state reading through `getState()`.
+- Added private subscriber management with unsubscribe support.
+- Added `initialize()`, `signIn()`, and `signOut()` methods that delegate to the existing `AuthProvider` contract.
+- Preserved provider-neutral Auth state handling without Firebase-specific leakage.
+- Confirmed the service is not wired into app startup, routing, persistence, Products, or runtime Auth behavior.
+- Confirmed TypeScript, build, and runtime non-regression verification passed with zero console errors, zero page exceptions, zero AuthStateService startup requests, and zero Firebase startup network requests.
+
 ## V1-AUTH-007 - Managed Auth Provider Adapter
 
 - Added a Firebase-backed `AuthProvider` adapter under `src/modules/auth/firebase/`.

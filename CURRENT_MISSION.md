@@ -2,19 +2,19 @@
 
 ## Mission
 
-`V1-AUTH-007 - Managed Auth Provider Adapter`
+`V1-AUTH-008 - Auth State Service`
 
 ## Classification
 
 `ECS`
 
-This is a limited Auth provider adapter implementation ECS.
+This is a limited Auth foundation source-code ECS.
 
-This is not login implementation, route guard implementation, Product work, persistence migration, or ECS-006.
+This is not login UI, route guard implementation, Product work, persistence migration, or ECS-006.
 
 ## Objective
 
-Add a Firebase-backed adapter behind the existing provider-neutral `AuthProvider` contract while preserving current runtime behavior.
+Add a minimal provider-neutral Auth State Service that manages the existing `AuthState` contract using the existing `AuthProvider` interface while preserving current runtime behavior.
 
 The owner has approved:
 
@@ -23,14 +23,17 @@ The owner has approved:
 - Minimal V1 roles: `owner` and `user`.
 - No permission matrix in V1.
 - No automatic deletion or migration of existing global localStorage data.
+- No `firebaseUser.uid === accountId` final-design assumption.
 
 ## Implemented
 
-- Added `FirebaseAuthProvider` under `src/modules/auth/firebase/`.
-- Kept Firebase SDK usage contained inside the Auth Firebase adapter layer.
-- Required an explicit `FirebaseAuthSessionResolver` for converting Firebase users into project `AuthSession` values.
-- Avoided assuming `firebaseUser.uid === accountId`.
-- Preserved current app startup, routing, Products, persistence, and localStorage behavior.
+- Added `AuthStateService` under `src/modules/auth/`.
+- Added current state reading through `getState()`.
+- Added subscribe/unsubscribe support with a private subscriber set.
+- Added `initialize()` delegation to `AuthProvider.getCurrentSession()`.
+- Added `signIn()` delegation to `AuthProvider.signIn(...)`.
+- Added `signOut()` delegation to `AuthProvider.signOut()`.
+- Preserved provider-neutral state handling and avoided Firebase-specific leakage.
 
 ## Forbidden Scope Preserved
 
@@ -44,8 +47,8 @@ The owner has approved:
 - No Product work.
 - No ECS-006.
 - No permission matrix.
-- No hardcoded Firebase credentials.
-- No real Firebase credentials.
+- No hardcoded credentials.
+- No real credentials.
 
 ## Verification Status
 
@@ -54,23 +57,25 @@ The owner has approved:
 - Runtime non-regression verification passed.
 - Console errors = 0.
 - Page exceptions = 0.
+- AuthStateService startup requests = 0.
 - Firebase startup network requests = 0.
 
 ## Completion Criteria
 
-- Adapter source changes are limited to `src/modules/auth/firebase/`.
+- Source changes are limited to `src/modules/auth/AuthStateService.ts`.
 - No Product, routing, persistence, UI, or app startup files changed.
 - No login UI appears.
 - No route guard behavior appears.
+- No AuthStateService runtime wiring exists.
 - No Firebase network call is required for normal startup.
 - No localStorage migration occurs.
-- `CHANGELOG.md` records V1-AUTH-007.
-- `PATCHES/V1-AUTH-007/verification.md` exists.
-- `PATCHES/V1-AUTH-007/closure-report.md` exists.
+- `CHANGELOG.md` records V1-AUTH-008.
+- `PATCHES/V1-AUTH-008/verification.md` exists.
+- `PATCHES/V1-AUTH-008/closure-report.md` exists.
 - Branch, tag, and push complete when remote access is available.
 
 ## Next Mission
 
 ECS-006 remains blocked.
 
-The recommended next mission is `V1-AUTH-008 - Auth State Service`, subject to Architect / Owner approval.
+The recommended next mission is `V1-AUTH-009 - Login / Logout Minimal Flow`, subject to Architect / Owner approval.
