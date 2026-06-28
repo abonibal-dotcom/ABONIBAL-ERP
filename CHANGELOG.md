@@ -1,5 +1,13 @@
 # Changelog
 
+## V1-AUTH-006 - Managed Auth Dependency & Config Skeleton
+
+- Recorded Firebase Auth as the owner-approved concrete V1 Managed Auth provider.
+- Added the `firebase` dependency for future Auth implementation.
+- Added safe Vite environment placeholder keys in `.env.example`.
+- Added Firebase Auth config reader and initialization skeleton under `src/modules/auth/firebase/`.
+- Confirmed the Firebase skeleton is not wired into app startup, routing, persistence, Products, or runtime Auth behavior.
+
 ## V1-AUTH-005 - Managed Auth Integration Planning
 
 - Created the Managed Auth integration plan for future V1 Auth implementation.
