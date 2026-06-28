@@ -3,12 +3,9 @@ import type { Auth, User } from "firebase/auth";
 
 import type { AuthProvider, SignInCredentials } from "../AuthProvider";
 import type { AuthSession } from "../AuthSession";
+import type { AuthProviderIdentity, AuthSessionResolver } from "../AuthSessionResolver";
 
-export interface FirebaseAuthSessionResolver {
-
-    resolve(firebaseUser: User): Promise<AuthSession | null>;
-
-}
+export type FirebaseAuthSessionResolver = AuthSessionResolver;
 
 export class FirebaseAuthProvider implements AuthProvider {
 
@@ -66,8 +63,30 @@ export class FirebaseAuthProvider implements AuthProvider {
 
     private async resolveSession(firebaseUser: User): Promise<AuthSession | null> {
 
-        return this.sessionResolver.resolve(firebaseUser);
+        return this.sessionResolver.resolve(this.toProviderIdentity(firebaseUser));
 
     }
+
+    private toProviderIdentity(firebaseUser: User): AuthProviderIdentity {
+
+        const displayName = normalizeOptionalText(firebaseUser.displayName ?? undefined);
+        const email = normalizeOptionalText(firebaseUser.email ?? undefined);
+
+        return {
+            provider: "firebase",
+            providerUserId: firebaseUser.uid,
+            ...(displayName ? { displayName } : {}),
+            ...(email ? { email } : {}),
+        };
+
+    }
+
+}
+
+function normalizeOptionalText(value: string | undefined): string | undefined {
+
+    const normalized = value?.trim();
+
+    return normalized ? normalized : undefined;
 
 }

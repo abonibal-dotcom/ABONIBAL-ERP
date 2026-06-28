@@ -1,5 +1,17 @@
 # Changelog
 
+## V1-AUTH-009 - AccountId / Auth Session Resolution Baseline
+
+- Recorded the owner / architect sequencing decision that `V1-AUTH-009` is AccountId / Auth Session Resolution Baseline.
+- Moved Login / Logout after account/session resolution.
+- Preserved the rule that Firebase provider user ids must not be assumed to equal V1 `accountId` values.
+- Added a provider-neutral `AuthSessionResolver` boundary under `src/modules/auth/`.
+- Added explicit account/session resolution input and output contracts before `AuthSession` creation.
+- Added `DefaultAuthSessionResolver` to build `AuthSession` only after an account resolver returns an explicit `accountId`.
+- Aligned `FirebaseAuthProvider` to pass Firebase users as provider identities instead of direct session input.
+- Confirmed no login UI, route guard, app startup Auth wiring, Product work, persistence change, localStorage migration, or ECS-006 work was added.
+- Confirmed TypeScript, build, and runtime non-regression verification passed with zero console errors, zero page exceptions, zero Auth startup requests, and zero Firebase startup network requests.
+
 ## V1-AUTH-008 - Auth State Service
 
 - Added a provider-neutral `AuthStateService` under `src/modules/auth/`.

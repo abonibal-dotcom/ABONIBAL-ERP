@@ -34,6 +34,8 @@ V1-AUTH-007 Managed Auth Provider Adapter is complete from execution side and re
 
 V1-AUTH-008 Auth State Service is complete from execution side and ready for Architect / Owner review.
 
+V1-AUTH-009 AccountId / Auth Session Resolution Baseline is complete from execution side and ready for Architect / Owner review.
+
 Completed stabilization work:
 
 - `PATCH-000-ECS-001 - Route Registry Stabilization`
@@ -80,6 +82,12 @@ Completed stabilization work:
 - V1-AUTH-008 added a provider-neutral `AuthStateService` behind the existing Auth contracts.
 - V1-AUTH-008 manages `loading`, `authenticated`, and `unauthenticated` state transitions through `AuthProvider` without app startup wiring.
 - V1-AUTH-008 did not add login UI, route guards, route accessibility changes, app startup wiring, persistence changes, localStorage migration, Product work, or ECS-006.
+- Owner / architect updated the Auth sequence: V1-AUTH-009 is now AccountId / Auth Session Resolution Baseline, not Login / Logout Minimal Flow.
+- Login / Logout moves after account/session resolution because Firebase provider user ids must not be assumed to be V1 `accountId` values.
+- V1-AUTH-009 added a provider-neutral account/session resolution boundary under `src/modules/auth/`.
+- V1-AUTH-009 added `DefaultAuthSessionResolver`, which creates an `AuthSession` only after an account resolver returns an explicit `accountId`.
+- V1-AUTH-009 aligned `FirebaseAuthProvider` so Firebase users become provider identities and do not directly become account/session records.
+- V1-AUTH-009 did not add login UI, route guards, route accessibility changes, app startup wiring, persistence changes, localStorage migration, Product work, or ECS-006.
 - Products module is partial.
 - Product dialog lifecycle was stabilized.
 - Malformed product localStorage read failures were contained.
@@ -98,11 +106,11 @@ Completed stabilization work:
 
 Current mission:
 
-`V1-AUTH-008 - Auth State Service`
+`V1-AUTH-009 - AccountId / Auth Session Resolution Baseline`
 
 Current next mission:
 
-V1-AUTH-008 execution closure and Architect / Owner review.
+V1-AUTH-009 execution closure and Architect / Owner review.
 
 Classification:
 
@@ -110,12 +118,12 @@ Classification:
 
 Allowed scope:
 
-Auth state service behind the existing `AuthState` and `AuthProvider` contracts only.
+Account/session resolution baseline under `src/modules/auth/`, with minimal `FirebaseAuthProvider` alignment only if required.
 
 Forbidden scope:
 
-No login UI, no route guards, no route accessibility changes, no app startup behavior changes, no persistence behavior changes, no localStorage migration, no Product work, no ECS-006, no permission matrix, no account migration, no hardcoded credentials, and no real credentials.
+No login UI, no route guards, no route accessibility changes, no app startup behavior changes, no persistence behavior changes, no localStorage migration, no Product work, no ECS-006, no permission matrix, no hardcoded credentials, no real credentials, and no `firebaseUser.uid === accountId` assumption.
 
 ## Next State
 
-After V1-AUTH-008 is reviewed and approved, the recommended next candidate is `V1-AUTH-009 - Login / Logout Minimal Flow` before route guards, persistence changes, and product-module expansion.
+After V1-AUTH-009 is reviewed and approved, the recommended next candidate is `V1-AUTH-010 - Login / Logout Minimal Flow` before route guards, persistence changes, and product-module expansion.
