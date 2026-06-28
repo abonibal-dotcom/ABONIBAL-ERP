@@ -2,79 +2,100 @@
 
 ## Mission
 
-`V1-AUTH-006 - Managed Auth Dependency & Config Skeleton`
+`V1-AUTH-009 - AccountId / Auth Session Resolution Baseline`
 
 ## Classification
 
 `ECS`
 
-This is a minimal Auth foundation source/config ECS.
+This is a limited Auth foundation source-code ECS.
 
-This is not login implementation, route guard implementation, Product work, or ECS-006.
+This is not login UI, route guard implementation, Product work, persistence migration, app startup Auth wiring, or ECS-006.
 
 ## Objective
 
-Add the minimal Firebase Auth dependency and config skeleton required for future Auth implementation while preserving current runtime behavior.
+Define the minimum provider-neutral account/session resolution boundary required to create a project `AuthSession` without assuming that a provider user id is the same as the V1 `accountId` data boundary.
 
-The owner has approved:
+This mission exists before login/logout because user-facing authentication must not begin until the project can resolve `AuthSession.user.accountId` and `AuthSession.account.id` through an explicit boundary.
 
-- Firebase Auth as the official V1 Auth provider.
-- `accountId` as the official V1 data boundary.
-- Minimal V1 roles: `owner` and `user`.
-- No permission matrix in V1.
-- No automatic deletion or migration of existing global localStorage data.
+## Sequencing Decision
 
-## Allowed
+The owner / architect confirmed that the previous roadmap sequence was outdated.
 
-- Add the `firebase` dependency.
-- Update `pnpm-lock.yaml`.
-- Add safe Firebase environment placeholders.
-- Add import-safe Firebase config and initialization skeleton files under `src/modules/auth/firebase/`.
-- Record Firebase Auth provider approval in governance documentation.
-- Run TypeScript, build, and runtime non-regression verification.
-- Create V1-AUTH-006 verification and closure reports.
-- Commit, tag, and push after all verification gates pass.
+`V1-AUTH-009` is now:
 
-## Forbidden
+`AccountId / Auth Session Resolution Baseline`
 
-- No login implementation.
-- No logout implementation.
+`V1-AUTH-009` is no longer:
+
+`Login / Logout Minimal Flow`
+
+Login / Logout must move after account/session resolution.
+
+## Allowed Scope
+
+- `src/modules/auth/` account/session resolution baseline files.
+- Existing Auth contracts only when minimal alignment is required.
+- Existing `FirebaseAuthProvider` only if minimal type alignment is required.
+- Mission documentation and evidence.
+
+## Implemented
+
+- Added provider-neutral account/session resolution contracts in `src/modules/auth/AuthSessionResolver.ts`.
+- Added `DefaultAuthSessionResolver`.
+- Required an explicit account resolver to return `accountId` before any `AuthSession` is created.
+- Aligned `FirebaseAuthProvider` to pass Firebase users as provider identities.
+- Preserved Firebase `uid` as `providerUserId`, not `accountId`.
+
+## Forbidden Scope
+
 - No login UI.
 - No route guards.
-- No authentication requirement at runtime.
 - No route accessibility changes.
-- No app startup behavior change.
-- No persistence behavior change.
-- No localStorage migration.
+- No app startup Auth wiring.
+- No authentication requirement at runtime.
 - No Product work.
+- No persistence behavior changes.
+- No localStorage migration.
 - No ECS-006.
 - No permission matrix.
-- No custom Auth.
-- No hardcoded secrets.
-- No real Firebase credentials.
+- No hardcoded credentials.
+- No real credentials.
+- No `firebaseUser.uid === accountId` assumption.
 
 ## Completion Criteria
 
-- Dependency changes limited to `firebase` and lockfile output.
-- Config skeleton contains placeholders only.
-- Firebase skeleton is not wired into app startup.
-- No Product, routing, persistence, UI, or app startup files changed.
+- Account/session resolution boundary exists under `src/modules/auth/`.
+- The boundary preserves `accountId` as the official V1 data boundary.
+- Firebase-specific user ids are not treated as account ids.
+- Source changes remain limited to the approved Auth scope.
 - TypeScript verification passes.
 - Build verification passes.
 - Runtime non-regression verification passes.
 - Console errors = 0.
 - Page exceptions = 0.
+- Auth session resolution is not wired into startup.
+- Firebase startup network requests remain 0.
 - No login UI appears.
 - No route guard behavior appears.
 - No localStorage migration occurs.
-- `CHANGELOG.md` records V1-AUTH-006.
-- `DECISIONS.md` records Firebase Auth provider approval.
-- `PATCHES/V1-AUTH-006/verification.md` exists.
-- `PATCHES/V1-AUTH-006/closure-report.md` exists.
+- `CHANGELOG.md` records V1-AUTH-009.
+- `PATCHES/V1-AUTH-009/verification.md` exists.
+- `PATCHES/V1-AUTH-009/closure-report.md` exists.
 - Branch, tag, and push complete when remote access is available.
+
+## Verification Status
+
+- TypeScript verification passed.
+- Build verification passed.
+- Runtime non-regression verification passed.
+- Console errors = 0.
+- Page exceptions = 0.
+- Auth startup requests = 0.
+- Firebase startup network requests = 0.
 
 ## Next Mission
 
 ECS-006 remains blocked.
 
-The recommended next mission is `V1-AUTH-007 - Managed Auth Provider Adapter`, subject to Architect / Owner approval.
+The recommended next mission is `V1-AUTH-010 - Login / Logout Minimal Flow`, subject to Architect / Owner approval.
