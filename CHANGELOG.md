@@ -1,5 +1,16 @@
 # Changelog
 
+## V1-AUTH-010 - Account Mapping Source Baseline
+
+- Recorded the owner / architect sequencing decision that `V1-AUTH-010` is Account Mapping Source Baseline.
+- Moved Login / Logout after account mapping source baseline.
+- Preserved the rule that provider user ids must resolve through an explicit account mapping source before project `AuthSession` creation.
+- Added `AccountMappingSource`, `ProviderUserReference`, `AccountMapping`, and `AccountMappingNotFoundError`.
+- Added `AccountMappingSessionResolver` to adapt account mapping results into the existing Auth session resolution flow.
+- Chose a strict contract-only baseline with no real accounts, no local seeds, no environment placeholder mapping, and no silent mapping success.
+- Confirmed missing mapping fails safely by returning `null` from the account-session resolver boundary.
+- Confirmed TypeScript, build, and runtime non-regression verification passed with zero console errors, zero page exceptions, zero Auth startup requests, and zero Firebase startup network requests.
+
 ## V1-AUTH-009 - AccountId / Auth Session Resolution Baseline
 
 - Recorded the owner / architect sequencing decision that `V1-AUTH-009` is AccountId / Auth Session Resolution Baseline.

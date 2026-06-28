@@ -36,6 +36,8 @@ V1-AUTH-008 Auth State Service is complete from execution side and ready for Arc
 
 V1-AUTH-009 AccountId / Auth Session Resolution Baseline is complete from execution side and ready for Architect / Owner review.
 
+V1-AUTH-010 Account Mapping Source Baseline is complete from execution side and ready for Architect / Owner review.
+
 Completed stabilization work:
 
 - `PATCH-000-ECS-001 - Route Registry Stabilization`
@@ -88,6 +90,12 @@ Completed stabilization work:
 - V1-AUTH-009 added `DefaultAuthSessionResolver`, which creates an `AuthSession` only after an account resolver returns an explicit `accountId`.
 - V1-AUTH-009 aligned `FirebaseAuthProvider` so Firebase users become provider identities and do not directly become account/session records.
 - V1-AUTH-009 did not add login UI, route guards, route accessibility changes, app startup wiring, persistence changes, localStorage migration, Product work, or ECS-006.
+- Owner / architect updated the Auth sequence: V1-AUTH-010 is now Account Mapping Source Baseline, not Login / Logout Minimal Flow.
+- Login / Logout moves after account mapping source baseline because provider identity must resolve through an explicit account mapping source before user-facing auth flow begins.
+- V1-AUTH-010 added account mapping source contracts under `src/modules/auth/`.
+- V1-AUTH-010 added `AccountMappingSessionResolver` to adapt account mapping into the existing Auth session resolution flow.
+- V1-AUTH-010 chose a strict contract-only baseline with no real accounts, no local seeds, no environment placeholder mapping, and no silent mapping success.
+- V1-AUTH-010 did not add login UI, login/logout UI, route guards, route accessibility changes, app startup wiring, persistence changes, localStorage migration, Product work, or ECS-006.
 - Products module is partial.
 - Product dialog lifecycle was stabilized.
 - Malformed product localStorage read failures were contained.
@@ -106,11 +114,11 @@ Completed stabilization work:
 
 Current mission:
 
-`V1-AUTH-009 - AccountId / Auth Session Resolution Baseline`
+`V1-AUTH-010 - Account Mapping Source Baseline`
 
 Current next mission:
 
-V1-AUTH-009 execution closure and Architect / Owner review.
+V1-AUTH-010 execution closure and Architect / Owner review.
 
 Classification:
 
@@ -118,12 +126,12 @@ Classification:
 
 Allowed scope:
 
-Account/session resolution baseline under `src/modules/auth/`, with minimal `FirebaseAuthProvider` alignment only if required.
+Account mapping source baseline under `src/modules/auth/`, with minimal `AuthSessionResolver` alignment only if required.
 
 Forbidden scope:
 
-No login UI, no route guards, no route accessibility changes, no app startup behavior changes, no persistence behavior changes, no localStorage migration, no Product work, no ECS-006, no permission matrix, no hardcoded credentials, no real credentials, and no `firebaseUser.uid === accountId` assumption.
+No login UI, no login/logout UI, no route guards, no route accessibility changes, no app startup behavior changes, no persistence behavior changes, no localStorage migration, no Product work, no ECS-006, no permission matrix, no hardcoded credentials, no real credentials, no production account seeds, and no `firebaseUser.uid === accountId` assumption.
 
 ## Next State
 
-After V1-AUTH-009 is reviewed and approved, the recommended next candidate is `V1-AUTH-010 - Login / Logout Minimal Flow` before route guards, persistence changes, and product-module expansion.
+After V1-AUTH-010 is reviewed and approved, the recommended next candidate is `V1-AUTH-011 - Login / Logout Minimal Flow` before route guards, persistence changes, and product-module expansion.

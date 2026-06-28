@@ -158,17 +158,22 @@ Recommended next Auth sequence:
 2. `V1-AUTH-007 - Managed Auth Provider Adapter`.
 3. `V1-AUTH-008 - Auth State Service`.
 4. `V1-AUTH-009 - AccountId / Auth Session Resolution Baseline`.
-5. `V1-AUTH-010 - Login / Logout Minimal Flow`.
-6. `V1-AUTH-011 - Route Guard Foundation`.
-7. `V1-AUTH-012 - Runtime Auth Session Verification`.
-8. `V1-AUTH-013 - Legacy Storage Compatibility Plan`.
-9. `V1-AUTH-014 - Account-scoped Persistence Planning`.
+5. `V1-AUTH-010 - Account Mapping Source Baseline`.
+6. `V1-AUTH-011 - Login / Logout Minimal Flow`.
+7. `V1-AUTH-012 - Route Guard Foundation`.
+8. `V1-AUTH-013 - Runtime Auth Session Verification`.
+9. `V1-AUTH-014 - Legacy Storage Compatibility Plan`.
+10. `V1-AUTH-015 - Account-scoped Persistence Planning`.
 
 Sequencing decision:
 
 `V1-AUTH-009` is no longer Login / Logout Minimal Flow.
 
 Login / Logout must occur after account/session resolution because `FirebaseAuthProvider` must not assume `firebaseUser.uid === accountId`, and the project must preserve `accountId` as the official V1 data boundary before user-facing authentication flow work begins.
+
+`V1-AUTH-010` is Account Mapping Source Baseline, not Login / Logout Minimal Flow.
+
+Login / Logout must also occur after a safe source exists for resolving provider identity into account identity, `accountId`, and V1 role.
 
 No Product-code work may resume until the owner or architect confirms the Auth foundation gate is satisfied.
 
