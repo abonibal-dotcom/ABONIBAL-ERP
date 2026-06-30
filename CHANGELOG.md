@@ -1,5 +1,16 @@
 # Changelog
 
+## V1-AUTH-012 - Account Mapping Runtime Source Decision
+
+- Recorded the account mapping runtime source recommendation for Architect / Owner review.
+- Recommended a Firebase-backed account mapping source for V1.
+- Confirmed Route Guard must wait until account mapping source decision, implementation, and authenticated session runtime verification are complete.
+- Evaluated Firebase custom claims, Firebase database account mapping, local development mapping, and hardcoded/default mapping.
+- Rejected hardcoded/default mapping, `providerUserId === accountId`, default owner fallback, one global account, and local-only mapping as the official V1 runtime source.
+- Recorded required mapping fields: provider, providerUserId, accountId, accountName, userId, displayName, role, and optional email.
+- Updated the future Auth sequence to place Route Guard after Firebase account mapping source implementation and authenticated session runtime verification.
+- Confirmed no source files, package/build/config files, Product files, persistence files, localStorage behavior, route guards, real mappings, seeded accounts, real credentials, or ECS-006 work were changed.
+
 ## V1-AUTH-011 - Login / Logout Minimal Flow
 
 - Added a minimal public Login page with email and password fields.
