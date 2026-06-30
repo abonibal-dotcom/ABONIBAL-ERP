@@ -2,39 +2,33 @@
 
 ## Mission
 
-`V1-AUTH-012 - Account Mapping Runtime Source Decision`
+`V1-AUTH-013 - Firebase Account Mapping Source Implementation`
 
 ## Classification
 
-`INF`
+`ECS`
 
-This is an architecture and implementation-decision documentation mission.
+This is a limited Auth implementation mission.
 
-This is not an ECS source-code implementation mission, Route Guard implementation, Product work, or ECS-006.
+This is not Route Guard implementation, Product work, persistence migration, account-scoped Product persistence, or ECS-006.
 
 ## Objective
 
-Decide the recommended V1 runtime source for resolving authenticated Firebase users into ABONIBAL ERP account mappings before Route Guard implementation.
+Implement the approved Firebase-backed account mapping source that resolves Firebase provider users into explicit ABONIBAL ERP account mappings.
 
-The mission records a recommendation for Architect / Owner review. It does not implement the account mapping source.
+The mission preserves `accountId` as the official V1 data boundary and must not assume Firebase uid is an `accountId`.
 
-## Confirmed Problem
+## Approved Source
 
-V1-AUTH-010 added the `AccountMappingSource` contract.
-
-V1-AUTH-011 added the minimal Login / Logout flow.
-
-Login still cannot create authenticated app state unless provider identity resolves into an explicit project account mapping.
-
-Route Guard must wait until the runtime mapping source is selected, implemented, and verified.
-
-## Recommendation Pending Approval
-
-Recommended V1 mapping source:
+Approved V1 runtime source:
 
 `Firebase-backed account mapping source`
 
-The source should map Firebase provider identity to explicit project account data.
+Implemented path:
+
+```text
+accountMappings/firebase/providerUsers/{providerUserId}
+```
 
 Required fields:
 
@@ -52,75 +46,67 @@ Rules:
 - `providerUserId` is not `accountId`.
 - `accountId` must be explicit.
 - `role` must be explicit.
+- Role must be `owner` or `user`.
 - No default owner fallback.
 - Missing mapping must fail safely.
+- Invalid mapping must not create an authenticated app session.
 - No hardcoded production mapping.
-- No local-only mapping as the official V1 source.
-
-## Options Evaluated
-
-- Firebase custom claims.
-- Firebase database account mapping.
-- Local development mapping.
-- Hardcoded/default mapping.
-
-## Rejected For Official V1 Runtime Source
-
-- Hardcoded/default mapping.
-- `providerUserId === accountId`.
-- All users become `owner`.
-- One global account.
-- Local-only mapping as the official runtime source.
-
-Firebase custom claims may be considered later for optimization or authorization strengthening, but should not be the only V1 mapping source unless backend/admin tooling is approved.
-
-## Future Sequence
-
-Recommended future sequence after Architect / Owner approval:
-
-1. `V1-AUTH-013 - Firebase Account Mapping Source Implementation`
-2. `V1-AUTH-014 - Authenticated Session Runtime Verification`
-3. `V1-AUTH-015 - Route Guard Foundation`
-4. `V1-AUTH-016 - Protected Route Runtime Verification`
-5. `V1-AUTH-017 - Legacy Storage Compatibility Plan`
-6. `V1-AUTH-018 - Account-scoped Persistence Planning`
-
-## Forbidden Scope
-
-- No account mapping source implementation.
-- No source-code changes.
-- No files under `src/` changed.
-- No package or lockfile changes.
-- No Firebase Database or Firestore implementation.
-- No route guards.
-- No Dashboard protection.
-- No Products protection.
-- No route accessibility changes.
-- No Product files changed.
-- No persistence behavior changes.
-- No localStorage migration.
-- No real account mappings.
-- No seeded accounts.
 - No real credentials.
-- No ECS-006.
+
+## Implementation Status
+
+Implemented:
+
+- `FirebaseAccountMappingSource`
+- Auth runtime wiring to Firebase account mapping source when Firebase config is present.
+- Firebase sign-out on session-resolution exception after Firebase sign-in.
+
+Not implemented:
+
+- Route Guard.
+- Dashboard protection.
+- Products protection.
+- Account-scoped persistence.
+- localStorage migration.
+- Live authenticated-session verification with real test credentials.
 
 ## Verification Status
 
-- Documentation-only diff required.
-- No source files changed.
-- No package/build/config files changed.
-- No dependencies installed.
-- No route guard added.
+- TypeScript: PASS.
+- Build: PASS.
+- Runtime: PASS.
+- Console errors: 0.
+- Page exceptions: 0.
+- Active network failures: 0.
+- External Firebase startup requests: 0.
+
+Runtime evidence:
+
+```text
+C:\Users\aboni\Documents\Codex\2026-06-26\abonibal-dotcom-abonibal-erp-https-github-3\outputs\V1-AUTH-013\after-runtime.json
+C:\Users\aboni\Documents\Codex\2026-06-26\abonibal-dotcom-abonibal-erp-https-github-3\outputs\V1-AUTH-013\after-dom.json
+C:\Users\aboni\Documents\Codex\2026-06-26\abonibal-dotcom-abonibal-erp-https-github-3\outputs\V1-AUTH-013\after-console.log
+C:\Users\aboni\Documents\Codex\2026-06-26\abonibal-dotcom-abonibal-erp-https-github-3\outputs\V1-AUTH-013\after-screenshot.png
+```
+
+## Forbidden Scope Confirmation
+
+- No route guard.
+- No Dashboard protection.
+- No Products protection.
 - No Product files changed.
 - No persistence files changed.
 - No localStorage migration.
-- ROADMAP keeps Route Guard after account mapping source decision, implementation, and runtime verification.
-- ECS-006 remains blocked.
+- No account-scoped persistence.
+- No real credentials.
+- No production mappings.
+- No seeded accounts.
+- No ECS-006.
 
 ## Next Mission
 
-Owner / Architect review of `V1-AUTH-012`.
+Owner / Architect review of `V1-AUTH-013`.
 
 Recommended next mission after approval:
 
-`V1-AUTH-013 - Firebase Account Mapping Source Implementation`
+`V1-AUTH-014 - Authenticated Session Runtime Verification`

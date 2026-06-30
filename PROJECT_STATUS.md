@@ -42,6 +42,8 @@ V1-AUTH-011 Login / Logout Minimal Flow is complete from execution side and read
 
 V1-AUTH-012 Account Mapping Runtime Source Decision is complete from execution side and ready for Architect / Owner review.
 
+V1-AUTH-013 Firebase Account Mapping Source Implementation is complete from execution side and ready for Architect / Owner review.
+
 Completed stabilization work:
 
 - `PATCH-000-ECS-001 - Route Registry Stabilization`
@@ -105,10 +107,17 @@ Completed stabilization work:
 - V1-AUTH-011 added a public `login` route without adding route guards, redirects, Dashboard protection, Products protection, Product work, persistence changes, localStorage migration, or ECS-006.
 - V1-AUTH-011 preserved the rule that Firebase uid is a provider user id and is not a V1 `accountId`.
 - V1-AUTH-011 keeps failed sign-in unauthenticated and does not store the password in localStorage.
-- V1-AUTH-012 recommends a Firebase-backed account mapping source for V1, pending Architect / Owner review.
+- V1-AUTH-012 recommended a Firebase-backed account mapping source for V1.
 - V1-AUTH-012 records that Route Guard must wait until account mapping source decision, implementation, and authenticated session runtime verification are complete.
 - V1-AUTH-012 rejects hardcoded/default mapping, `providerUserId === accountId`, default owner fallback, one global account, and local-only mapping as the official V1 runtime source.
 - V1-AUTH-012 did not change source files, package/build/config files, Product files, persistence behavior, localStorage behavior, route guards, account mappings, seeded accounts, credentials, or ECS-006.
+- Owner approved the Firebase-backed account mapping source for `V1-AUTH-013`.
+- V1-AUTH-013 added `FirebaseAccountMappingSource` under `src/modules/auth/firebase/`.
+- V1-AUTH-013 reads explicit account mappings from Firestore at `accountMappings/firebase/providerUsers/{providerUserId}`.
+- V1-AUTH-013 wires Auth runtime to Firebase Auth, Firestore account mapping, `AccountMappingSessionResolver`, and `DefaultAuthSessionResolver` only when Firebase config is present and Auth runtime is requested.
+- V1-AUTH-013 preserves the approved `accountId` boundary by rejecting Firebase uid to `accountId` fallback, default owner fallback, one global account fallback, and invalid mapping data.
+- V1-AUTH-013 aligns `FirebaseAuthProvider` to sign out Firebase Auth if session resolution throws after Firebase sign-in.
+- V1-AUTH-013 did not add route guards, Dashboard protection, Products protection, Product work, persistence behavior changes, localStorage migration, account-scoped persistence, real credentials, production mappings, seeded accounts, or ECS-006.
 - Products module is partial.
 - Product dialog lifecycle was stabilized.
 - Malformed product localStorage read failures were contained.
@@ -121,30 +130,30 @@ Completed stabilization work:
 - Basic ledger is missing.
 - Sync/data-safety module is missing.
 - Reports are missing.
-- Auth implementation now includes the V1 foundation, provider adapter, Auth state service, account/session resolution, account mapping boundary, and minimal Login / Logout runtime flow. The runtime account mapping source is documented as a pending recommendation for Architect / Owner review. Route guards, protected business routes, account-scoped persistence, and storage migration remain future approved missions.
+- Auth implementation now includes the V1 foundation, provider adapter, Auth state service, account/session resolution, account mapping boundary, minimal Login / Logout runtime flow, and Firebase-backed account mapping source implementation. Live authenticated-session runtime verification, route guards, protected business routes, account-scoped persistence, and storage migration remain future approved missions.
 
 ## Current Mission
 
 Current mission:
 
-`V1-AUTH-012 - Account Mapping Runtime Source Decision`
+`V1-AUTH-013 - Firebase Account Mapping Source Implementation`
 
 Current next mission:
 
-V1-AUTH-012 Architect / Owner review.
+V1-AUTH-013 Architect / Owner review.
 
 Classification:
 
-`INF`
+`ECS`
 
 Allowed scope:
 
-Documentation-only account mapping runtime source decision and future Auth sequencing.
+Auth-only Firebase account mapping source implementation and required evidence/documentation.
 
 Forbidden scope:
 
-No source-code changes, no account mapping source implementation, no route guards, no Dashboard protection, no Products protection, no Product work, no package/build/config changes, no persistence behavior changes, no localStorage migration, no account-scoped persistence, no ECS-006, no permission matrix, no hardcoded credentials, no real credentials, no production account mappings, no real account seeds, and no `firebaseUser.uid === accountId` assumption.
+No route guards, no Dashboard protection, no Products protection, no Product work, no persistence behavior changes, no localStorage migration, no account-scoped persistence, no ECS-006, no permission matrix, no hardcoded credentials, no real credentials, no production account mappings, no real account seeds, and no Firebase uid to `accountId` assumption.
 
 ## Next State
 
-After V1-AUTH-012 is reviewed and approved, the recommended next Auth mission is `V1-AUTH-013 - Firebase Account Mapping Source Implementation`. Route Guard must remain after account mapping implementation and authenticated session runtime verification.
+After V1-AUTH-013 is reviewed and approved, the recommended next Auth mission is `V1-AUTH-014 - Authenticated Session Runtime Verification`. Route Guard must remain after account mapping implementation and authenticated session runtime verification.

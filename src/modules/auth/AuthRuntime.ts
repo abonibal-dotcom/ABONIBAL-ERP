@@ -1,11 +1,13 @@
 import type { AuthProvider, SignInCredentials } from "./AuthProvider";
 import type { AuthSession } from "./AuthSession";
 import { AuthStateService } from "./AuthStateService";
-import { AccountMappingNotFoundError, type AccountMapping, type AccountMappingSource, type ProviderUserReference } from "./AccountMappingSource";
 import { AccountMappingSessionResolver } from "./AccountMappingSessionResolver";
 import { DefaultAuthSessionResolver } from "./AuthSessionResolver";
-import { initializeFirebaseAuth } from "./firebase/FirebaseAuthClient";
+import { getFirestore } from "firebase/firestore";
+
+import { getFirebaseApp, initializeFirebaseAuth } from "./firebase/FirebaseAuthClient";
 import { hasFirebaseAuthConfig, readFirebaseAuthConfig } from "./firebase/FirebaseAuthConfig";
+import { FirebaseAccountMappingSource } from "./firebase/FirebaseAccountMappingSource";
 import { FirebaseAuthProvider } from "./firebase/FirebaseAuthProvider";
 
 let authStateService: AuthStateService | null = null;
@@ -43,7 +45,17 @@ function createAuthProvider(): AuthProvider {
     }
 
     const auth = initializeFirebaseAuth(readFirebaseAuthConfig());
-    const accountResolver = new AccountMappingSessionResolver(new EmptyAccountMappingSource());
+    const firebaseApp = getFirebaseApp();
+
+    if (!firebaseApp) {
+
+        throw new Error("Firebase app was not initialized for Auth.");
+
+    }
+
+    const accountResolver = new AccountMappingSessionResolver(
+        new FirebaseAccountMappingSource(getFirestore(firebaseApp))
+    );
     const sessionResolver = new DefaultAuthSessionResolver(accountResolver);
 
     return new FirebaseAuthProvider(auth, sessionResolver);
@@ -65,15 +77,5 @@ class MissingFirebaseAuthConfigProvider implements AuthProvider {
     }
 
     public async signOut(): Promise<void> {}
-
-}
-
-class EmptyAccountMappingSource implements AccountMappingSource {
-
-    public resolveAccountMapping(providerUser: ProviderUserReference): Promise<AccountMapping> {
-
-        return Promise.reject(new AccountMappingNotFoundError(providerUser));
-
-    }
 
 }

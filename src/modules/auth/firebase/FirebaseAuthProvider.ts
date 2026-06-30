@@ -43,7 +43,19 @@ export class FirebaseAuthProvider implements AuthProvider {
             credentials.password
         );
 
-        const session = await this.resolveSession(credential.user);
+        let session: AuthSession | null;
+
+        try {
+
+            session = await this.resolveSession(credential.user);
+
+        } catch (error) {
+
+            await firebaseSignOut(this.auth);
+
+            throw error;
+
+        }
 
         if (!session) {
 
