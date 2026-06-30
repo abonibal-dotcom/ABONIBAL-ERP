@@ -47,6 +47,8 @@ export class FirebaseAuthProvider implements AuthProvider {
 
         if (!session) {
 
+            await firebaseSignOut(this.auth);
+
             throw new Error("Firebase user authenticated, but AuthSession could not be resolved.");
 
         }

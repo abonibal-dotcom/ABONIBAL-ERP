@@ -1,5 +1,18 @@
 # Changelog
 
+## V1-AUTH-011 - Login / Logout Minimal Flow
+
+- Added a minimal public Login page with email and password fields.
+- Added Login page loading, safe failure, and AuthState rendering behavior.
+- Added a public Login route without route guards, redirects, Dashboard protection, or Products protection.
+- Added a minimal Auth runtime factory that initializes AuthStateService only when the Login page is opened.
+- Preserved no Firebase initialization or Firebase network requests on normal app startup in the no-config verification environment.
+- Preserved the approved `accountId` boundary: Firebase uid remains a provider user id and is not treated as a V1 account id.
+- Ensured FirebaseAuthProvider signs out if Firebase sign-in succeeds but project AuthSession resolution fails.
+- Confirmed failed login remains unauthenticated and the password is not stored in localStorage.
+- Runtime diagnosis: the first runtime attempt failed before evidence capture completed and was classified as a TOOL / verification invocation issue; rerun produced Runtime PASS.
+- Confirmed TypeScript, build, and runtime verification passed with zero console errors, zero page exceptions, zero active network failures, and zero external Firebase requests in the no-config verification environment.
+
 ## V1-AUTH-010 - Account Mapping Source Baseline
 
 - Recorded the owner / architect sequencing decision that `V1-AUTH-010` is Account Mapping Source Baseline.
