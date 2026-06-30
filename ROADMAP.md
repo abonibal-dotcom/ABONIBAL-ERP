@@ -160,10 +160,13 @@ Recommended next Auth sequence:
 4. `V1-AUTH-009 - AccountId / Auth Session Resolution Baseline`.
 5. `V1-AUTH-010 - Account Mapping Source Baseline`.
 6. `V1-AUTH-011 - Login / Logout Minimal Flow`.
-7. `V1-AUTH-012 - Route Guard Foundation`.
-8. `V1-AUTH-013 - Runtime Auth Session Verification`.
-9. `V1-AUTH-014 - Legacy Storage Compatibility Plan`.
-10. `V1-AUTH-015 - Account-scoped Persistence Planning`.
+7. `V1-AUTH-012 - Account Mapping Runtime Source Decision`.
+8. `V1-AUTH-013 - Firebase Account Mapping Source Implementation`.
+9. `V1-AUTH-014 - Authenticated Session Runtime Verification`.
+10. `V1-AUTH-015 - Route Guard Foundation`.
+11. `V1-AUTH-016 - Protected Route Runtime Verification`.
+12. `V1-AUTH-017 - Legacy Storage Compatibility Plan`.
+13. `V1-AUTH-018 - Account-scoped Persistence Planning`.
 
 Sequencing decision:
 
@@ -174,6 +177,14 @@ Login / Logout must occur after account/session resolution because `FirebaseAuth
 `V1-AUTH-010` is Account Mapping Source Baseline, not Login / Logout Minimal Flow.
 
 Login / Logout must also occur after a safe source exists for resolving provider identity into account identity, `accountId`, and V1 role.
+
+`V1-AUTH-012` is Account Mapping Runtime Source Decision, not Route Guard Foundation.
+
+Route Guard must occur only after account mapping source decision, Firebase account mapping source implementation, and authenticated session runtime verification.
+
+Recommended V1 runtime mapping source is Firebase-backed account mapping, pending Architect / Owner review.
+
+The official V1 mapping source must return explicit provider, providerUserId, accountId, accountName, userId, displayName, and role data. It must not use providerUserId as accountId, default owner fallback, one global account, hardcoded production mappings, or local-only mappings as the official runtime source.
 
 No Product-code work may resume until the owner or architect confirms the Auth foundation gate is satisfied.
 
