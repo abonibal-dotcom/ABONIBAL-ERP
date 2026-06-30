@@ -182,9 +182,11 @@ Login / Logout must also occur after a safe source exists for resolving provider
 
 Route Guard must occur only after account mapping source decision, Firebase account mapping source implementation, and authenticated session runtime verification.
 
-Recommended V1 runtime mapping source is Firebase-backed account mapping, pending Architect / Owner review.
+Owner-approved V1 runtime mapping source is Firebase-backed account mapping.
 
 The official V1 mapping source must return explicit provider, providerUserId, accountId, accountName, userId, displayName, and role data. It must not use providerUserId as accountId, default owner fallback, one global account, hardcoded production mappings, or local-only mappings as the official runtime source.
+
+`V1-AUTH-013` implements the Firebase-backed account mapping source. Live authenticated-session runtime verification remains `V1-AUTH-014`.
 
 No Product-code work may resume until the owner or architect confirms the Auth foundation gate is satisfied.
 

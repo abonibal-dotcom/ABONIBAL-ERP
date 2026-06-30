@@ -1,5 +1,16 @@
 # Changelog
 
+## V1-AUTH-013 - Firebase Account Mapping Source Implementation
+
+- Implemented `FirebaseAccountMappingSource` under `src/modules/auth/firebase/`.
+- Wired Firebase Auth session resolution through Firestore-backed account mapping when Firebase config is present.
+- Recorded the Firestore mapping path: `accountMappings/firebase/providerUsers/{providerUserId}`.
+- Required explicit provider, providerUserId, accountId, accountName, userId, displayName, role, and optional email fields.
+- Rejected missing or invalid mapping data without default owner fallback, one global account fallback, hardcoded mappings, real credentials, or Firebase uid to `accountId` fallback.
+- Aligned `FirebaseAuthProvider` to sign out Firebase Auth if session resolution throws after Firebase sign-in, preventing partial provider-authenticated state.
+- Confirmed Dashboard and Products remain accessible without auth and no route guard, Product work, persistence change, localStorage migration, account-scoped persistence, real credentials, production mappings, seeded accounts, or ECS-006 work was added.
+- Confirmed TypeScript, build, and runtime verification passed with zero console errors, zero page exceptions, zero active network failures, and zero external Firebase startup requests in the no-config verification environment.
+
 ## V1-AUTH-012 - Account Mapping Runtime Source Decision
 
 - Recorded the account mapping runtime source recommendation for Architect / Owner review.

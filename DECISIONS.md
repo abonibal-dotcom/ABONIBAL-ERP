@@ -62,6 +62,38 @@ Impact:
 
 Product-module expansion remains blocked until the approved Managed Auth direction, session contract, route guard behavior, and user/account persistence boundary are implemented through future missions.
 
+### DEC-014 - V1 Account Mapping Runtime Source
+
+Decision:
+
+V1 uses a Firebase-backed account mapping source to resolve Firebase provider users into explicit ABONIBAL ERP account mappings.
+
+The mapping source must return explicit:
+
+- `provider`
+- `providerUserId`
+- `accountId`
+- `accountName`
+- `userId`
+- `displayName`
+- `role`
+- optional `email`
+
+The V1 mapping source must not assume Firebase uid or `providerUserId` is the ABONIBAL ERP `accountId`.
+
+Rejected for the official V1 runtime source:
+
+- Firebase uid to `accountId` fallback.
+- `providerUserId` to `accountId` fallback.
+- Default owner fallback.
+- One global account fallback.
+- Hardcoded production mappings.
+- Local-only mapping as the official runtime source.
+
+Impact:
+
+Route Guard remains blocked until Firebase account mapping implementation and authenticated-session runtime verification are complete.
+
 ### DEC-002 - Product Images Optional In V1
 
 Decision:
