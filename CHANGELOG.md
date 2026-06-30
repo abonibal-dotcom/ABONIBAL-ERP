@@ -1,5 +1,29 @@
 # Changelog
 
+## V1-AUTH-011 - Login / Logout Minimal Flow
+
+- Added a minimal public Login page with email and password fields.
+- Added Login page loading, safe failure, and AuthState rendering behavior.
+- Added a public Login route without route guards, redirects, Dashboard protection, or Products protection.
+- Added a minimal Auth runtime factory that initializes AuthStateService only when the Login page is opened.
+- Preserved no Firebase initialization or Firebase network requests on normal app startup in the no-config verification environment.
+- Preserved the approved `accountId` boundary: Firebase uid remains a provider user id and is not treated as a V1 account id.
+- Ensured FirebaseAuthProvider signs out if Firebase sign-in succeeds but project AuthSession resolution fails.
+- Confirmed failed login remains unauthenticated and the password is not stored in localStorage.
+- Runtime diagnosis: the first runtime attempt failed before evidence capture completed and was classified as a TOOL / verification invocation issue; rerun produced Runtime PASS.
+- Confirmed TypeScript, build, and runtime verification passed with zero console errors, zero page exceptions, zero active network failures, and zero external Firebase requests in the no-config verification environment.
+
+## V1-AUTH-010 - Account Mapping Source Baseline
+
+- Recorded the owner / architect sequencing decision that `V1-AUTH-010` is Account Mapping Source Baseline.
+- Moved Login / Logout after account mapping source baseline.
+- Preserved the rule that provider user ids must resolve through an explicit account mapping source before project `AuthSession` creation.
+- Added `AccountMappingSource`, `ProviderUserReference`, `AccountMapping`, and `AccountMappingNotFoundError`.
+- Added `AccountMappingSessionResolver` to adapt account mapping results into the existing Auth session resolution flow.
+- Chose a strict contract-only baseline with no real accounts, no local seeds, no environment placeholder mapping, and no silent mapping success.
+- Confirmed missing mapping fails safely by returning `null` from the account-session resolver boundary.
+- Confirmed TypeScript, build, and runtime non-regression verification passed with zero console errors, zero page exceptions, zero Auth startup requests, and zero Firebase startup network requests.
+
 ## V1-AUTH-009 - AccountId / Auth Session Resolution Baseline
 
 - Recorded the owner / architect sequencing decision that `V1-AUTH-009` is AccountId / Auth Session Resolution Baseline.

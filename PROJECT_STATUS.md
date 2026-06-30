@@ -36,6 +36,10 @@ V1-AUTH-008 Auth State Service is complete from execution side and ready for Arc
 
 V1-AUTH-009 AccountId / Auth Session Resolution Baseline is complete from execution side and ready for Architect / Owner review.
 
+V1-AUTH-010 Account Mapping Source Baseline is complete from execution side and ready for Architect / Owner review.
+
+V1-AUTH-011 Login / Logout Minimal Flow is complete from execution side and ready for Architect / Owner review.
+
 Completed stabilization work:
 
 - `PATCH-000-ECS-001 - Route Registry Stabilization`
@@ -88,6 +92,17 @@ Completed stabilization work:
 - V1-AUTH-009 added `DefaultAuthSessionResolver`, which creates an `AuthSession` only after an account resolver returns an explicit `accountId`.
 - V1-AUTH-009 aligned `FirebaseAuthProvider` so Firebase users become provider identities and do not directly become account/session records.
 - V1-AUTH-009 did not add login UI, route guards, route accessibility changes, app startup wiring, persistence changes, localStorage migration, Product work, or ECS-006.
+- Owner / architect updated the Auth sequence: V1-AUTH-010 is now Account Mapping Source Baseline, not Login / Logout Minimal Flow.
+- Login / Logout moves after account mapping source baseline because provider identity must resolve through an explicit account mapping source before user-facing auth flow begins.
+- V1-AUTH-010 added account mapping source contracts under `src/modules/auth/`.
+- V1-AUTH-010 added `AccountMappingSessionResolver` to adapt account mapping into the existing Auth session resolution flow.
+- V1-AUTH-010 chose a strict contract-only baseline with no real accounts, no local seeds, no environment placeholder mapping, and no silent mapping success.
+- V1-AUTH-010 did not add login UI, login/logout UI, route guards, route accessibility changes, app startup wiring, persistence changes, localStorage migration, Product work, or ECS-006.
+- V1-AUTH-011 added a minimal public Login page and Logout affordance behind AuthState.
+- V1-AUTH-011 added a minimal Auth runtime factory that is created only when the Login page is opened.
+- V1-AUTH-011 added a public `login` route without adding route guards, redirects, Dashboard protection, Products protection, Product work, persistence changes, localStorage migration, or ECS-006.
+- V1-AUTH-011 preserved the rule that Firebase uid is a provider user id and is not a V1 `accountId`.
+- V1-AUTH-011 keeps failed sign-in unauthenticated and does not store the password in localStorage.
 - Products module is partial.
 - Product dialog lifecycle was stabilized.
 - Malformed product localStorage read failures were contained.
@@ -100,17 +115,17 @@ Completed stabilization work:
 - Basic ledger is missing.
 - Sync/data-safety module is missing.
 - Reports are missing.
-- Auth implementation is still missing, but the V1 account boundary, Firebase provider decision, role boundary, and legacy storage safety decisions are now documented.
+- Auth implementation now includes the V1 foundation, provider adapter, Auth state service, account/session resolution, account mapping boundary, and minimal Login / Logout runtime flow. Route guards, protected business routes, account-scoped persistence, and storage migration remain future approved missions.
 
 ## Current Mission
 
 Current mission:
 
-`V1-AUTH-009 - AccountId / Auth Session Resolution Baseline`
+`V1-AUTH-011 - Login / Logout Minimal Flow`
 
 Current next mission:
 
-V1-AUTH-009 execution closure and Architect / Owner review.
+V1-AUTH-011 Architect / Owner review.
 
 Classification:
 
@@ -118,12 +133,12 @@ Classification:
 
 Allowed scope:
 
-Account/session resolution baseline under `src/modules/auth/`, with minimal `FirebaseAuthProvider` alignment only if required.
+Minimal Auth Login / Logout flow under `src/modules/auth/`, with public login routing and mission documentation/evidence.
 
 Forbidden scope:
 
-No login UI, no route guards, no route accessibility changes, no app startup behavior changes, no persistence behavior changes, no localStorage migration, no Product work, no ECS-006, no permission matrix, no hardcoded credentials, no real credentials, and no `firebaseUser.uid === accountId` assumption.
+No route guards, no Dashboard protection, no Products protection, no Product work, no persistence behavior changes, no localStorage migration, no account-scoped persistence, no ECS-006, no permission matrix, no hardcoded credentials, no real credentials, no production account mappings, no real account seeds, and no `firebaseUser.uid === accountId` assumption.
 
 ## Next State
 
-After V1-AUTH-009 is reviewed and approved, the recommended next candidate is `V1-AUTH-010 - Login / Logout Minimal Flow` before route guards, persistence changes, and product-module expansion.
+After V1-AUTH-011 is reviewed and approved, the next Auth continuation mission must be explicitly approved by the owner or architect before route guards, persistence changes, and product-module expansion.
