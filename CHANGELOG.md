@@ -1,5 +1,14 @@
 # Changelog
 
+## V1-AUTH-014 - Authenticated Session Runtime Verification
+
+- Opened authenticated-session runtime verification on a dedicated mission branch.
+- Confirmed `V1-AUTH-013` exists and the Firebase-backed account mapping source is present.
+- Confirmed TypeScript and build pass.
+- Blocked authenticated runtime verification because the current environment does not provide approved Firebase config, approved test credentials, or verifiable Firebase account mapping data.
+- Did not fake success, add hardcoded mapping, add local fallback, commit credentials, create Route Guard, change Product files, change persistence, migrate localStorage, or start ECS-006.
+- Final status: `V1-AUTH-014 BLOCKED - ENV / Owner-provided Firebase test environment required`.
+
 ## V1-AUTH-013 - Firebase Account Mapping Source Implementation
 
 - Implemented `FirebaseAccountMappingSource` under `src/modules/auth/firebase/`.

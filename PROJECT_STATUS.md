@@ -44,6 +44,8 @@ V1-AUTH-012 Account Mapping Runtime Source Decision is complete from execution s
 
 V1-AUTH-013 Firebase Account Mapping Source Implementation is complete from execution side and ready for Architect / Owner review.
 
+V1-AUTH-014 Authenticated Session Runtime Verification is blocked by missing owner-provided Firebase test environment inputs.
+
 Completed stabilization work:
 
 - `PATCH-000-ECS-001 - Route Registry Stabilization`
@@ -118,6 +120,8 @@ Completed stabilization work:
 - V1-AUTH-013 preserves the approved `accountId` boundary by rejecting Firebase uid to `accountId` fallback, default owner fallback, one global account fallback, and invalid mapping data.
 - V1-AUTH-013 aligns `FirebaseAuthProvider` to sign out Firebase Auth if session resolution throws after Firebase sign-in.
 - V1-AUTH-013 did not add route guards, Dashboard protection, Products protection, Product work, persistence behavior changes, localStorage migration, account-scoped persistence, real credentials, production mappings, seeded accounts, or ECS-006.
+- V1-AUTH-014 confirmed TypeScript and build pass, but authenticated runtime verification is blocked because the local environment does not provide approved Firebase config, approved test credentials, approved Firebase test user, or verifiable Firestore account mapping data.
+- V1-AUTH-014 did not change source files, route guards, Product files, persistence files, localStorage behavior, credentials, account mappings, seeded accounts, or ECS-006.
 - Products module is partial.
 - Product dialog lifecycle was stabilized.
 - Malformed product localStorage read failures were contained.
@@ -130,17 +134,17 @@ Completed stabilization work:
 - Basic ledger is missing.
 - Sync/data-safety module is missing.
 - Reports are missing.
-- Auth implementation now includes the V1 foundation, provider adapter, Auth state service, account/session resolution, account mapping boundary, minimal Login / Logout runtime flow, and Firebase-backed account mapping source implementation. Live authenticated-session runtime verification, route guards, protected business routes, account-scoped persistence, and storage migration remain future approved missions.
+- Auth implementation now includes the V1 foundation, provider adapter, Auth state service, account/session resolution, account mapping boundary, minimal Login / Logout runtime flow, and Firebase-backed account mapping source implementation. Live authenticated-session runtime verification remains blocked until an approved Firebase test environment is provided. Route guards, protected business routes, account-scoped persistence, and storage migration remain future approved missions.
 
 ## Current Mission
 
 Current mission:
 
-`V1-AUTH-013 - Firebase Account Mapping Source Implementation`
+`V1-AUTH-014 - Authenticated Session Runtime Verification`
 
 Current next mission:
 
-V1-AUTH-013 Architect / Owner review.
+V1-AUTH-014 blocked pending owner-provided Firebase test environment.
 
 Classification:
 
@@ -148,12 +152,12 @@ Classification:
 
 Allowed scope:
 
-Auth-only Firebase account mapping source implementation and required evidence/documentation.
+Authenticated-session runtime verification and blocked-state documentation.
 
 Forbidden scope:
 
-No route guards, no Dashboard protection, no Products protection, no Product work, no persistence behavior changes, no localStorage migration, no account-scoped persistence, no ECS-006, no permission matrix, no hardcoded credentials, no real credentials, no production account mappings, no real account seeds, and no Firebase uid to `accountId` assumption.
+No source changes, no route guards, no Dashboard protection, no Products protection, no Product work, no persistence behavior changes, no localStorage migration, no account-scoped persistence, no ECS-006, no permission matrix, no hardcoded credentials, no real credentials, no production account mappings, no real account seeds, and no Firebase uid to `accountId` assumption.
 
 ## Next State
 
-After V1-AUTH-013 is reviewed and approved, the recommended next Auth mission is `V1-AUTH-014 - Authenticated Session Runtime Verification`. Route Guard must remain after account mapping implementation and authenticated session runtime verification.
+V1-AUTH-014 must be resumed from authenticated runtime verification after the owner provides the approved Firebase test environment. Route Guard must remain after authenticated session runtime verification.

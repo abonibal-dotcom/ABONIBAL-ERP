@@ -2,95 +2,67 @@
 
 ## Mission
 
-`V1-AUTH-013 - Firebase Account Mapping Source Implementation`
+`V1-AUTH-014 - Authenticated Session Runtime Verification`
 
 ## Classification
 
 `ECS`
 
-This is a limited Auth implementation mission.
+This is a runtime verification ECS.
 
 This is not Route Guard implementation, Product work, persistence migration, account-scoped Product persistence, or ECS-006.
 
 ## Objective
 
-Implement the approved Firebase-backed account mapping source that resolves Firebase provider users into explicit ABONIBAL ERP account mappings.
+Verify that the complete Auth runtime chain can produce a valid authenticated `AuthSession` using Firebase Auth and the Firebase-backed account mapping source.
 
-The mission preserves `accountId` as the official V1 data boundary and must not assume Firebase uid is an `accountId`.
-
-## Approved Source
-
-Approved V1 runtime source:
-
-`Firebase-backed account mapping source`
-
-Implemented path:
+Target chain:
 
 ```text
-accountMappings/firebase/providerUsers/{providerUserId}
+Firebase email/password sign-in
+-> Firebase provider user
+-> providerUserId
+-> FirebaseAccountMappingSource
+-> explicit accountId/accountName/role
+-> AuthSessionResolver
+-> AuthSession
+-> AuthStateService authenticated state
 ```
 
-Required fields:
+## Current Status
 
-- `provider`
-- `providerUserId`
-- `accountId`
-- `accountName`
-- `userId`
-- `displayName`
-- `role`
-- optional `email`
+`V1-AUTH-014 BLOCKED - ENV / Owner-provided Firebase test environment required`
 
-Rules:
+## Block Reason
 
-- `providerUserId` is not `accountId`.
-- `accountId` must be explicit.
-- `role` must be explicit.
-- Role must be `owner` or `user`.
-- No default owner fallback.
-- Missing mapping must fail safely.
-- Invalid mapping must not create an authenticated app session.
-- No hardcoded production mapping.
-- No real credentials.
+The current local environment does not provide the required Firebase test verification inputs:
 
-## Implementation Status
+- Firebase config values.
+- Approved test email/password.
+- Approved Firebase test user.
+- Approved Firestore account mapping record.
+- Verified Firebase database access/rules for the mapping record.
 
-Implemented:
+The mission rules forbid faking success, adding hardcoded mappings, adding local fallback mappings, committing credentials, or assuming Firebase uid is `accountId`.
 
-- `FirebaseAccountMappingSource`
-- Auth runtime wiring to Firebase account mapping source when Firebase config is present.
-- Firebase sign-out on session-resolution exception after Firebase sign-in.
-
-Not implemented:
-
-- Route Guard.
-- Dashboard protection.
-- Products protection.
-- Account-scoped persistence.
-- localStorage migration.
-- Live authenticated-session verification with real test credentials.
-
-## Verification Status
+## Static Verification Completed
 
 - TypeScript: PASS.
 - Build: PASS.
-- Runtime: PASS.
-- Console errors: 0.
-- Page exceptions: 0.
-- Active network failures: 0.
-- External Firebase startup requests: 0.
 
-Runtime evidence:
+## Runtime Verification Status
 
-```text
-C:\Users\aboni\Documents\Codex\2026-06-26\abonibal-dotcom-abonibal-erp-https-github-3\outputs\V1-AUTH-013\after-runtime.json
-C:\Users\aboni\Documents\Codex\2026-06-26\abonibal-dotcom-abonibal-erp-https-github-3\outputs\V1-AUTH-013\after-dom.json
-C:\Users\aboni\Documents\Codex\2026-06-26\abonibal-dotcom-abonibal-erp-https-github-3\outputs\V1-AUTH-013\after-console.log
-C:\Users\aboni\Documents\Codex\2026-06-26\abonibal-dotcom-abonibal-erp-https-github-3\outputs\V1-AUTH-013\after-screenshot.png
-```
+Authenticated runtime verification:
 
-## Forbidden Scope Confirmation
+BLOCKED / not run.
 
+Reason:
+
+Running the authenticated scenario requires approved Firebase config, approved test credentials, and approved account mapping data.
+
+## Scope Confirmation
+
+- No source files changed.
 - No route guard.
 - No Dashboard protection.
 - No Products protection.
@@ -98,15 +70,35 @@ C:\Users\aboni\Documents\Codex\2026-06-26\abonibal-dotcom-abonibal-erp-https-git
 - No persistence files changed.
 - No localStorage migration.
 - No account-scoped persistence.
-- No real credentials.
-- No production mappings.
-- No seeded accounts.
+- No real credentials committed.
+- No test credentials committed.
+- No `.env` file committed.
+- No hardcoded mapping.
+- No default owner fallback.
+- No one global account fallback.
 - No ECS-006.
+
+## Evidence
+
+```text
+PATCHES/V1-AUTH-014/verification.md
+PATCHES/V1-AUTH-014/closure-report.md
+```
+
+## Required Next Input
+
+Owner-approved local-only Firebase test environment:
+
+- Firebase config for Vite.
+- Approved test email/password.
+- Approved test Firebase user.
+- Firestore mapping record at `accountMappings/firebase/providerUsers/{providerUserId}`.
+- Security rules/database access that allow the signed-in test user to read its own mapping record.
 
 ## Next Mission
 
-Owner / Architect review of `V1-AUTH-013`.
+Resume `V1-AUTH-014` from authenticated runtime verification after the required test environment exists.
 
-Recommended next mission after approval:
+Do not start Route Guard.
 
-`V1-AUTH-014 - Authenticated Session Runtime Verification`
+Do not start ECS-006.
