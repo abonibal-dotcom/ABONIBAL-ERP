@@ -31,38 +31,32 @@ Firebase email/password sign-in
 
 ## Current Status
 
-`V1-AUTH-014 BLOCKED - ENV / Owner-provided Firebase test environment required`
+`V1-AUTH-014 Ready for Architect / Owner Review`
 
-## Block Reason
-
-The current local environment does not provide the required Firebase test verification inputs:
-
-- Firebase config values.
-- Approved test email/password.
-- Approved Firebase test user.
-- Approved Firestore account mapping record.
-- Verified Firebase database access/rules for the mapping record.
-
-The mission rules forbid faking success, adding hardcoded mappings, adding local fallback mappings, committing credentials, or assuming Firebase uid is `accountId`.
-
-## Static Verification Completed
+## Verification Completed
 
 - TypeScript: PASS.
 - Build: PASS.
+- Authenticated runtime verification: PASS.
+- Console errors: 0.
+- Page exceptions: 0.
+- Network failures: 0.
 
-## Runtime Verification Status
+## Runtime Result
 
-Authenticated runtime verification:
-
-BLOCKED / not run.
-
-Reason:
-
-Running the authenticated scenario requires approved Firebase config, approved test credentials, and approved account mapping data.
+- Firebase login succeeds.
+- Firestore mapping resolves from `accountMappings/firebase/providerUsers/{actualProviderUserId}`.
+- `AuthSession` is created.
+- `AuthState` becomes authenticated.
+- `accountId` is explicit and is not Firebase UID.
+- Role is `owner` or `user`.
+- Logout returns `AuthState` to unauthenticated.
+- Dashboard remains accessible without auth.
+- Products remains accessible without auth.
 
 ## Scope Confirmation
 
-- No source files changed.
+- No source files changed during runtime verification.
 - No route guard.
 - No Dashboard protection.
 - No Products protection.
@@ -83,21 +77,15 @@ Running the authenticated scenario requires approved Firebase config, approved t
 ```text
 PATCHES/V1-AUTH-014/verification.md
 PATCHES/V1-AUTH-014/closure-report.md
+outputs/V1-AUTH-014/after-runtime.json
+outputs/V1-AUTH-014/after-dom.json
+outputs/V1-AUTH-014/after-console.log
+outputs/V1-AUTH-014/after-screenshot.png
 ```
-
-## Required Next Input
-
-Owner-approved local-only Firebase test environment:
-
-- Firebase config for Vite.
-- Approved test email/password.
-- Approved test Firebase user.
-- Firestore mapping record at `accountMappings/firebase/providerUsers/{providerUserId}`.
-- Security rules/database access that allow the signed-in test user to read its own mapping record.
 
 ## Next Mission
 
-Resume `V1-AUTH-014` from authenticated runtime verification after the required test environment exists.
+Await Architect / Owner review.
 
 Do not start Route Guard.
 

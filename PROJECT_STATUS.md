@@ -44,7 +44,7 @@ V1-AUTH-012 Account Mapping Runtime Source Decision is complete from execution s
 
 V1-AUTH-013 Firebase Account Mapping Source Implementation is complete from execution side and ready for Architect / Owner review.
 
-V1-AUTH-014 Authenticated Session Runtime Verification is blocked by missing owner-provided Firebase test environment inputs.
+V1-AUTH-014 Authenticated Session Runtime Verification is complete from execution side and ready for Architect / Owner review.
 
 Completed stabilization work:
 
@@ -120,7 +120,8 @@ Completed stabilization work:
 - V1-AUTH-013 preserves the approved `accountId` boundary by rejecting Firebase uid to `accountId` fallback, default owner fallback, one global account fallback, and invalid mapping data.
 - V1-AUTH-013 aligns `FirebaseAuthProvider` to sign out Firebase Auth if session resolution throws after Firebase sign-in.
 - V1-AUTH-013 did not add route guards, Dashboard protection, Products protection, Product work, persistence behavior changes, localStorage migration, account-scoped persistence, real credentials, production mappings, seeded accounts, or ECS-006.
-- V1-AUTH-014 confirmed TypeScript and build pass, but authenticated runtime verification is blocked because the local environment does not provide approved Firebase config, approved test credentials, approved Firebase test user, or verifiable Firestore account mapping data.
+- V1-AUTH-014 confirmed TypeScript, build, and authenticated runtime verification pass.
+- V1-AUTH-014 verified Firebase login, Firestore account mapping resolution at `accountMappings/firebase/providerUsers/{actualProviderUserId}`, `AuthSession` creation, authenticated `AuthState`, explicit `accountId` distinct from Firebase UID, allowed role, logout to unauthenticated state, Dashboard accessibility without auth, and Products accessibility without auth.
 - V1-AUTH-014 did not change source files, route guards, Product files, persistence files, localStorage behavior, credentials, account mappings, seeded accounts, or ECS-006.
 - Products module is partial.
 - Product dialog lifecycle was stabilized.
@@ -134,7 +135,7 @@ Completed stabilization work:
 - Basic ledger is missing.
 - Sync/data-safety module is missing.
 - Reports are missing.
-- Auth implementation now includes the V1 foundation, provider adapter, Auth state service, account/session resolution, account mapping boundary, minimal Login / Logout runtime flow, and Firebase-backed account mapping source implementation. Live authenticated-session runtime verification remains blocked until an approved Firebase test environment is provided. Route guards, protected business routes, account-scoped persistence, and storage migration remain future approved missions.
+- Auth implementation now includes the V1 foundation, provider adapter, Auth state service, account/session resolution, account mapping boundary, minimal Login / Logout runtime flow, Firebase-backed account mapping source implementation, and live authenticated-session runtime verification. Route guards, protected business routes, account-scoped persistence, and storage migration remain future approved missions.
 
 ## Current Mission
 
@@ -144,7 +145,7 @@ Current mission:
 
 Current next mission:
 
-V1-AUTH-014 blocked pending owner-provided Firebase test environment.
+V1-AUTH-014 complete from execution side and ready for Architect / Owner review.
 
 Classification:
 
@@ -152,7 +153,7 @@ Classification:
 
 Allowed scope:
 
-Authenticated-session runtime verification and blocked-state documentation.
+Authenticated-session runtime verification and completion documentation.
 
 Forbidden scope:
 
@@ -160,4 +161,4 @@ No source changes, no route guards, no Dashboard protection, no Products protect
 
 ## Next State
 
-V1-AUTH-014 must be resumed from authenticated runtime verification after the owner provides the approved Firebase test environment. Route Guard must remain after authenticated session runtime verification.
+Await Architect / Owner review for V1-AUTH-014. Route Guard must remain after authenticated session runtime verification and requires a separate approved mission.

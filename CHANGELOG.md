@@ -5,9 +5,17 @@
 - Opened authenticated-session runtime verification on a dedicated mission branch.
 - Confirmed `V1-AUTH-013` exists and the Firebase-backed account mapping source is present.
 - Confirmed TypeScript and build pass.
-- Blocked authenticated runtime verification because the current environment does not provide approved Firebase config, approved test credentials, or verifiable Firebase account mapping data.
+- Confirmed authenticated runtime verification passes against the owner-approved Firebase test environment.
+- Verified Firebase login succeeds for the approved test user.
+- Verified Firestore account mapping resolves from `accountMappings/firebase/providerUsers/{actualProviderUserId}`.
+- Verified `AuthSession` is created and `AuthState` becomes authenticated.
+- Verified `accountId` is explicit and does not equal Firebase UID.
+- Verified role is `owner` or `user`.
+- Verified logout returns `AuthState` to unauthenticated.
+- Verified Dashboard and Products remain accessible without auth.
+- Verified console errors = 0, page exceptions = 0, and active network failures = 0.
 - Did not fake success, add hardcoded mapping, add local fallback, commit credentials, create Route Guard, change Product files, change persistence, migrate localStorage, or start ECS-006.
-- Final status: `V1-AUTH-014 BLOCKED - ENV / Owner-provided Firebase test environment required`.
+- Final status: `V1-AUTH-014 Ready for Architect / Owner Review`.
 
 ## V1-AUTH-013 - Firebase Account Mapping Source Implementation
 
