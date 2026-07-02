@@ -206,6 +206,12 @@ Recommended next Product persistence step:
 
 Product Create/Edit/Delete should wait for an approved Product account-scoped persistence plan and no-data-loss compatibility strategy.
 
+V1-PER-004 recommends the next implementation mission:
+
+`V1-PER-005 - Product Account-Scoped Persistence Compatibility Layer`
+
+The recommended strategy is to preserve `localStorage.products`, write new scoped Products to `products:{accountId}`, and migrate legacy global Products only through an owner-approved no-data-loss flow.
+
 ## Verification Expectation
 
 Each future ECS must include:

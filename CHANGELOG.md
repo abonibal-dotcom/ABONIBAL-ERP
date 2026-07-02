@@ -1,5 +1,17 @@
 # Changelog
 
+## V1-PER-004 - Product Account-Scoped Persistence Plan
+
+- Created an implementation-ready Product account-scoped persistence plan without source changes.
+- Confirmed the current Product key remains `localStorage.products`.
+- Confirmed Product records still lack `accountId`, `createdBy`, and `updatedBy`.
+- Compared global embedded filtering, account-scoped keys, and a compatibility layer preserving legacy global storage.
+- Recommended a compatibility layer before Product CRUD: preserve `localStorage.products`, write new scoped Products to `products:{accountId}`, and migrate legacy data only through an owner-approved no-data-loss flow.
+- Added a no-data-loss plan for backup, owner-approved account assignment, copy/transform, count verification, and legacy key preservation.
+- Added a rollback plan that forbids deleting `localStorage.products`, clearing all localStorage, or treating Firebase UID as `accountId`.
+- Confirmed no source files, Product files, persistence files, Auth files, Route Guard behavior, localStorage migration, account-scoped implementation, Product schema change, Product CRUD, credentials, or `.env` tracking changes were introduced.
+- Final status: `V1-PER-004 Ready for Architect / Owner Review`.
+
 ## V1-PER-003 - Product Persistence Boundary Assessment
 
 - Assessed the Product persistence boundary from the accepted `ecs-006-product-list-read-path` baseline.

@@ -2,45 +2,40 @@
 
 ## Mission
 
-`V1-PER-003 - Product Persistence Boundary Assessment`
+`V1-PER-004 - Product Account-Scoped Persistence Plan`
 
 ## Classification
 
 `INF`
 
-This is a Product persistence boundary assessment mission.
+This is a Product account-scoped persistence planning mission.
 
-This is not Product CRUD work, persistence migration, account-scoped Product persistence implementation, Auth redesign, Route Guard change, Product schema change, UI redesign, or ECS-007.
+This is not Product CRUD work, migration execution, account-scoped Product persistence implementation, Auth redesign, Route Guard change, Product schema change, UI redesign, or ECS-007.
 
 ## Objective
 
-Assess whether Products can safely proceed to Create/Edit/Delete on the current persistence model, or whether account-scoped Product persistence must be planned first.
+Create an implementation-ready, no-data-loss plan for moving Product persistence from global `localStorage.products` toward account-scoped Product persistence.
 
 ## Current Status
 
-`V1-PER-003 Ready for Architect / Owner Review`
+`V1-PER-004 Ready for Architect / Owner Review`
 
 ## Verification Completed
 
-- Baseline tag `ecs-006-product-list-read-path`: confirmed.
+- Baseline tag `v1-per-003-product-persistence-boundary-assessment`: confirmed.
 - Source inspection: PASS.
 - TypeScript: PASS.
 - Build: PASS.
-- Runtime verification: PASS.
-- Console errors: 0.
-- Page exceptions: 0.
-- Product storage mutation during inspection: no.
+- Runtime verification: not required for this planning mission.
+- Product storage mutation: none.
 
 ## Runtime Result
 
-- Route Guard remains active.
-- Firebase login succeeds with the approved local test credentials.
-- Authenticated Products access succeeds.
-- The ECS-006 Product renders in the Products list.
-- Product storage key is `products`.
+- Product storage key remains `products`.
 - Product storage is global, not account-scoped.
 - Product records do not contain `accountId`, `createdBy`, or `updatedBy`.
-- Product data remained unchanged during inspection.
+- Recommended target storage pattern is `products:{accountId}` with a compatibility layer preserving global `products`.
+- Product CRUD should wait for account-scoped Product persistence compatibility implementation.
 
 ## Scope Confirmation
 
@@ -50,7 +45,7 @@ Assess whether Products can safely proceed to Create/Edit/Delete on the current 
 - No route files changed.
 - No persistence files changed.
 - No localStorage migration.
-- No account-scoped storage migration.
+- No account-scoped storage implementation.
 - No Product data deletion.
 - No Product schema change.
 - No Product create/edit/delete implementation.
@@ -61,20 +56,16 @@ Assess whether Products can safely proceed to Create/Edit/Delete on the current 
 ## Evidence
 
 ```text
-PATCHES/V1-PER-003/product-persistence-boundary-assessment.md
-PATCHES/V1-PER-003/verification.md
-PATCHES/V1-PER-003/closure-report.md
-outputs/V1-PER-003/runtime.json
-outputs/V1-PER-003/dom.json
-outputs/V1-PER-003/console.log
-outputs/V1-PER-003/storage-snapshot-sanitized.json
-outputs/V1-PER-003/screenshot.png
+PATCHES/V1-PER-004/product-account-scoped-persistence-plan.md
+PATCHES/V1-PER-004/no-data-loss-plan.md
+PATCHES/V1-PER-004/rollback-plan.md
+PATCHES/V1-PER-004/closure-report.md
 ```
 
 ## Next Mission
 
 Await Architect / Owner review.
 
-Recommended next mission is a separate Product account-scoped persistence plan before Product Create/Edit/Delete.
+Recommended next mission is `V1-PER-005 - Product Account-Scoped Persistence Compatibility Layer`.
 
-Do not start the next mission until V1-PER-003 is reviewed.
+Do not start the next mission until V1-PER-004 is reviewed.

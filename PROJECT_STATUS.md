@@ -52,6 +52,8 @@ ECS-006 Product List Read Path is complete from execution side and ready for Arc
 
 V1-PER-003 Product Persistence Boundary Assessment is complete from execution side and ready for Architect / Owner review.
 
+V1-PER-004 Product Account-Scoped Persistence Plan is complete from execution side and ready for Architect / Owner review.
+
 Completed stabilization work:
 
 - `PATCH-000-ECS-001 - Route Registry Stabilization`
@@ -142,6 +144,7 @@ Completed stabilization work:
 - V1-PER-003 confirmed Product records do not contain `accountId`, `createdBy`, or `updatedBy`.
 - V1-PER-003 confirmed Product reads and existing write methods do not receive or apply account context.
 - V1-PER-003 recommends a separate Product account-scoped persistence plan before Product Create/Edit/Delete work.
+- V1-PER-004 recommends a compatibility layer before Product CRUD: preserve `localStorage.products`, write new scoped Products to `products:{accountId}`, and migrate legacy global data only through an owner-approved no-data-loss flow.
 - Product dialog lifecycle was stabilized.
 - Malformed product localStorage read failures were contained.
 - Inventory is missing as a module.
@@ -159,11 +162,11 @@ Completed stabilization work:
 
 Current mission:
 
-`V1-PER-003 - Product Persistence Boundary Assessment`
+`V1-PER-004 - Product Account-Scoped Persistence Plan`
 
 Current next mission:
 
-V1-PER-003 complete from execution side and ready for Architect / Owner review.
+V1-PER-004 complete from execution side and ready for Architect / Owner review.
 
 Classification:
 
@@ -171,12 +174,12 @@ Classification:
 
 Allowed scope:
 
-Product persistence boundary assessment and documentation.
+Product account-scoped persistence planning and documentation.
 
 Forbidden scope:
 
-No Auth redesign, no Route Guard weakening, no routing changes, no persistence behavior changes, no localStorage migration, no account-scoped persistence implementation, no Product schema change, no create/edit/delete feature, no permission matrix, no advanced roles, no hardcoded credentials, no real credentials committed, and no Firebase uid to `accountId` assumption.
+No Auth redesign, no Route Guard weakening, no routing changes, no persistence behavior changes, no localStorage migration execution, no account-scoped persistence implementation, no Product schema change, no create/edit/delete feature, no permission matrix, no advanced roles, no hardcoded credentials, no real credentials committed, and no Firebase uid to `accountId` assumption.
 
 ## Next State
 
-Await Architect / Owner review for V1-PER-003. Recommended next mission is a separate Product account-scoped persistence plan before Product Create/Edit/Delete.
+Await Architect / Owner review for V1-PER-004. Recommended next mission is `V1-PER-005 - Product Account-Scoped Persistence Compatibility Layer`.
