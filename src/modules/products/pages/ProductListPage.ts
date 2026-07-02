@@ -1,9 +1,14 @@
 import { Page } from "../../../framework/Page";
+import { Container } from "../../../core/Container";
 import { ProductDialog } from "../dialogs/ProductDialog";
+import type { Product } from "../Product";
+import type { ProductService } from "../services/ProductService";
 
 export class ProductListPage extends Page {
 
     private dialog: ProductDialog;
+
+    private productService: ProductService;
 
     private openButton: HTMLElement | null = null;
 
@@ -30,6 +35,8 @@ export class ProductListPage extends Page {
         super();
 
         this.dialog = new ProductDialog();
+
+        this.productService = Container.get<ProductService>("productService");
 
     }
 
@@ -108,6 +115,76 @@ export class ProductListPage extends Page {
 
     }
 
+    private renderProductsIntoTable(): void {
+
+        const productsBody = document.getElementById("products-body");
+
+        if (!productsBody) {
+            return;
+        }
+
+        const products = this.readProducts();
+
+        if (products.length === 0) {
+            return;
+        }
+
+        productsBody.innerHTML = this.renderProductRows(products);
+
+    }
+
+    private readProducts(): Product[] {
+
+        const products = this.productService.getAll();
+
+        if (!Array.isArray(products)) {
+            return [];
+        }
+
+        return products;
+
+    }
+
+    private renderProductRows(products: Product[]): string {
+
+        return products.map(product => `
+            <tr data-product-id="${this.escapeHtml(product.id)}">
+
+                <td>-</td>
+                <td>${this.escapeHtml(product.name)}</td>
+                <td>${this.escapeHtml(product.barcode)}</td>
+                <td>${this.formatNumber(product.quantity)}</td>
+                <td>${this.formatNumber(product.salePrice)}</td>
+                <td>-</td>
+
+            </tr>
+        `).join("");
+
+    }
+
+    private escapeHtml(value: unknown): string {
+
+        return String(value ?? "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+
+    }
+
+    private formatNumber(value: unknown): string {
+
+        const numericValue = Number(value);
+
+        if (!Number.isFinite(numericValue)) {
+            return "0";
+        }
+
+        return String(numericValue);
+
+    }
+
     public onEnter(): void {
 
         this.onLeave();
@@ -116,6 +193,8 @@ export class ProductListPage extends Page {
         this.dialogElement = document.getElementById("product-dialog");
         this.closeButton = document.getElementById("close-product-dialog");
         this.cancelButton = document.getElementById("cancel-product");
+
+        this.renderProductsIntoTable();
 
         this.openButton?.addEventListener("click", this.openDialog);
 
