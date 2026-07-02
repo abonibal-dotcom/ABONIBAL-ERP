@@ -1,5 +1,24 @@
 # Changelog
 
+## V1-AUTH-015 - Route Guard Foundation
+
+- Added minimal Route Guard foundation for business routes.
+- Added route access metadata to the route registry.
+- Marked Login as public.
+- Marked Dashboard and Products as protected.
+- Added `AuthRouteGuard` behind `AuthStateService`.
+- Updated Router navigation to initialize AuthState and redirect unauthenticated protected access to Login.
+- Updated Login success behavior to navigate to Dashboard.
+- Updated Firebase current-session lookup to wait for Firebase Auth readiness before reading `currentUser`.
+- Verified unauthenticated Dashboard and Products access is blocked.
+- Verified Login remains public.
+- Verified Firebase login, Firestore account mapping, `AuthSession`, authenticated `AuthState`, Dashboard access, Products access, session restoration, logout, and post-logout route blocking.
+- Verified `accountId` remains explicit and does not equal Firebase UID.
+- Verified role remains `owner` or `user`.
+- Verified console errors = 0, page exceptions = 0, and active network failures = 0.
+- Did not modify Product files, persistence files, localStorage behavior, account-scoped persistence, permission matrix, advanced roles, Firebase mapping data, credentials, or ECS-006.
+- Final status: `V1-AUTH-015 Ready for Architect / Owner Review`.
+
 ## V1-AUTH-014 - Authenticated Session Runtime Verification
 
 - Opened authenticated-session runtime verification on a dedicated mission branch.

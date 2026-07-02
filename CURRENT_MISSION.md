@@ -2,68 +2,60 @@
 
 ## Mission
 
-`V1-AUTH-014 - Authenticated Session Runtime Verification`
+`V1-AUTH-015 - Route Guard Foundation`
 
 ## Classification
 
 `ECS`
 
-This is a runtime verification ECS.
+This is a limited Auth routing foundation ECS.
 
-This is not Route Guard implementation, Product work, persistence migration, account-scoped Product persistence, or ECS-006.
+This is not Product work, persistence migration, account-scoped Product persistence, permission matrix, advanced roles, or ECS-006.
 
 ## Objective
 
-Verify that the complete Auth runtime chain can produce a valid authenticated `AuthSession` using Firebase Auth and the Firebase-backed account mapping source.
-
-Target chain:
-
-```text
-Firebase email/password sign-in
--> Firebase provider user
--> providerUserId
--> FirebaseAccountMappingSource
--> explicit accountId/accountName/role
--> AuthSessionResolver
--> AuthSession
--> AuthStateService authenticated state
-```
+Introduce the minimal Route Guard foundation now that `V1-AUTH-014` verified authenticated session creation end-to-end.
 
 ## Current Status
 
-`V1-AUTH-014 Ready for Architect / Owner Review`
+`V1-AUTH-015 Ready for Architect / Owner Review`
 
 ## Verification Completed
 
+- Baseline evidence: PASS.
 - TypeScript: PASS.
 - Build: PASS.
-- Authenticated runtime verification: PASS.
+- Runtime verification: PASS.
 - Console errors: 0.
 - Page exceptions: 0.
 - Network failures: 0.
 
 ## Runtime Result
 
+- Unauthenticated Dashboard access is blocked and redirected to Login.
+- Unauthenticated Products access is blocked and redirected to Login.
+- Login remains public.
 - Firebase login succeeds.
-- Firestore mapping resolves from `accountMappings/firebase/providerUsers/{actualProviderUserId}`.
+- Firestore account mapping resolves.
 - `AuthSession` is created.
 - `AuthState` becomes authenticated.
-- `accountId` is explicit and is not Firebase UID.
-- Role is `owner` or `user`.
+- Authenticated Dashboard access works.
+- Authenticated Products access works.
+- Session restoration after reload works.
 - Logout returns `AuthState` to unauthenticated.
-- Dashboard remains accessible without auth.
-- Products remains accessible without auth.
+- Protected routes are blocked again after logout.
+- `accountId` remains explicit and is not Firebase UID.
+- Role remains `owner` or `user`.
 
 ## Scope Confirmation
 
-- No source files changed during runtime verification.
-- No route guard.
-- No Dashboard protection.
-- No Products protection.
 - No Product files changed.
 - No persistence files changed.
 - No localStorage migration.
 - No account-scoped persistence.
+- No Product data mutation observed.
+- No permission matrix.
+- No advanced roles.
 - No real credentials committed.
 - No test credentials committed.
 - No `.env` file committed.
@@ -75,18 +67,24 @@ Firebase email/password sign-in
 ## Evidence
 
 ```text
-PATCHES/V1-AUTH-014/verification.md
-PATCHES/V1-AUTH-014/closure-report.md
-outputs/V1-AUTH-014/after-runtime.json
-outputs/V1-AUTH-014/after-dom.json
-outputs/V1-AUTH-014/after-console.log
-outputs/V1-AUTH-014/after-screenshot.png
+PATCHES/V1-AUTH-015/verification.md
+PATCHES/V1-AUTH-015/closure-report.md
+outputs/V1-AUTH-015/baseline-runtime.json
+outputs/V1-AUTH-015/baseline-dom.json
+outputs/V1-AUTH-015/baseline-console.log
+outputs/V1-AUTH-015/baseline-screenshot.png
+outputs/V1-AUTH-015/after-runtime.json
+outputs/V1-AUTH-015/after-dom.json
+outputs/V1-AUTH-015/after-console.log
+outputs/V1-AUTH-015/after-screenshot.png
 ```
 
 ## Next Mission
 
 Await Architect / Owner review.
 
-Do not start Route Guard.
+Recommended next mission:
+
+`V1-AUTH-016 - Protected Route Runtime Verification`
 
 Do not start ECS-006.

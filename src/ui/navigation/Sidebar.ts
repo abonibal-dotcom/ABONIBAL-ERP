@@ -37,7 +37,7 @@ export class Sidebar {
 
                 if (page) {
 
-                    router.navigate(page);
+                    void router.navigate(page);
 
                 }
 

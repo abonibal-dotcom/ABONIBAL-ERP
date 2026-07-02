@@ -23,6 +23,8 @@ export class FirebaseAuthProvider implements AuthProvider {
 
     public async getCurrentSession(): Promise<AuthSession | null> {
 
+        await this.auth.authStateReady();
+
         const currentUser = this.auth.currentUser;
 
         if (!currentUser) {

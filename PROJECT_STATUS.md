@@ -46,6 +46,8 @@ V1-AUTH-013 Firebase Account Mapping Source Implementation is complete from exec
 
 V1-AUTH-014 Authenticated Session Runtime Verification is complete from execution side and ready for Architect / Owner review.
 
+V1-AUTH-015 Route Guard Foundation is complete from execution side and ready for Architect / Owner review.
+
 Completed stabilization work:
 
 - `PATCH-000-ECS-001 - Route Registry Stabilization`
@@ -123,6 +125,11 @@ Completed stabilization work:
 - V1-AUTH-014 confirmed TypeScript, build, and authenticated runtime verification pass.
 - V1-AUTH-014 verified Firebase login, Firestore account mapping resolution at `accountMappings/firebase/providerUsers/{actualProviderUserId}`, `AuthSession` creation, authenticated `AuthState`, explicit `accountId` distinct from Firebase UID, allowed role, logout to unauthenticated state, Dashboard accessibility without auth, and Products accessibility without auth.
 - V1-AUTH-014 did not change source files, route guards, Product files, persistence files, localStorage behavior, credentials, account mappings, seeded accounts, or ECS-006.
+- V1-AUTH-015 added the minimal Route Guard foundation for business routes.
+- V1-AUTH-015 marks Login as public and Dashboard/Products as protected in the route registry.
+- V1-AUTH-015 redirects unauthenticated protected-route access to Login.
+- V1-AUTH-015 verifies authenticated users can access Dashboard and Products, session restoration works after reload, logout returns unauthenticated state, and protected routes are blocked again after logout.
+- V1-AUTH-015 did not change Product files, persistence files, localStorage behavior, account-scoped persistence, permission matrix, advanced roles, credentials, Firebase mapping data, or ECS-006.
 - Products module is partial.
 - Product dialog lifecycle was stabilized.
 - Malformed product localStorage read failures were contained.
@@ -135,17 +142,17 @@ Completed stabilization work:
 - Basic ledger is missing.
 - Sync/data-safety module is missing.
 - Reports are missing.
-- Auth implementation now includes the V1 foundation, provider adapter, Auth state service, account/session resolution, account mapping boundary, minimal Login / Logout runtime flow, Firebase-backed account mapping source implementation, and live authenticated-session runtime verification. Route guards, protected business routes, account-scoped persistence, and storage migration remain future approved missions.
+- Auth implementation now includes the V1 foundation, provider adapter, Auth state service, account/session resolution, account mapping boundary, minimal Login / Logout runtime flow, Firebase-backed account mapping source implementation, live authenticated-session runtime verification, and Route Guard foundation. Account-scoped persistence and storage migration remain future approved missions.
 
 ## Current Mission
 
 Current mission:
 
-`V1-AUTH-014 - Authenticated Session Runtime Verification`
+`V1-AUTH-015 - Route Guard Foundation`
 
 Current next mission:
 
-V1-AUTH-014 complete from execution side and ready for Architect / Owner review.
+V1-AUTH-015 complete from execution side and ready for Architect / Owner review.
 
 Classification:
 
@@ -153,12 +160,12 @@ Classification:
 
 Allowed scope:
 
-Authenticated-session runtime verification and completion documentation.
+Route Guard foundation and completion documentation.
 
 Forbidden scope:
 
-No source changes, no route guards, no Dashboard protection, no Products protection, no Product work, no persistence behavior changes, no localStorage migration, no account-scoped persistence, no ECS-006, no permission matrix, no hardcoded credentials, no real credentials, no production account mappings, no real account seeds, and no Firebase uid to `accountId` assumption.
+No Product work, no Product file changes, no persistence behavior changes, no localStorage migration, no account-scoped persistence, no ECS-006, no permission matrix, no advanced roles, no hardcoded credentials, no real credentials, no production account mappings, no real account seeds, and no Firebase uid to `accountId` assumption.
 
 ## Next State
 
-Await Architect / Owner review for V1-AUTH-014. Route Guard must remain after authenticated session runtime verification and requires a separate approved mission.
+Await Architect / Owner review for V1-AUTH-015. The recommended next mission is `V1-AUTH-016 - Protected Route Runtime Verification`. ECS-006 remains blocked.
