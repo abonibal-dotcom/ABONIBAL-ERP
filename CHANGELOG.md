@@ -1,5 +1,20 @@
 # Changelog
 
+## V1-PER-005 - Product Account-Scoped Persistence Compatibility Layer
+
+- Implemented the minimal account-scoped Product persistence compatibility layer before Product CRUD.
+- Confirmed baseline Product reads used legacy `products` and did not read the current account scoped key.
+- Added optional Product ownership metadata: `accountId`, `createdBy`, and `updatedBy`.
+- Added Product account-scoped key resolution for `products:{accountId}`.
+- Updated Product repository/service reads and writes to use the authenticated `AuthSession` account boundary.
+- Verified empty scoped storage renders an empty Product list.
+- Verified malformed scoped storage does not crash.
+- Verified scoped Product writes attach ownership metadata and render from `products:{accountId}`.
+- Verified legacy `localStorage.products` remains present and hash-unchanged.
+- Confirmed no Product Create/Edit/Delete UI, Product search/filter, legacy migration, legacy deletion, Route Guard weakening, Firebase Auth change, persistence driver change, credentials, or Firebase UID/accountId assumption were introduced.
+- Verified TypeScript, build, and runtime verification passed with console errors = 0 and page exceptions = 0.
+- Final status: `V1-PER-005 Ready for Architect / Owner Review`.
+
 ## V1-PER-004 - Product Account-Scoped Persistence Plan
 
 - Created an implementation-ready Product account-scoped persistence plan without source changes.

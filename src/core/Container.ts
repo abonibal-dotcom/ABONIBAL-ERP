@@ -7,6 +7,7 @@ import { LocalStorageDriver } from "./persistence/LocalStorageDriver";
 import { ProductRepository } from "../modules/products/repositories/ProductRepository";
 import { ProductValidator } from "../modules/products/validators/ProductValidator";
 import { ProductService } from "../modules/products/services/ProductService";
+import { getAuthStateService } from "../modules/auth/AuthRuntime";
 
 export class Container {
 
@@ -34,7 +35,8 @@ export class Container {
 
         const productService = new ProductService(
             productRepository,
-            productValidator
+            productValidator,
+            getAuthStateService()
         );
 
         this.register("productService", productService);

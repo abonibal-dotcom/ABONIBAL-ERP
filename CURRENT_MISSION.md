@@ -2,70 +2,81 @@
 
 ## Mission
 
-`V1-PER-004 - Product Account-Scoped Persistence Plan`
+`V1-PER-005 - Product Account-Scoped Persistence Compatibility Layer`
 
 ## Classification
 
-`INF`
+`ECS`
 
-This is a Product account-scoped persistence planning mission.
+This is a Product persistence compatibility mission.
 
-This is not Product CRUD work, migration execution, account-scoped Product persistence implementation, Auth redesign, Route Guard change, Product schema change, UI redesign, or ECS-007.
+This is not Product Create/Edit/Delete UI work, Product search/filter work, legacy storage migration, Auth redesign, Route Guard change, Firebase Auth change, Inventory work, Sales work, Sync work, or ECS-007.
 
 ## Objective
 
-Create an implementation-ready, no-data-loss plan for moving Product persistence from global `localStorage.products` toward account-scoped Product persistence.
+Implement the minimal account-scoped Product persistence compatibility layer before Product CRUD.
 
 ## Current Status
 
-`V1-PER-004 Ready for Architect / Owner Review`
+`V1-PER-005 Ready for Architect / Owner Review`
 
 ## Verification Completed
 
-- Baseline tag `v1-per-003-product-persistence-boundary-assessment`: confirmed.
-- Source inspection: PASS.
+- Baseline evidence: PASS.
+- Root cause confirmation: PASS.
 - TypeScript: PASS.
 - Build: PASS.
-- Runtime verification: not required for this planning mission.
-- Product storage mutation: none.
+- Runtime Verification: PASS.
+- Console errors: 0.
+- Page exceptions: 0.
 
 ## Runtime Result
 
-- Product storage key remains `products`.
-- Product storage is global, not account-scoped.
-- Product records do not contain `accountId`, `createdBy`, or `updatedBy`.
-- Recommended target storage pattern is `products:{accountId}` with a compatibility layer preserving global `products`.
-- Product CRUD should wait for account-scoped Product persistence compatibility implementation.
+- Baseline confirmed Product reads used legacy `products`.
+- Baseline confirmed the current account scoped key was not read.
+- After implementation Product reads use `products:{accountId}`.
+- Empty scoped storage renders an empty Product list.
+- Malformed scoped storage does not crash.
+- A scoped verification Product renders from `products:{accountId}`.
+- Legacy `localStorage.products` remains present and unchanged.
+- No legacy Product migration was executed.
 
 ## Scope Confirmation
 
-- No source files changed.
-- No Product source files changed.
-- No Auth files changed.
-- No route files changed.
-- No persistence files changed.
-- No localStorage migration.
-- No account-scoped storage implementation.
-- No Product data deletion.
-- No Product schema change.
-- No Product create/edit/delete implementation.
-- No Firebase UID as `accountId`.
+- Product ownership metadata was added as optional fields only.
+- Product repository/service now use account-scoped Product persistence.
+- ProductService is wired to the existing AuthStateService.
+- No Product Create/Edit/Delete UI.
+- No Product search/filter feature.
+- No legacy localStorage migration.
+- No legacy Product deletion.
+- No Route Guard weakening.
+- No Firebase Auth change.
+- No persistence driver change.
+- No Firebase UID or provider user id as `accountId`.
+- No default account fallback.
 - No credentials committed.
 - `.env` remains untracked.
 
 ## Evidence
 
 ```text
-PATCHES/V1-PER-004/product-account-scoped-persistence-plan.md
-PATCHES/V1-PER-004/no-data-loss-plan.md
-PATCHES/V1-PER-004/rollback-plan.md
-PATCHES/V1-PER-004/closure-report.md
+PATCHES/V1-PER-005/verification.md
+PATCHES/V1-PER-005/closure-report.md
+outputs/V1-PER-005/baseline-runtime.json
+outputs/V1-PER-005/baseline-dom.json
+outputs/V1-PER-005/baseline-console.log
+outputs/V1-PER-005/baseline-storage-snapshot-sanitized.json
+outputs/V1-PER-005/baseline-screenshot.png
+outputs/V1-PER-005/after-runtime.json
+outputs/V1-PER-005/after-dom.json
+outputs/V1-PER-005/after-console.log
+outputs/V1-PER-005/after-storage-snapshot-sanitized.json
+outputs/V1-PER-005/after-screenshot.png
 ```
 
 ## Next Mission
 
 Await Architect / Owner review.
 
-Recommended next mission is `V1-PER-005 - Product Account-Scoped Persistence Compatibility Layer`.
-
-Do not start the next mission until V1-PER-004 is reviewed.
+Do not start Product Create/Edit/Delete until V1-PER-005 is reviewed and accepted.

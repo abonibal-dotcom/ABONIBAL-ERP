@@ -212,6 +212,10 @@ V1-PER-004 recommends the next implementation mission:
 
 The recommended strategy is to preserve `localStorage.products`, write new scoped Products to `products:{accountId}`, and migrate legacy global Products only through an owner-approved no-data-loss flow.
 
+V1-PER-005 implemented the compatibility layer. Normal Product reads and writes now use `products:{accountId}` from the authenticated account boundary, while legacy `localStorage.products` remains preserved and unmigrated.
+
+Product Create/Edit/Delete may proceed only after V1-PER-005 is reviewed and accepted by the Architect / Owner.
+
 ## Verification Expectation
 
 Each future ECS must include:
