@@ -2,28 +2,27 @@
 
 ## Mission
 
-`V1-PER-005 - Product Account-Scoped Persistence Compatibility Layer`
+`V1-PER-006 - Legacy Product Scoped Import`
 
 ## Classification
 
 `ECS`
 
-This is a Product persistence compatibility mission.
+This is a controlled no-data-loss legacy Product import mission.
 
-This is not Product Create/Edit/Delete UI work, Product search/filter work, legacy storage migration, Auth redesign, Route Guard change, Firebase Auth change, Inventory work, Sales work, Sync work, or ECS-007.
+This is not Product Create/Edit/Delete UI work, Product search/filter work, destructive migration, Auth redesign, Route Guard change, Firebase Auth change, Inventory work, Sales work, Sync work, or ECS-007.
 
 ## Objective
 
-Implement the minimal account-scoped Product persistence compatibility layer before Product CRUD.
+Copy owner-approved legacy Product records from `localStorage.products` into the current authenticated account-scoped key `products:{accountId}` while preserving the legacy key.
 
 ## Current Status
 
-`V1-PER-005 Ready for Architect / Owner Review`
+`V1-PER-006 Ready for Architect / Owner Review`
 
 ## Verification Completed
 
 - Baseline evidence: PASS.
-- Root cause confirmation: PASS.
 - TypeScript: PASS.
 - Build: PASS.
 - Runtime Verification: PASS.
@@ -32,24 +31,24 @@ Implement the minimal account-scoped Product persistence compatibility layer bef
 
 ## Runtime Result
 
-- Baseline confirmed Product reads used legacy `products`.
-- Baseline confirmed the current account scoped key was not read.
-- After implementation Product reads use `products:{accountId}`.
-- Empty scoped storage renders an empty Product list.
-- Malformed scoped storage does not crash.
-- A scoped verification Product renders from `products:{accountId}`.
-- Legacy `localStorage.products` remains present and unchanged.
-- No legacy Product migration was executed.
+- Baseline confirmed legacy `products` exists with one Product.
+- Baseline confirmed scoped `products:{accountId}` was empty.
+- Baseline confirmed legacy Products were not visible in the Products UI before import.
+- Import copied one legacy Product into `products:{accountId}`.
+- Import attached `accountId`, `createdBy`, and `updatedBy`.
+- Existing scoped Products were preserved.
+- Duplicate import did not duplicate Products.
+- Backup keys were created.
+- Legacy `localStorage.products` remained present and hash unchanged.
+- Products UI rendered the scoped Products after import.
 
 ## Scope Confirmation
 
-- Product ownership metadata was added as optional fields only.
-- Product repository/service now use account-scoped Product persistence.
-- ProductService is wired to the existing AuthStateService.
 - No Product Create/Edit/Delete UI.
 - No Product search/filter feature.
-- No legacy localStorage migration.
+- No destructive migration.
 - No legacy Product deletion.
+- No automatic import on app startup.
 - No Route Guard weakening.
 - No Firebase Auth change.
 - No persistence driver change.
@@ -61,22 +60,23 @@ Implement the minimal account-scoped Product persistence compatibility layer bef
 ## Evidence
 
 ```text
-PATCHES/V1-PER-005/verification.md
-PATCHES/V1-PER-005/closure-report.md
-outputs/V1-PER-005/baseline-runtime.json
-outputs/V1-PER-005/baseline-dom.json
-outputs/V1-PER-005/baseline-console.log
-outputs/V1-PER-005/baseline-storage-snapshot-sanitized.json
-outputs/V1-PER-005/baseline-screenshot.png
-outputs/V1-PER-005/after-runtime.json
-outputs/V1-PER-005/after-dom.json
-outputs/V1-PER-005/after-console.log
-outputs/V1-PER-005/after-storage-snapshot-sanitized.json
-outputs/V1-PER-005/after-screenshot.png
+PATCHES/V1-PER-006/verification.md
+PATCHES/V1-PER-006/closure-report.md
+outputs/V1-PER-006/baseline-runtime.json
+outputs/V1-PER-006/baseline-dom.json
+outputs/V1-PER-006/baseline-console.log
+outputs/V1-PER-006/baseline-storage-snapshot-sanitized.json
+outputs/V1-PER-006/baseline-screenshot.png
+outputs/V1-PER-006/after-runtime.json
+outputs/V1-PER-006/after-dom.json
+outputs/V1-PER-006/after-console.log
+outputs/V1-PER-006/after-storage-snapshot-sanitized.json
+outputs/V1-PER-006/after-screenshot.png
+outputs/V1-PER-006/import-summary.json
 ```
 
 ## Next Mission
 
 Await Architect / Owner review.
 
-Do not start Product Create/Edit/Delete until V1-PER-005 is reviewed and accepted.
+Do not start Product Create/Edit/Delete until V1-PER-006 is reviewed and accepted.

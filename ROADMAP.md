@@ -214,7 +214,9 @@ The recommended strategy is to preserve `localStorage.products`, write new scope
 
 V1-PER-005 implemented the compatibility layer. Normal Product reads and writes now use `products:{accountId}` from the authenticated account boundary, while legacy `localStorage.products` remains preserved and unmigrated.
 
-Product Create/Edit/Delete may proceed only after V1-PER-005 is reviewed and accepted by the Architect / Owner.
+V1-PER-006 implemented the owner-approved controlled legacy Product import into `products:{accountId}` with backup, duplicate handling, ownership metadata, and legacy key preservation.
+
+Product Create/Edit/Delete may proceed only after V1-PER-006 is reviewed and accepted by the Architect / Owner.
 
 ## Verification Expectation
 

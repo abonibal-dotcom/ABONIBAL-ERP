@@ -2,7 +2,11 @@ import type { Product } from "../Product";
 
 import { Repository } from "../../../core/repositories/Repository";
 import type { Driver } from "../../../core/persistence/Driver";
-import { productStorageKeyForAccount } from "../persistence/ProductPersistenceKey";
+import {
+    legacyProductStorageKey,
+    productLegacyImportBackupKeyForAccount,
+    productStorageKeyForAccount
+} from "../persistence/ProductPersistenceKey";
 
 export class ProductRepository extends Repository<Product> {
 
@@ -17,6 +21,20 @@ export class ProductRepository extends Repository<Product> {
         return this.driver.read<Product[]>(
             productStorageKeyForAccount(accountId)
         ) ?? [];
+
+    }
+
+    public allLegacy(): Product[] {
+
+        return this.driver.read<Product[]>(
+            legacyProductStorageKey()
+        ) ?? [];
+
+    }
+
+    public saveAllForAccount(accountId: string, products: Product[]): void {
+
+        this.saveForAccount(accountId, products);
 
     }
 
@@ -84,5 +102,37 @@ export class ProductRepository extends Repository<Product> {
         );
 
     }
+
+    public saveLegacyImportBackup(
+        accountId: string,
+        backup: ProductLegacyImportBackup
+    ): string {
+
+        const backupKey = productLegacyImportBackupKeyForAccount(
+            accountId,
+            backup.createdAt
+        );
+
+        this.driver.write<ProductLegacyImportBackup>(
+            backupKey,
+            backup
+        );
+
+        return backupKey;
+
+    }
+
+}
+
+export interface ProductLegacyImportBackup {
+
+    version: 1;
+    createdAt: string;
+    accountId: string;
+    createdBy: string;
+    legacyProductCount: number;
+    scopedProductCountBefore: number;
+    legacyProducts: Product[];
+    scopedProductsBefore: Product[];
 
 }

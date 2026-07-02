@@ -1,5 +1,8 @@
 import type { Product } from "../Product";
-import { ProductRepository } from "../repositories/ProductRepository";
+import {
+    ProductRepository,
+    type ProductLegacyImportBackup
+} from "../repositories/ProductRepository";
 import { ProductValidator } from "../validators/ProductValidator";
 import type { AuthStateService } from "../../auth/AuthStateService";
 
@@ -134,6 +137,88 @@ export class ProductService {
 
     }
 
+    public importLegacyProducts(): LegacyProductImportResult {
+
+        const accountContext = this.currentAccountContext();
+
+        if (!accountContext) {
+            return failedLegacyImportResult(
+                "Authenticated account is required."
+            );
+        }
+
+        const legacyProducts = this.repository.allLegacy();
+        const scopedProducts = this.repository.allForAccount(
+            accountContext.accountId
+        );
+        const backup: ProductLegacyImportBackup = {
+            version: 1,
+            createdAt: new Date().toISOString(),
+            accountId: accountContext.accountId,
+            createdBy: accountContext.userId,
+            legacyProductCount: legacyProducts.length,
+            scopedProductCountBefore: scopedProducts.length,
+            legacyProducts,
+            scopedProductsBefore: scopedProducts
+        };
+        const backupKey = this.repository.saveLegacyImportBackup(
+            accountContext.accountId,
+            backup
+        );
+        const scopedProductIds = new Set(
+            scopedProducts.map(product => product.id)
+        );
+        const importedProducts: Product[] = [];
+        const skippedDuplicateIds: string[] = [];
+
+        for (const legacyProduct of legacyProducts) {
+
+            const productId = legacyProduct.id.trim();
+
+            if (!productId || scopedProductIds.has(productId)) {
+                skippedDuplicateIds.push(productId);
+                continue;
+            }
+
+            scopedProductIds.add(productId);
+
+            importedProducts.push({
+                ...legacyProduct,
+                id: productId,
+                accountId: accountContext.accountId,
+                createdBy: legacyProduct.createdBy ?? accountContext.userId,
+                updatedBy: legacyProduct.updatedBy ?? accountContext.userId
+            });
+
+        }
+
+        const nextScopedProducts = [
+            ...scopedProducts,
+            ...importedProducts
+        ];
+
+        if (importedProducts.length > 0) {
+            this.repository.saveAllForAccount(
+                accountContext.accountId,
+                nextScopedProducts
+            );
+        }
+
+        return {
+            success: true,
+            errors: [],
+            backupKey,
+            legacyProductCount: legacyProducts.length,
+            scopedProductCountBefore: scopedProducts.length,
+            copiedProductCount: importedProducts.length,
+            skippedDuplicateCount: skippedDuplicateIds.length,
+            scopedProductCountAfter: nextScopedProducts.length,
+            copiedProductIds: importedProducts.map(product => product.id),
+            skippedDuplicateIds
+        };
+
+    }
+
     private currentAccountContext(): ProductAccountContext | null {
 
         const state = this.authStateService.getState();
@@ -156,6 +241,38 @@ export class ProductService {
         };
 
     }
+
+}
+
+export interface LegacyProductImportResult {
+
+    success: boolean;
+    errors: string[];
+    backupKey: string | null;
+    legacyProductCount: number;
+    scopedProductCountBefore: number;
+    copiedProductCount: number;
+    skippedDuplicateCount: number;
+    scopedProductCountAfter: number;
+    copiedProductIds: string[];
+    skippedDuplicateIds: string[];
+
+}
+
+function failedLegacyImportResult(error: string): LegacyProductImportResult {
+
+    return {
+        success: false,
+        errors: [error],
+        backupKey: null,
+        legacyProductCount: 0,
+        scopedProductCountBefore: 0,
+        copiedProductCount: 0,
+        skippedDuplicateCount: 0,
+        scopedProductCountAfter: 0,
+        copiedProductIds: [],
+        skippedDuplicateIds: []
+    };
 
 }
 

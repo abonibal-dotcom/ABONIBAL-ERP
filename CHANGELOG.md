@@ -1,5 +1,23 @@
 # Changelog
 
+## V1-PER-006 - Legacy Product Scoped Import
+
+- Implemented a controlled owner-approved legacy Product import path before Product CRUD.
+- Confirmed baseline legacy `products` existed with one Product and scoped `products:{accountId}` was empty.
+- Confirmed baseline Products UI did not show legacy Products because active reads use scoped storage.
+- Added legacy Product key and legacy import backup key helpers.
+- Added Product repository methods for reading legacy Products, saving scoped collections, and saving import backups.
+- Added `ProductService.importLegacyProducts()` to copy missing legacy Products into `products:{accountId}`.
+- Preserved existing scoped Products and skipped duplicate legacy Products by stable Product id.
+- Attached `accountId`, `createdBy`, and `updatedBy` to imported Products.
+- Created non-destructive backup keys before import operations.
+- Verified duplicate import safety: second import copied 0 Products and skipped 1 duplicate.
+- Verified legacy `localStorage.products` remained present and hash-unchanged.
+- Verified Products UI rendered imported scoped Products and continued reading the scoped key, not legacy `products`.
+- Confirmed no Product Create/Edit/Delete UI, Product search/filter, destructive migration, legacy deletion, Route Guard weakening, Firebase Auth change, credentials, default account fallback, or Firebase UID/accountId assumption were introduced.
+- Verified TypeScript, build, and runtime verification passed with console errors = 0 and page exceptions = 0.
+- Final status: `V1-PER-006 Ready for Architect / Owner Review`.
+
 ## V1-PER-005 - Product Account-Scoped Persistence Compatibility Layer
 
 - Implemented the minimal account-scoped Product persistence compatibility layer before Product CRUD.
