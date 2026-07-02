@@ -1,19 +1,27 @@
 import type { Product } from "../Product";
+import type { ProductData } from "../dto/ProductData";
+
+import { ProductFactory } from "../factories/ProductFactory";
 import { ProductRepository } from "../repositories/ProductRepository";
 import { ProductValidator } from "../validators/ProductValidator";
 
 export class ProductService {
 
-    private repository: ProductRepository;
-    private validator: ProductValidator;
+    private readonly repository: ProductRepository;
+
+    private readonly validator: ProductValidator;
+
+    private readonly factory: ProductFactory;
 
     constructor(
         repository: ProductRepository,
-        validator: ProductValidator
+        validator: ProductValidator,
+        factory: ProductFactory
     ) {
 
         this.repository = repository;
         this.validator = validator;
+        this.factory = factory;
 
     }
 
@@ -23,12 +31,24 @@ export class ProductService {
 
     }
 
-    public add(product: Product): string[] {
+    public find(id: string): Product | undefined {
 
-        const errors = this.validator.validate(product);
+        return this.repository.find(id);
+
+    }
+
+    public add(data: ProductData): string[] {
+
+        const product =
+            this.factory.create(data);
+
+        const errors =
+            this.validator.validate(product);
 
         if (errors.length > 0) {
+
             return errors;
+
         }
 
         this.repository.add(product);
@@ -37,26 +57,43 @@ export class ProductService {
 
     }
 
-    public update(id: string, data: Partial<Product>): string[] {
+    public update(
+        id: string,
+        data: Partial<Product>
+    ): string[] {
 
-        const current = this.repository.find(id);
+        const current =
+            this.repository.find(id);
 
         if (!current) {
-            return ["المنتج غير موجود."];
+
+            return [
+                "المنتج غير موجود."
+            ];
+
         }
 
         const updated: Product = {
+
             ...current,
+
             ...data
+
         };
 
-        const errors = this.validator.validate(updated);
+        const errors =
+            this.validator.validate(updated);
 
         if (errors.length > 0) {
+
             return errors;
+
         }
 
-        this.repository.update(id, data);
+        this.repository.update(
+            id,
+            data
+        );
 
         return [];
 
@@ -65,12 +102,6 @@ export class ProductService {
     public remove(id: string): void {
 
         this.repository.remove(id);
-
-    }
-
-    public find(id: string): Product | undefined {
-
-        return this.repository.find(id);
 
     }
 
