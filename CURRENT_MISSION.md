@@ -2,27 +2,28 @@
 
 ## Mission
 
-`V1-AUTH-015 - Route Guard Foundation`
+`ECS-006 - Product List Read Path`
 
 ## Classification
 
 `ECS`
 
-This is a limited Auth routing foundation ECS.
+This is a product read-path stabilization mission.
 
-This is not Product work, persistence migration, account-scoped Product persistence, permission matrix, advanced roles, or ECS-006.
+This is not Auth redesign, persistence migration, account-scoped Product persistence, Product create/edit/delete implementation, UI redesign, or ECS-007.
 
 ## Objective
 
-Introduce the minimal Route Guard foundation now that `V1-AUTH-014` verified authenticated session creation end-to-end.
+Verify and minimally fix the Products UI read path so valid persisted products are visible after authenticated access through the accepted Route Guard foundation.
 
 ## Current Status
 
-`V1-AUTH-015 Ready for Architect / Owner Review`
+`ECS-006 Ready for Architect / Owner Review`
 
 ## Verification Completed
 
 - Baseline evidence: PASS.
+- Root cause confirmation: PASS.
 - TypeScript: PASS.
 - Build: PASS.
 - Runtime verification: PASS.
@@ -32,59 +33,45 @@ Introduce the minimal Route Guard foundation now that `V1-AUTH-014` verified aut
 
 ## Runtime Result
 
-- Unauthenticated Dashboard access is blocked and redirected to Login.
-- Unauthenticated Products access is blocked and redirected to Login.
-- Login remains public.
-- Firebase login succeeds.
-- Firestore account mapping resolves.
-- `AuthSession` is created.
-- `AuthState` becomes authenticated.
-- Authenticated Dashboard access works.
-- Authenticated Products access works.
-- Session restoration after reload works.
-- Logout returns `AuthState` to unauthenticated.
-- Protected routes are blocked again after logout.
-- `accountId` remains explicit and is not Firebase UID.
-- Role remains `owner` or `user`.
+- Unauthenticated Products access remains blocked by Route Guard.
+- Firebase login succeeds with the approved local test credentials.
+- Authenticated Products access succeeds.
+- A valid persisted product exists in `localStorage.products`.
+- `ProductService.getAll()` reads the persisted product.
+- Products route read execution occurs during Products page entry.
+- Products UI renders the persisted product.
+- Malformed `products` storage data does not crash the page.
 
 ## Scope Confirmation
 
-- No Product files changed.
+- Modified one source file: `src/modules/products/pages/ProductListPage.ts`.
+- No Auth files changed.
+- No route files changed.
 - No persistence files changed.
 - No localStorage migration.
-- No account-scoped persistence.
-- No Product data mutation observed.
-- No permission matrix.
-- No advanced roles.
-- No real credentials committed.
-- No test credentials committed.
-- No `.env` file committed.
-- No hardcoded mapping.
-- No default owner fallback.
-- No one global account fallback.
-- No ECS-006.
+- No account-scoped storage migration.
+- No Product data deletion.
+- No Firebase UID as `accountId`.
+- No credentials committed.
+- `.env` remains untracked.
 
 ## Evidence
 
 ```text
-PATCHES/V1-AUTH-015/verification.md
-PATCHES/V1-AUTH-015/closure-report.md
-outputs/V1-AUTH-015/baseline-runtime.json
-outputs/V1-AUTH-015/baseline-dom.json
-outputs/V1-AUTH-015/baseline-console.log
-outputs/V1-AUTH-015/baseline-screenshot.png
-outputs/V1-AUTH-015/after-runtime.json
-outputs/V1-AUTH-015/after-dom.json
-outputs/V1-AUTH-015/after-console.log
-outputs/V1-AUTH-015/after-screenshot.png
+PATCHES/ECS-006/verification.md
+PATCHES/ECS-006/closure-report.md
+outputs/ECS-006/baseline-runtime.json
+outputs/ECS-006/baseline-dom.json
+outputs/ECS-006/baseline-console.log
+outputs/ECS-006/baseline-screenshot.png
+outputs/ECS-006/after-runtime.json
+outputs/ECS-006/after-dom.json
+outputs/ECS-006/after-console.log
+outputs/ECS-006/after-screenshot.png
 ```
 
 ## Next Mission
 
 Await Architect / Owner review.
 
-Recommended next mission:
-
-`V1-AUTH-016 - Protected Route Runtime Verification`
-
-Do not start ECS-006.
+Do not start the next mission until ECS-006 is reviewed.

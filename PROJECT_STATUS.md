@@ -6,7 +6,7 @@ PATCH-000 is complete.
 
 V1 roadmap execution is in progress through approved verification missions.
 
-No ECS-006 has started.
+ECS-006 Product List Read Path is complete from execution side and ready for Architect / Owner review.
 
 V1-INF-001 has been executed and integrated into the active baseline branch.
 
@@ -47,6 +47,8 @@ V1-AUTH-013 Firebase Account Mapping Source Implementation is complete from exec
 V1-AUTH-014 Authenticated Session Runtime Verification is complete from execution side and ready for Architect / Owner review.
 
 V1-AUTH-015 Route Guard Foundation is complete from execution side and ready for Architect / Owner review.
+
+ECS-006 Product List Read Path is complete from execution side and ready for Architect / Owner review.
 
 Completed stabilization work:
 
@@ -131,6 +133,8 @@ Completed stabilization work:
 - V1-AUTH-015 verifies authenticated users can access Dashboard and Products, session restoration works after reload, logout returns unauthenticated state, and protected routes are blocked again after logout.
 - V1-AUTH-015 did not change Product files, persistence files, localStorage behavior, account-scoped persistence, permission matrix, advanced roles, credentials, Firebase mapping data, or ECS-006.
 - Products module is partial.
+- ECS-006 confirmed persisted products can be read through `ProductService.getAll()` and rendered by the Products page after authenticated access.
+- ECS-006 fixed the Products page read binding without Auth changes, routing changes, persistence changes, localStorage migration, account-scoped storage migration, Product schema changes, create/edit/delete behavior, or Product data deletion.
 - Product dialog lifecycle was stabilized.
 - Malformed product localStorage read failures were contained.
 - Inventory is missing as a module.
@@ -148,11 +152,11 @@ Completed stabilization work:
 
 Current mission:
 
-`V1-AUTH-015 - Route Guard Foundation`
+`ECS-006 - Product List Read Path`
 
 Current next mission:
 
-V1-AUTH-015 complete from execution side and ready for Architect / Owner review.
+ECS-006 complete from execution side and ready for Architect / Owner review.
 
 Classification:
 
@@ -160,12 +164,12 @@ Classification:
 
 Allowed scope:
 
-Route Guard foundation and completion documentation.
+Product list read-path stabilization and completion documentation.
 
 Forbidden scope:
 
-No Product work, no Product file changes, no persistence behavior changes, no localStorage migration, no account-scoped persistence, no ECS-006, no permission matrix, no advanced roles, no hardcoded credentials, no real credentials, no production account mappings, no real account seeds, and no Firebase uid to `accountId` assumption.
+No Auth redesign, no Route Guard weakening, no routing changes, no persistence behavior changes, no localStorage migration, no account-scoped persistence, no Product schema change, no create/edit/delete feature, no permission matrix, no advanced roles, no hardcoded credentials, no real credentials committed, and no Firebase uid to `accountId` assumption.
 
 ## Next State
 
-Await Architect / Owner review for V1-AUTH-015. The recommended next mission is `V1-AUTH-016 - Protected Route Runtime Verification`. ECS-006 remains blocked.
+Await Architect / Owner review for ECS-006. The next mission must be selected only after ECS-006 review.

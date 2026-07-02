@@ -4,9 +4,9 @@
 
 This is the official Version 1.0 roadmap baseline for repository governance.
 
-ECS-006 is not started.
+ECS-006 Product List Read Path is complete from execution side and ready for Architect / Owner review.
 
-No product-code work may begin until the Auth / Multi-user Foundation contract is approved and the required Auth foundation steps are complete.
+Product-code work resumed only after the approved Auth / Route Guard foundation reached the accepted V1-AUTH-015 baseline.
 
 ## V1 Definition
 
@@ -121,7 +121,7 @@ The first mission after V1-INF-002 should not automatically be Products.
 
 The next candidate should be selected from Foundation Verification, Persistence Safety, or Auth / Multi-user Foundation based on evidence and owner approval.
 
-ECS-006 remains blocked until explicitly approved by the owner or architect.
+ECS-006 was explicitly approved by the owner and executed after the accepted V1-AUTH-015 Route Guard foundation baseline.
 
 ## Auth / Multi-user Foundation Gate
 
@@ -142,7 +142,7 @@ Advanced roles and permission matrix are V2.
 
 localStorage migration is not automatic and must be a separate ECS with runtime evidence, no-data-loss plan, rollback plan, and owner / architect approval.
 
-Product-code work remains blocked until this gate is satisfied.
+Product-code work may proceed only through owner-approved missions after the accepted Auth / Route Guard foundation baseline.
 
 ## Planned Auth Foundation Sequence
 
@@ -188,7 +188,7 @@ The official V1 mapping source must return explicit provider, providerUserId, ac
 
 `V1-AUTH-013` implements the Firebase-backed account mapping source. Live authenticated-session runtime verification remains `V1-AUTH-014`.
 
-No Product-code work may resume until the owner or architect confirms the Auth foundation gate is satisfied.
+Product-code work resumed through ECS-006 after owner approval and the accepted V1-AUTH-015 Route Guard foundation baseline.
 
 ## Verification Expectation
 

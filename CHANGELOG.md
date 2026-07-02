@@ -1,5 +1,22 @@
 # Changelog
 
+## ECS-006 - Product List Read Path
+
+- Started from the accepted `v1-auth-015-route-guard-foundation` baseline.
+- Verified unauthenticated Products access remains blocked by Route Guard.
+- Verified Firebase login succeeds with the approved local test credentials.
+- Verified authenticated Products access succeeds.
+- Confirmed valid persisted product data existed in `localStorage.products`.
+- Confirmed `ProductService.getAll()` returned the persisted product.
+- Confirmed the baseline Products page did not execute the product read path during page entry and continued showing the empty state.
+- Fixed the Products page read binding in `src/modules/products/pages/ProductListPage.ts`.
+- Rendered persisted products into the existing Products table without adding create/edit/delete behavior.
+- Preserved the existing empty state when no products are present.
+- Verified malformed `products` storage data does not crash the page.
+- Verified TypeScript, build, and runtime verification passed with console errors = 0 and page exceptions = 0.
+- Confirmed no Auth files, route files, persistence files, localStorage migration, account-scoped storage migration, Product data deletion, Product schema change, credentials, or Firebase UID/accountId assumption were introduced.
+- Final status: `ECS-006 Ready for Architect / Owner Review`.
+
 ## V1-AUTH-015 - Route Guard Foundation
 
 - Added minimal Route Guard foundation for business routes.
