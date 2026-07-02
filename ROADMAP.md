@@ -190,6 +190,22 @@ The official V1 mapping source must return explicit provider, providerUserId, ac
 
 Product-code work resumed through ECS-006 after owner approval and the accepted V1-AUTH-015 Route Guard foundation baseline.
 
+## Product Persistence Boundary Gate
+
+V1-PER-003 assessed Product persistence after ECS-006.
+
+Current Product persistence uses the global localStorage key `products`.
+
+Current Product records do not contain `accountId`, `createdBy`, or `updatedBy`.
+
+Product reads and existing write methods do not currently receive account context.
+
+Recommended next Product persistence step:
+
+`V1-PER-004 - Product Account-scoped Persistence Plan`
+
+Product Create/Edit/Delete should wait for an approved Product account-scoped persistence plan and no-data-loss compatibility strategy.
+
 ## Verification Expectation
 
 Each future ECS must include:

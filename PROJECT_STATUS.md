@@ -50,6 +50,8 @@ V1-AUTH-015 Route Guard Foundation is complete from execution side and ready for
 
 ECS-006 Product List Read Path is complete from execution side and ready for Architect / Owner review.
 
+V1-PER-003 Product Persistence Boundary Assessment is complete from execution side and ready for Architect / Owner review.
+
 Completed stabilization work:
 
 - `PATCH-000-ECS-001 - Route Registry Stabilization`
@@ -135,6 +137,11 @@ Completed stabilization work:
 - Products module is partial.
 - ECS-006 confirmed persisted products can be read through `ProductService.getAll()` and rendered by the Products page after authenticated access.
 - ECS-006 fixed the Products page read binding without Auth changes, routing changes, persistence changes, localStorage migration, account-scoped storage migration, Product schema changes, create/edit/delete behavior, or Product data deletion.
+- V1-PER-003 assessed the Product persistence boundary without source changes.
+- V1-PER-003 confirmed Product persistence currently uses the global `products` localStorage key.
+- V1-PER-003 confirmed Product records do not contain `accountId`, `createdBy`, or `updatedBy`.
+- V1-PER-003 confirmed Product reads and existing write methods do not receive or apply account context.
+- V1-PER-003 recommends a separate Product account-scoped persistence plan before Product Create/Edit/Delete work.
 - Product dialog lifecycle was stabilized.
 - Malformed product localStorage read failures were contained.
 - Inventory is missing as a module.
@@ -152,24 +159,24 @@ Completed stabilization work:
 
 Current mission:
 
-`ECS-006 - Product List Read Path`
+`V1-PER-003 - Product Persistence Boundary Assessment`
 
 Current next mission:
 
-ECS-006 complete from execution side and ready for Architect / Owner review.
+V1-PER-003 complete from execution side and ready for Architect / Owner review.
 
 Classification:
 
-`ECS`
+`INF`
 
 Allowed scope:
 
-Product list read-path stabilization and completion documentation.
+Product persistence boundary assessment and documentation.
 
 Forbidden scope:
 
-No Auth redesign, no Route Guard weakening, no routing changes, no persistence behavior changes, no localStorage migration, no account-scoped persistence, no Product schema change, no create/edit/delete feature, no permission matrix, no advanced roles, no hardcoded credentials, no real credentials committed, and no Firebase uid to `accountId` assumption.
+No Auth redesign, no Route Guard weakening, no routing changes, no persistence behavior changes, no localStorage migration, no account-scoped persistence implementation, no Product schema change, no create/edit/delete feature, no permission matrix, no advanced roles, no hardcoded credentials, no real credentials committed, and no Firebase uid to `accountId` assumption.
 
 ## Next State
 
-Await Architect / Owner review for ECS-006. The next mission must be selected only after ECS-006 review.
+Await Architect / Owner review for V1-PER-003. Recommended next mission is a separate Product account-scoped persistence plan before Product Create/Edit/Delete.

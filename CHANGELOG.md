@@ -1,5 +1,19 @@
 # Changelog
 
+## V1-PER-003 - Product Persistence Boundary Assessment
+
+- Assessed the Product persistence boundary from the accepted `ecs-006-product-list-read-path` baseline.
+- Confirmed TypeScript and build verification passed.
+- Verified Route Guard remains active, Firebase login succeeds, Products is accessible after login, and the ECS-006 Product renders.
+- Confirmed Product storage uses the global localStorage key `products`.
+- Confirmed no account-scoped Product storage keys were observed.
+- Confirmed Product records contain `id`, product name/title, and price fields, but do not contain `accountId`, `createdBy`, or `updatedBy`.
+- Confirmed Product data did not change during runtime inspection.
+- Confirmed console errors = 0 and page exceptions = 0.
+- Confirmed no source files, Product files, persistence files, Auth files, Route Guard behavior, localStorage migration, account-scoped implementation, Product schema, Product CRUD, credentials, or `.env` tracking changes were introduced.
+- Recommended a separate Product account-scoped persistence plan before Product Create/Edit/Delete work.
+- Final status: `V1-PER-003 Ready for Architect / Owner Review`.
+
 ## ECS-006 - Product List Read Path
 
 - Started from the accepted `v1-auth-015-route-guard-foundation` baseline.
