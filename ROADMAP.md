@@ -216,7 +216,9 @@ V1-PER-005 implemented the compatibility layer. Normal Product reads and writes 
 
 V1-PER-006 implemented the owner-approved controlled legacy Product import into `products:{accountId}` with backup, duplicate handling, ownership metadata, and legacy key preservation.
 
-Product Create/Edit/Delete may proceed only after V1-PER-006 is reviewed and accepted by the Architect / Owner.
+ECS-007 implemented the minimal Product Create path on top of the accepted account-scoped Product persistence foundation.
+
+Product Edit/Delete may proceed only after ECS-007 is reviewed and accepted by the Architect / Owner.
 
 ## Verification Expectation
 

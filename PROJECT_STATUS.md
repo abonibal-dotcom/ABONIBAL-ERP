@@ -58,6 +58,8 @@ V1-PER-005 Product Account-Scoped Persistence Compatibility Layer is complete fr
 
 V1-PER-006 Legacy Product Scoped Import is complete from execution side and ready for Architect / Owner review.
 
+ECS-007 Product Create Path is complete from execution side and ready for Architect / Owner review.
+
 Completed stabilization work:
 
 - `PATCH-000-ECS-001 - Route Registry Stabilization`
@@ -153,6 +155,8 @@ Completed stabilization work:
 - V1-PER-005 preserved legacy `localStorage.products` without deletion, rewrite, automatic copy, or migration.
 - V1-PER-006 added a controlled owner-approved import path that copies legacy Products into `products:{accountId}` with backup, duplicate handling, ownership metadata, and legacy key preservation.
 - V1-PER-006 verified duplicate import safety and confirmed Product CRUD UI remains blocked.
+- ECS-007 added the minimal Product Create path on top of the accepted account-scoped Product persistence foundation.
+- ECS-007 verified invalid create attempts do not write Products, valid create writes exactly one Product to `products:{accountId}`, ownership metadata is attached, reload persistence works, and legacy `localStorage.products` remains hash-unchanged.
 - Product dialog lifecycle was stabilized.
 - Malformed product localStorage read failures were contained.
 - Inventory is missing as a module.
@@ -170,11 +174,11 @@ Completed stabilization work:
 
 Current mission:
 
-`V1-PER-006 - Legacy Product Scoped Import`
+`ECS-007 - Product Create Path`
 
 Current next mission:
 
-V1-PER-006 complete from execution side and ready for Architect / Owner review.
+ECS-007 complete from execution side and ready for Architect / Owner review.
 
 Classification:
 
@@ -182,12 +186,12 @@ Classification:
 
 Allowed scope:
 
-Controlled legacy Product scoped import.
+Minimal account-scoped Product Create path.
 
 Forbidden scope:
 
-No Auth redesign, no Route Guard weakening, no Product Create/Edit/Delete UI, no Product search/filter feature, no destructive migration, no legacy Product deletion, no automatic import on app startup, no permission matrix, no advanced roles, no hardcoded credentials, no real credentials committed, and no Firebase uid to `accountId` assumption.
+No Product Edit UI, no Product Delete UI, no Product Search / Filter feature, no Auth redesign, no Route Guard weakening, no destructive migration, no legacy Product deletion, no legacy `localStorage.products` mutation, no automatic import on app startup, no permission matrix, no advanced roles, no hardcoded credentials, no real credentials committed, and no Firebase uid to `accountId` assumption.
 
 ## Next State
 
-Await Architect / Owner review for V1-PER-006. Product Create/Edit/Delete remains blocked until this mission is reviewed and accepted.
+Await Architect / Owner review for ECS-007. Product Edit/Delete remains blocked until this mission is reviewed and accepted.

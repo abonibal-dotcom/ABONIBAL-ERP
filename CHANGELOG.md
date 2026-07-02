@@ -1,5 +1,21 @@
 # Changelog
 
+## ECS-007 - Product Create Path
+
+- Implemented the minimal Product Create path on top of accepted account-scoped Product persistence.
+- Confirmed baseline unauthenticated Products access is blocked by Route Guard.
+- Confirmed baseline login succeeds, `AuthSession.accountId` exists, and Products render from `products:{accountId}`.
+- Confirmed baseline Product Create button, dialog, and Save button existed, but Save was not connected to a working create path.
+- Connected the existing Product dialog values to `ProductFactory` and `ProductService.add()` from `ProductListPage`.
+- Verified invalid create attempts do not write Products.
+- Verified valid create writes exactly one Product to `products:{accountId}`.
+- Verified the created Product contains `accountId`, `createdBy`, and `updatedBy`.
+- Verified the created Product renders in the Products UI and remains visible after reload.
+- Verified legacy `localStorage.products` remains present and hash-unchanged.
+- Confirmed no Product Edit UI, Product Delete UI, Product Search / Filter, destructive migration, legacy deletion, Route Guard weakening, Firebase Auth change, credentials, default account fallback, or Firebase UID/accountId assumption were introduced.
+- Verified TypeScript, build, and runtime verification passed with console errors = 0 and page exceptions = 0.
+- Final status: `ECS-007 Ready for Architect / Owner Review`.
+
 ## V1-PER-006 - Legacy Product Scoped Import
 
 - Implemented a controlled owner-approved legacy Product import path before Product CRUD.

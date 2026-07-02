@@ -2,23 +2,25 @@
 
 ## Mission
 
-`V1-PER-006 - Legacy Product Scoped Import`
+`ECS-007 - Product Create Path`
 
 ## Classification
 
 `ECS`
 
-This is a controlled no-data-loss legacy Product import mission.
+This is a Product Create stabilization mission.
 
-This is not Product Create/Edit/Delete UI work, Product search/filter work, destructive migration, Auth redesign, Route Guard change, Firebase Auth change, Inventory work, Sales work, Sync work, or ECS-007.
+This is not Product Edit, Product Delete, Product Search / Filter, legacy migration, Auth redesign, Route Guard change, Inventory work, Sales work, Sync work, or ECS-008.
 
 ## Objective
 
-Copy owner-approved legacy Product records from `localStorage.products` into the current authenticated account-scoped key `products:{accountId}` while preserving the legacy key.
+Implement and verify the minimal Product Create path on top of the accepted account-scoped Product persistence foundation.
+
+New Products are created only in `products:{AuthSession.accountId}` and are never written to legacy `localStorage.products`.
 
 ## Current Status
 
-`V1-PER-006 Ready for Architect / Owner Review`
+`ECS-007 Ready for Architect / Owner Review`
 
 ## Verification Completed
 
@@ -31,24 +33,27 @@ Copy owner-approved legacy Product records from `localStorage.products` into the
 
 ## Runtime Result
 
-- Baseline confirmed legacy `products` exists with one Product.
-- Baseline confirmed scoped `products:{accountId}` was empty.
-- Baseline confirmed legacy Products were not visible in the Products UI before import.
-- Import copied one legacy Product into `products:{accountId}`.
-- Import attached `accountId`, `createdBy`, and `updatedBy`.
-- Existing scoped Products were preserved.
-- Duplicate import did not duplicate Products.
-- Backup keys were created.
+- Baseline confirmed unauthenticated Products access is blocked by Route Guard.
+- Baseline confirmed Firebase login succeeds and `AuthSession.accountId` exists.
+- Baseline confirmed Products render from `products:{accountId}`.
+- Baseline confirmed Product Create button, dialog, and Save button exist.
+- Baseline confirmed Save was not connected to a working Product Create path.
+- Minimal fix connected the existing dialog values to `ProductFactory` and `ProductService.add()`.
+- Invalid create attempt did not write a Product.
+- Valid create wrote exactly one Product to `products:{accountId}`.
+- Created Product includes `accountId`, `createdBy`, and `updatedBy`.
+- Created Product appears in the Products UI.
+- Created Product remains visible after reload.
 - Legacy `localStorage.products` remained present and hash unchanged.
-- Products UI rendered the scoped Products after import.
 
 ## Scope Confirmation
 
-- No Product Create/Edit/Delete UI.
-- No Product search/filter feature.
+- No Product Edit UI.
+- No Product Delete UI.
+- No Product Search / Filter feature.
 - No destructive migration.
 - No legacy Product deletion.
-- No automatic import on app startup.
+- No legacy `localStorage.products` mutation.
 - No Route Guard weakening.
 - No Firebase Auth change.
 - No persistence driver change.
@@ -60,23 +65,23 @@ Copy owner-approved legacy Product records from `localStorage.products` into the
 ## Evidence
 
 ```text
-PATCHES/V1-PER-006/verification.md
-PATCHES/V1-PER-006/closure-report.md
-outputs/V1-PER-006/baseline-runtime.json
-outputs/V1-PER-006/baseline-dom.json
-outputs/V1-PER-006/baseline-console.log
-outputs/V1-PER-006/baseline-storage-snapshot-sanitized.json
-outputs/V1-PER-006/baseline-screenshot.png
-outputs/V1-PER-006/after-runtime.json
-outputs/V1-PER-006/after-dom.json
-outputs/V1-PER-006/after-console.log
-outputs/V1-PER-006/after-storage-snapshot-sanitized.json
-outputs/V1-PER-006/after-screenshot.png
-outputs/V1-PER-006/import-summary.json
+PATCHES/ECS-007/verification.md
+PATCHES/ECS-007/closure-report.md
+outputs/ECS-007/baseline-runtime.json
+outputs/ECS-007/baseline-dom.json
+outputs/ECS-007/baseline-console.log
+outputs/ECS-007/baseline-storage-snapshot-sanitized.json
+outputs/ECS-007/baseline-screenshot.png
+outputs/ECS-007/after-runtime.json
+outputs/ECS-007/after-dom.json
+outputs/ECS-007/after-console.log
+outputs/ECS-007/after-storage-snapshot-sanitized.json
+outputs/ECS-007/after-screenshot.png
+outputs/ECS-007/create-summary.json
 ```
 
 ## Next Mission
 
 Await Architect / Owner review.
 
-Do not start Product Create/Edit/Delete until V1-PER-006 is reviewed and accepted.
+Do not start Product Edit/Delete until ECS-007 is reviewed and accepted.
