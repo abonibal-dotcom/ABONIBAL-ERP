@@ -1,4 +1,6 @@
 import { Page } from "../../../framework/Page";
+import { Container } from "../../../core/Container";
+import type { Router } from "../../../core/Router";
 import type { AuthState } from "../AuthState";
 import type { AuthStateService, AuthStateUnsubscribe } from "../AuthStateService";
 import { AuthConfigurationUnavailableError, getAuthStateService } from "../AuthRuntime";
@@ -229,6 +231,8 @@ export class LoginPage extends Page {
             }
 
             this.setMessage("Signed in.");
+
+            void Container.get<Router>("router").navigate("dashboard");
 
         } catch (error) {
 
