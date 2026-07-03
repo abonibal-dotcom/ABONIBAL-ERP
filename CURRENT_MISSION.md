@@ -2,25 +2,25 @@
 
 ## Mission
 
-`ECS-007 - Product Create Path`
+`ECS-008 - Product Edit Path`
 
 ## Classification
 
 `ECS`
 
-This is a Product Create stabilization mission.
+This is a Product Edit stabilization mission.
 
-This is not Product Edit, Product Delete, Product Search / Filter, legacy migration, Auth redesign, Route Guard change, Inventory work, Sales work, Sync work, or ECS-008.
+This is not Product Delete, Product Search / Filter, legacy migration, Auth redesign, Route Guard change, Inventory work, Sales work, Sync work, or ECS-009.
 
 ## Objective
 
-Implement and verify the minimal Product Create path on top of the accepted account-scoped Product persistence foundation.
+Implement and verify the minimal Product Edit path on top of the accepted account-scoped Product persistence foundation.
 
-New Products are created only in `products:{AuthSession.accountId}` and are never written to legacy `localStorage.products`.
+Edited Products are updated only in `products:{AuthSession.accountId}` and legacy `localStorage.products` is never mutated.
 
 ## Current Status
 
-`ECS-007 Ready for Architect / Owner Review`
+`ECS-008 Ready for Architect / Owner Review`
 
 ## Verification Completed
 
@@ -36,19 +36,21 @@ New Products are created only in `products:{AuthSession.accountId}` and are neve
 - Baseline confirmed unauthenticated Products access is blocked by Route Guard.
 - Baseline confirmed Firebase login succeeds and `AuthSession.accountId` exists.
 - Baseline confirmed Products render from `products:{accountId}`.
-- Baseline confirmed Product Create button, dialog, and Save button exist.
-- Baseline confirmed Save was not connected to a working Product Create path.
-- Minimal fix connected the existing dialog values to `ProductFactory` and `ProductService.add()`.
-- Invalid create attempt did not write a Product.
-- Valid create wrote exactly one Product to `products:{accountId}`.
-- Created Product includes `accountId`, `createdBy`, and `updatedBy`.
-- Created Product appears in the Products UI.
-- Created Product remains visible after reload.
+- Baseline confirmed `ProductService.update()` and repository update support exist.
+- Baseline confirmed there was no Product Edit UI/action.
+- Minimal fix added an Edit action per Product row.
+- Minimal fix reused the existing Product dialog and ProductService update path.
+- Invalid edit attempt did not update a Product.
+- Valid edit updated exactly one Product without changing Product count.
+- Edited Product kept the same `id`.
+- Edited Product kept the same `accountId`.
+- Edited Product preserved `createdBy` and updated `updatedBy`.
+- Edited Product appears in the Products UI.
+- Edited Product remains visible after reload.
 - Legacy `localStorage.products` remained present and hash unchanged.
 
 ## Scope Confirmation
 
-- No Product Edit UI.
 - No Product Delete UI.
 - No Product Search / Filter feature.
 - No destructive migration.
@@ -65,23 +67,23 @@ New Products are created only in `products:{AuthSession.accountId}` and are neve
 ## Evidence
 
 ```text
-PATCHES/ECS-007/verification.md
-PATCHES/ECS-007/closure-report.md
-outputs/ECS-007/baseline-runtime.json
-outputs/ECS-007/baseline-dom.json
-outputs/ECS-007/baseline-console.log
-outputs/ECS-007/baseline-storage-snapshot-sanitized.json
-outputs/ECS-007/baseline-screenshot.png
-outputs/ECS-007/after-runtime.json
-outputs/ECS-007/after-dom.json
-outputs/ECS-007/after-console.log
-outputs/ECS-007/after-storage-snapshot-sanitized.json
-outputs/ECS-007/after-screenshot.png
-outputs/ECS-007/create-summary.json
+PATCHES/ECS-008/verification.md
+PATCHES/ECS-008/closure-report.md
+outputs/ECS-008/baseline-runtime.json
+outputs/ECS-008/baseline-dom.json
+outputs/ECS-008/baseline-console.log
+outputs/ECS-008/baseline-storage-snapshot-sanitized.json
+outputs/ECS-008/baseline-screenshot.png
+outputs/ECS-008/after-runtime.json
+outputs/ECS-008/after-dom.json
+outputs/ECS-008/after-console.log
+outputs/ECS-008/after-storage-snapshot-sanitized.json
+outputs/ECS-008/after-screenshot.png
+outputs/ECS-008/edit-summary.json
 ```
 
 ## Next Mission
 
 Await Architect / Owner review.
 
-Do not start Product Edit/Delete until ECS-007 is reviewed and accepted.
+Do not start Product Delete until ECS-008 is reviewed and accepted.

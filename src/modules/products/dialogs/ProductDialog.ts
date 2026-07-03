@@ -85,4 +85,36 @@ export class ProductDialog {
 
     }
 
+    public fill(data: ProductData): void {
+
+        this.setInputValue("product-name", data.name);
+        this.setInputValue("product-english-name", data.englishName);
+        this.setInputValue("product-sku", data.sku);
+        this.setInputValue("product-barcode", data.barcode);
+
+    }
+
+    public clear(): void {
+
+        this.fill({
+            name: "",
+            englishName: "",
+            sku: "",
+            barcode: ""
+        });
+
+    }
+
+    private setInputValue(id: string, value: string): void {
+
+        const input = document.getElementById(id) as HTMLInputElement | null;
+
+        if (!input) {
+            return;
+        }
+
+        input.value = value;
+
+    }
+
 }

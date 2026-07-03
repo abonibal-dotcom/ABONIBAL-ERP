@@ -1,5 +1,23 @@
 # Changelog
 
+## ECS-008 - Product Edit Path
+
+- Implemented the minimal Product Edit path on top of accepted account-scoped Product persistence.
+- Confirmed baseline unauthenticated Products access is blocked by Route Guard.
+- Confirmed baseline login succeeds, `AuthSession.accountId` exists, and Products render from `products:{accountId}`.
+- Confirmed baseline `ProductService.update()` and repository update support exist, but no Product Edit UI/action existed.
+- Added an Edit action per Product row.
+- Reused the existing Product dialog and existing `ProductService.update()` write boundary.
+- Verified invalid edit attempts do not update Products.
+- Verified valid edit updates exactly one Product in `products:{accountId}` without changing Product count.
+- Verified the edited Product keeps the same `id` and same `accountId`.
+- Verified `createdBy` is preserved and `updatedBy` is updated.
+- Verified the edited Product renders in the Products UI and remains visible after reload.
+- Verified legacy `localStorage.products` remains present and hash-unchanged.
+- Confirmed no Product Delete UI, Product Search / Filter, destructive migration, legacy deletion, Route Guard weakening, Firebase Auth change, credentials, default account fallback, or Firebase UID/accountId assumption were introduced.
+- Verified TypeScript, build, and runtime verification passed with console errors = 0 and page exceptions = 0.
+- Final status: `ECS-008 Ready for Architect / Owner Review`.
+
 ## ECS-007 - Product Create Path
 
 - Implemented the minimal Product Create path on top of accepted account-scoped Product persistence.
