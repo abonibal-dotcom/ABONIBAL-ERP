@@ -33,6 +33,9 @@ export interface Product {
     accountId?: string;
     createdBy?: string;
     updatedBy?: string;
+    deletedBy?: string;
+    deletedAt?: string;
+    isDeleted?: boolean;
 
     // التواريخ
     createdAt: Date;

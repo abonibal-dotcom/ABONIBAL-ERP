@@ -218,7 +218,11 @@ V1-PER-006 implemented the owner-approved controlled legacy Product import into 
 
 ECS-007 implemented the minimal Product Create path on top of the accepted account-scoped Product persistence foundation.
 
-Product Edit/Delete may proceed only after ECS-007 is reviewed and accepted by the Architect / Owner.
+ECS-008 implemented the minimal Product Edit path on top of the accepted account-scoped Product persistence foundation.
+
+ECS-009 implemented the minimal Product Safe Delete path on top of the accepted account-scoped Product persistence foundation.
+
+Product Search / Filter may proceed only after ECS-009 is reviewed and accepted by the Architect / Owner.
 
 ## Verification Expectation
 

@@ -17,11 +17,15 @@ export class ProductListPage extends Page {
 
     private saveButton: HTMLElement | null = null;
 
+    private productsBody: HTMLElement | null = null;
+
     private closeButton: HTMLElement | null = null;
 
     private cancelButton: HTMLElement | null = null;
 
     private dialogElement: HTMLElement | null = null;
+
+    private editingProductId: string | null = null;
 
     private readonly openDialog = (): void => {
 
@@ -29,13 +33,30 @@ export class ProductListPage extends Page {
 
     };
 
+    private readonly openCreateDialog = (): void => {
+
+        this.editingProductId = null;
+
+        this.dialog.clear();
+
+        this.openDialog();
+
+    };
+
     private readonly closeDialog = (): void => {
 
         this.dialogElement?.classList.add("hidden");
 
+        this.editingProductId = null;
+
     };
 
     private readonly saveProduct = (): void => {
+
+        if (this.editingProductId) {
+            this.updateProduct(this.editingProductId);
+            return;
+        }
 
         const product = this.productFactory.create(
             this.dialog.values()
@@ -50,6 +71,40 @@ export class ProductListPage extends Page {
         this.closeDialog();
 
         this.renderProductsIntoTable();
+
+    };
+
+    private readonly handleProductTableClick = (event: Event): void => {
+
+        const target = event.target;
+
+        if (!(target instanceof HTMLElement)) {
+            return;
+        }
+
+        const editButton = target.closest<HTMLButtonElement>(
+            "[data-action=\"edit-product\"]"
+        );
+
+        const deleteButton = target.closest<HTMLButtonElement>(
+            "[data-action=\"safe-delete-product\"]"
+        );
+
+        const productId = editButton?.dataset.productId
+            ?? deleteButton?.dataset.productId;
+
+        if (!productId) {
+            return;
+        }
+
+        if (editButton) {
+            this.openEditDialog(productId);
+            return;
+        }
+
+        if (deleteButton) {
+            this.safeDeleteProduct(productId);
+        }
 
     };
 
@@ -151,6 +206,13 @@ export class ProductListPage extends Page {
         const products = this.readProducts();
 
         if (products.length === 0) {
+            productsBody.innerHTML = `
+                <tr>
+                    <td colspan="6">
+                        ظ„ط§ طھظˆط¬ط¯ ظ…ظ†طھط¬ط§طھ ط­طھظ‰ ط§ظ„ط¢ظ†.
+                    </td>
+                </tr>
+            `;
             return;
         }
 
@@ -180,10 +242,79 @@ export class ProductListPage extends Page {
                 <td>${this.escapeHtml(product.barcode)}</td>
                 <td>${this.formatNumber(product.quantity)}</td>
                 <td>${this.formatNumber(product.salePrice)}</td>
-                <td>-</td>
+                <td>
+                    <button
+                        type="button"
+                        data-action="edit-product"
+                        data-product-id="${this.escapeHtml(product.id)}"
+                    >
+                        Edit
+                    </button>
+                    <button
+                        type="button"
+                        data-action="safe-delete-product"
+                        data-product-id="${this.escapeHtml(product.id)}"
+                    >
+                        Delete
+                    </button>
+                </td>
 
             </tr>
         `).join("");
+
+    }
+
+    private openEditDialog(productId: string): void {
+
+        const product = this.productService.find(productId);
+
+        if (!product) {
+            return;
+        }
+
+        this.editingProductId = product.id;
+
+        this.dialog.fill({
+            name: product.name,
+            englishName: product.englishName ?? "",
+            sku: product.sku,
+            barcode: product.barcode
+        });
+
+        this.openDialog();
+
+    }
+
+    private updateProduct(productId: string): void {
+
+        const errors = this.productService.update(
+            productId,
+            this.dialog.values()
+        );
+
+        if (errors.length > 0) {
+            return;
+        }
+
+        this.closeDialog();
+
+        this.renderProductsIntoTable();
+
+    }
+
+    private safeDeleteProduct(productId: string): void {
+
+        if (!window.confirm("Archive this product?")) {
+            return;
+        }
+
+        const errors = this.productService.safeDelete(productId);
+
+        if (errors.length > 0) {
+            return;
+        }
+
+        this.renderProductsIntoTable();
 
     }
 
@@ -216,15 +347,18 @@ export class ProductListPage extends Page {
 
         this.openButton = document.getElementById("create-product");
         this.saveButton = document.getElementById("save-product");
+        this.productsBody = document.getElementById("products-body");
         this.dialogElement = document.getElementById("product-dialog");
         this.closeButton = document.getElementById("close-product-dialog");
         this.cancelButton = document.getElementById("cancel-product");
 
         this.renderProductsIntoTable();
 
-        this.openButton?.addEventListener("click", this.openDialog);
+        this.openButton?.addEventListener("click", this.openCreateDialog);
 
         this.saveButton?.addEventListener("click", this.saveProduct);
+
+        this.productsBody?.addEventListener("click", this.handleProductTableClick);
 
         this.closeButton?.addEventListener("click", this.closeDialog);
 
@@ -234,9 +368,11 @@ export class ProductListPage extends Page {
 
     public onLeave(): void {
 
-        this.openButton?.removeEventListener("click", this.openDialog);
+        this.openButton?.removeEventListener("click", this.openCreateDialog);
 
         this.saveButton?.removeEventListener("click", this.saveProduct);
+
+        this.productsBody?.removeEventListener("click", this.handleProductTableClick);
 
         this.closeButton?.removeEventListener("click", this.closeDialog);
 
@@ -246,11 +382,15 @@ export class ProductListPage extends Page {
 
         this.saveButton = null;
 
+        this.productsBody = null;
+
         this.closeButton = null;
 
         this.cancelButton = null;
 
         this.dialogElement = null;
+
+        this.editingProductId = null;
 
     }
 
