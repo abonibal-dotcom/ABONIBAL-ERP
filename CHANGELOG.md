@@ -1,5 +1,24 @@
 # Changelog
 
+## ECS-010 - Product Search / Filter Path
+
+- Implemented the minimal Product Search / Filter path on top of accepted account-scoped Product persistence.
+- Confirmed baseline unauthenticated Products access is blocked by Route Guard.
+- Confirmed baseline login succeeds, `AuthSession.accountId` exists, and Products render from `products:{accountId}`.
+- Confirmed baseline active Products exclude soft-deleted records.
+- Confirmed baseline Product search input existed but did not filter results.
+- Connected the existing Product search input to in-memory filtering of active Products returned by `ProductService.getAll()`.
+- Search now matches active Products by `name`, `barcode`, and `category`.
+- Verified matching Product name search returns the expected active Product.
+- Verified non-matching search returns zero active Products and shows the no-results state.
+- Verified search using a deleted Product query returns zero active Products.
+- Verified clearing search restores the full active Product list.
+- Verified scoped Product storage count remains unchanged during search.
+- Verified legacy `localStorage.products` remains present and hash-unchanged.
+- Confirmed no Product Create, Edit, Delete, migration, Route Guard, Firebase Auth, credentials, default account fallback, or Firebase UID/accountId assumption changes were introduced.
+- Verified TypeScript, build, and runtime verification passed with console errors = 0 and page exceptions = 0.
+- Final status: `ECS-010 Ready for Architect / Owner Review`.
+
 ## ECS-009 - Product Safe Delete Path
 
 - Implemented the minimal Product Safe Delete path on top of accepted account-scoped Product persistence.

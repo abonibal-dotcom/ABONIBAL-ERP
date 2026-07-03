@@ -222,7 +222,9 @@ ECS-008 implemented the minimal Product Edit path on top of the accepted account
 
 ECS-009 implemented the minimal Product Safe Delete path on top of the accepted account-scoped Product persistence foundation.
 
-Product Search / Filter may proceed only after ECS-009 is reviewed and accepted by the Architect / Owner.
+ECS-010 implemented the minimal Product Search / Filter path on top of the accepted account-scoped Product persistence foundation.
+
+The next Product or Inventory mission may proceed only after ECS-010 is reviewed and accepted by the Architect / Owner.
 
 ## Verification Expectation
 
