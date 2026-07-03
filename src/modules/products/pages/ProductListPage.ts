@@ -19,6 +19,8 @@ export class ProductListPage extends Page {
 
     private productsBody: HTMLElement | null = null;
 
+    private searchInput: HTMLInputElement | null = null;
+
     private closeButton: HTMLElement | null = null;
 
     private cancelButton: HTMLElement | null = null;
@@ -26,6 +28,8 @@ export class ProductListPage extends Page {
     private dialogElement: HTMLElement | null = null;
 
     private editingProductId: string | null = null;
+
+    private searchQuery = "";
 
     private readonly openDialog = (): void => {
 
@@ -69,6 +73,14 @@ export class ProductListPage extends Page {
         }
 
         this.closeDialog();
+
+        this.renderProductsIntoTable();
+
+    };
+
+    private readonly handleSearchInput = (): void => {
+
+        this.searchQuery = this.searchInput?.value.trim().toLowerCase() ?? "";
 
         this.renderProductsIntoTable();
 
@@ -203,7 +215,9 @@ export class ProductListPage extends Page {
             return;
         }
 
-        const products = this.readProducts();
+        const products = this.filterProducts(
+            this.readProducts()
+        );
 
         if (products.length === 0) {
             productsBody.innerHTML = `
@@ -229,6 +243,30 @@ export class ProductListPage extends Page {
         }
 
         return products;
+
+    }
+
+    private filterProducts(products: Product[]): Product[] {
+
+        if (!this.searchQuery) {
+            return products;
+        }
+
+        return products.filter(product => this.productMatchesSearch(product));
+
+    }
+
+    private productMatchesSearch(product: Product): boolean {
+
+        const searchableText = [
+            product.name,
+            product.barcode,
+            product.category
+        ]
+            .map(value => String(value ?? "").toLowerCase())
+            .join(" ");
+
+        return searchableText.includes(this.searchQuery);
 
     }
 
@@ -348,13 +386,17 @@ export class ProductListPage extends Page {
         this.openButton = document.getElementById("create-product");
         this.saveButton = document.getElementById("save-product");
         this.productsBody = document.getElementById("products-body");
+        this.searchInput = document.getElementById("product-search") as HTMLInputElement | null;
         this.dialogElement = document.getElementById("product-dialog");
         this.closeButton = document.getElementById("close-product-dialog");
         this.cancelButton = document.getElementById("cancel-product");
+        this.searchQuery = this.searchInput?.value.trim().toLowerCase() ?? "";
 
         this.renderProductsIntoTable();
 
         this.openButton?.addEventListener("click", this.openCreateDialog);
+
+        this.searchInput?.addEventListener("input", this.handleSearchInput);
 
         this.saveButton?.addEventListener("click", this.saveProduct);
 
@@ -370,6 +412,8 @@ export class ProductListPage extends Page {
 
         this.openButton?.removeEventListener("click", this.openCreateDialog);
 
+        this.searchInput?.removeEventListener("input", this.handleSearchInput);
+
         this.saveButton?.removeEventListener("click", this.saveProduct);
 
         this.productsBody?.removeEventListener("click", this.handleProductTableClick);
@@ -384,6 +428,8 @@ export class ProductListPage extends Page {
 
         this.productsBody = null;
 
+        this.searchInput = null;
+
         this.closeButton = null;
 
         this.cancelButton = null;
@@ -391,6 +437,8 @@ export class ProductListPage extends Page {
         this.dialogElement = null;
 
         this.editingProductId = null;
+
+        this.searchQuery = "";
 
     }
 

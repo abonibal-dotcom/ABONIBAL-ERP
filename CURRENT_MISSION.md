@@ -2,25 +2,25 @@
 
 ## Mission
 
-`ECS-009 - Product Safe Delete Path`
+`ECS-010 - Product Search / Filter Path`
 
 ## Classification
 
 `ECS`
 
-This is a Product safe delete / soft delete stabilization mission.
+This is a Product Search / Filter stabilization mission.
 
-This is not Product Search / Filter, hard delete, legacy migration, Auth redesign, Route Guard change, Inventory work, Sales work, Sync work, or ECS-010.
+This is not Product Create, Product Edit, Product Delete, Product migration, Auth redesign, Route Guard change, Inventory work, Sales work, Sync work, or ECS-011.
 
 ## Objective
 
-Implement and verify the minimal Product safe delete path on top of the accepted account-scoped Product persistence foundation.
+Implement and verify the minimal Product Search / Filter path on top of the accepted account-scoped Product persistence foundation.
 
-Deleted Products are marked with backward-compatible metadata in `products:{AuthSession.accountId}`, hidden from the active Products list, and legacy `localStorage.products` is never mutated.
+Search / Filter operates only on active Products returned from `ProductService.getAll()` and therefore indirectly uses `products:{AuthSession.accountId}`. It does not read from or mutate legacy `localStorage.products`.
 
 ## Current Status
 
-`ECS-009 Ready for Architect / Owner Review`
+`ECS-010 Ready for Architect / Owner Review`
 
 ## Verification Completed
 
@@ -36,25 +36,21 @@ Deleted Products are marked with backward-compatible metadata in `products:{Auth
 - Baseline confirmed unauthenticated Products access is blocked by Route Guard.
 - Baseline confirmed Firebase login succeeds and `AuthSession.accountId` exists.
 - Baseline confirmed Products render from `products:{accountId}`.
-- Baseline confirmed Product Edit exists from ECS-008.
-- Baseline confirmed no Product Safe Delete UI/action existed.
-- Minimal fix added a Product Safe Delete action per Product row.
-- Cancelled delete did not update Product data.
-- Confirmed safe delete marked exactly one Product as deleted.
-- Deleted Product remained in `products:{accountId}`.
-- Deleted Product kept the same `id`.
-- Deleted Product kept the same `accountId`.
-- Deleted Product preserved `createdBy`.
-- Deleted Product received safe-delete metadata.
-- Active Product count decreased from 3 to 2.
-- Total stored Product record count remained 3.
-- Deleted Product remained hidden after reload.
+- Baseline confirmed active Products exclude deleted records.
+- Baseline confirmed the Product search input existed but did not filter results.
+- Minimal fix connected the existing Product search input to active Product filtering.
+- Matching Product name search returned the expected active Product.
+- Non-matching search returned zero active Products and showed the no-results state.
+- Search using a deleted Product query returned zero active Products.
+- Clearing search restored the full active Product list.
+- Search did not mutate scoped Product storage.
 - Legacy `localStorage.products` remained present and hash unchanged.
 
 ## Scope Confirmation
 
-- No hard delete.
-- No Product Search / Filter feature.
+- No Product Create behavior change.
+- No Product Edit behavior change.
+- No Product Delete behavior change.
 - No destructive migration.
 - No legacy Product deletion.
 - No legacy `localStorage.products` mutation.
@@ -69,23 +65,23 @@ Deleted Products are marked with backward-compatible metadata in `products:{Auth
 ## Evidence
 
 ```text
-PATCHES/ECS-009/verification.md
-PATCHES/ECS-009/closure-report.md
-outputs/ECS-009/baseline-runtime.json
-outputs/ECS-009/baseline-dom.json
-outputs/ECS-009/baseline-console.log
-outputs/ECS-009/baseline-storage-snapshot-sanitized.json
-outputs/ECS-009/baseline-screenshot.png
-outputs/ECS-009/after-runtime.json
-outputs/ECS-009/after-dom.json
-outputs/ECS-009/after-console.log
-outputs/ECS-009/after-storage-snapshot-sanitized.json
-outputs/ECS-009/after-screenshot.png
-outputs/ECS-009/delete-summary.json
+PATCHES/ECS-010/verification.md
+PATCHES/ECS-010/closure-report.md
+outputs/ECS-010/baseline-runtime.json
+outputs/ECS-010/baseline-dom.json
+outputs/ECS-010/baseline-console.log
+outputs/ECS-010/baseline-storage-snapshot-sanitized.json
+outputs/ECS-010/baseline-screenshot.png
+outputs/ECS-010/after-runtime.json
+outputs/ECS-010/after-dom.json
+outputs/ECS-010/after-console.log
+outputs/ECS-010/after-storage-snapshot-sanitized.json
+outputs/ECS-010/after-screenshot.png
+outputs/ECS-010/search-summary.json
 ```
 
 ## Next Mission
 
 Await Architect / Owner review.
 
-Do not start Product Search / Filter until ECS-009 is reviewed and accepted.
+Do not start the next mission until ECS-010 is reviewed and accepted.
