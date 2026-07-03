@@ -66,6 +66,8 @@ ECS-009 Product Safe Delete Path is complete from execution side and ready for A
 
 ECS-010 Product Search / Filter Path is complete from execution side and ready for Architect / Owner review.
 
+ECS-011 Product Module Regression Baseline is complete from execution side and ready for Architect / Owner review.
+
 Completed stabilization work:
 
 - `PATCH-000-ECS-001 - Route Registry Stabilization`
@@ -169,6 +171,7 @@ Completed stabilization work:
 - ECS-009 verified cancelled delete does not update Product data, confirmed safe delete marks one scoped Product with safe-delete metadata, active count decreases by exactly 1, total stored count does not decrease, reload hiding works, and legacy `localStorage.products` remains hash-unchanged.
 - ECS-010 added the minimal Product Search / Filter path on top of the accepted account-scoped Product persistence foundation.
 - ECS-010 verified matching Product name search, non-matching no-results, deleted Product exclusion from search results, clear-search restoration, unchanged scoped Product storage count, and legacy `localStorage.products` hash preservation.
+- ECS-011 verified the accepted Product module end to end across Route Guard, account-scoped read, create, edit, safe delete, search/filter, legacy key preservation, and runtime stability without source changes.
 - Product dialog lifecycle was stabilized.
 - Malformed product localStorage read failures were contained.
 - Inventory is missing as a module.
@@ -186,11 +189,11 @@ Completed stabilization work:
 
 Current mission:
 
-`ECS-010 - Product Search / Filter Path`
+`ECS-011 - Product Module Regression Baseline`
 
 Current next mission:
 
-ECS-010 complete from execution side and ready for Architect / Owner review.
+ECS-011 complete from execution side and ready for Architect / Owner review.
 
 Classification:
 
@@ -198,12 +201,12 @@ Classification:
 
 Allowed scope:
 
-Minimal account-scoped Product Search / Filter path.
+Product module runtime regression baseline only.
 
 Forbidden scope:
 
-No Product Create behavior change, no Product Edit behavior change, no Product Delete behavior change, no Auth redesign, no Route Guard weakening, no destructive migration, no legacy Product deletion, no legacy `localStorage.products` mutation, no automatic import on app startup, no permission matrix, no advanced roles, no hardcoded credentials, no real credentials committed, and no Firebase uid to `accountId` assumption.
+No new Product feature, no invoices, no stock, no inventory, no Auth redesign, no Route Guard weakening, no destructive migration, no legacy Product deletion, no legacy `localStorage.products` mutation, no automatic import on app startup, no permission matrix, no advanced roles, no hardcoded credentials, no real credentials committed, and no Firebase uid to `accountId` assumption.
 
 ## Next State
 
-Await Architect / Owner review for ECS-010. The next mission remains blocked until this mission is reviewed and accepted.
+Await Architect / Owner review for ECS-011. The next mission remains blocked until this mission is reviewed and accepted.
