@@ -2,25 +2,25 @@
 
 ## Mission
 
-`ECS-008 - Product Edit Path`
+`ECS-009 - Product Safe Delete Path`
 
 ## Classification
 
 `ECS`
 
-This is a Product Edit stabilization mission.
+This is a Product safe delete / soft delete stabilization mission.
 
-This is not Product Delete, Product Search / Filter, legacy migration, Auth redesign, Route Guard change, Inventory work, Sales work, Sync work, or ECS-009.
+This is not Product Search / Filter, hard delete, legacy migration, Auth redesign, Route Guard change, Inventory work, Sales work, Sync work, or ECS-010.
 
 ## Objective
 
-Implement and verify the minimal Product Edit path on top of the accepted account-scoped Product persistence foundation.
+Implement and verify the minimal Product safe delete path on top of the accepted account-scoped Product persistence foundation.
 
-Edited Products are updated only in `products:{AuthSession.accountId}` and legacy `localStorage.products` is never mutated.
+Deleted Products are marked with backward-compatible metadata in `products:{AuthSession.accountId}`, hidden from the active Products list, and legacy `localStorage.products` is never mutated.
 
 ## Current Status
 
-`ECS-008 Ready for Architect / Owner Review`
+`ECS-009 Ready for Architect / Owner Review`
 
 ## Verification Completed
 
@@ -36,22 +36,24 @@ Edited Products are updated only in `products:{AuthSession.accountId}` and legac
 - Baseline confirmed unauthenticated Products access is blocked by Route Guard.
 - Baseline confirmed Firebase login succeeds and `AuthSession.accountId` exists.
 - Baseline confirmed Products render from `products:{accountId}`.
-- Baseline confirmed `ProductService.update()` and repository update support exist.
-- Baseline confirmed there was no Product Edit UI/action.
-- Minimal fix added an Edit action per Product row.
-- Minimal fix reused the existing Product dialog and ProductService update path.
-- Invalid edit attempt did not update a Product.
-- Valid edit updated exactly one Product without changing Product count.
-- Edited Product kept the same `id`.
-- Edited Product kept the same `accountId`.
-- Edited Product preserved `createdBy` and updated `updatedBy`.
-- Edited Product appears in the Products UI.
-- Edited Product remains visible after reload.
+- Baseline confirmed Product Edit exists from ECS-008.
+- Baseline confirmed no Product Safe Delete UI/action existed.
+- Minimal fix added a Product Safe Delete action per Product row.
+- Cancelled delete did not update Product data.
+- Confirmed safe delete marked exactly one Product as deleted.
+- Deleted Product remained in `products:{accountId}`.
+- Deleted Product kept the same `id`.
+- Deleted Product kept the same `accountId`.
+- Deleted Product preserved `createdBy`.
+- Deleted Product received safe-delete metadata.
+- Active Product count decreased from 3 to 2.
+- Total stored Product record count remained 3.
+- Deleted Product remained hidden after reload.
 - Legacy `localStorage.products` remained present and hash unchanged.
 
 ## Scope Confirmation
 
-- No Product Delete UI.
+- No hard delete.
 - No Product Search / Filter feature.
 - No destructive migration.
 - No legacy Product deletion.
@@ -67,23 +69,23 @@ Edited Products are updated only in `products:{AuthSession.accountId}` and legac
 ## Evidence
 
 ```text
-PATCHES/ECS-008/verification.md
-PATCHES/ECS-008/closure-report.md
-outputs/ECS-008/baseline-runtime.json
-outputs/ECS-008/baseline-dom.json
-outputs/ECS-008/baseline-console.log
-outputs/ECS-008/baseline-storage-snapshot-sanitized.json
-outputs/ECS-008/baseline-screenshot.png
-outputs/ECS-008/after-runtime.json
-outputs/ECS-008/after-dom.json
-outputs/ECS-008/after-console.log
-outputs/ECS-008/after-storage-snapshot-sanitized.json
-outputs/ECS-008/after-screenshot.png
-outputs/ECS-008/edit-summary.json
+PATCHES/ECS-009/verification.md
+PATCHES/ECS-009/closure-report.md
+outputs/ECS-009/baseline-runtime.json
+outputs/ECS-009/baseline-dom.json
+outputs/ECS-009/baseline-console.log
+outputs/ECS-009/baseline-storage-snapshot-sanitized.json
+outputs/ECS-009/baseline-screenshot.png
+outputs/ECS-009/after-runtime.json
+outputs/ECS-009/after-dom.json
+outputs/ECS-009/after-console.log
+outputs/ECS-009/after-storage-snapshot-sanitized.json
+outputs/ECS-009/after-screenshot.png
+outputs/ECS-009/delete-summary.json
 ```
 
 ## Next Mission
 
 Await Architect / Owner review.
 
-Do not start Product Delete until ECS-008 is reviewed and accepted.
+Do not start Product Search / Filter until ECS-009 is reviewed and accepted.

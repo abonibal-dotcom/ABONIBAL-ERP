@@ -73,16 +73,6 @@ export class ProductRepository extends Repository<Product> {
 
     }
 
-    public removeFromAccount(accountId: string, id: string): void {
-
-        const products = this
-            .allForAccount(accountId)
-            .filter(product => product.id !== id);
-
-        this.saveForAccount(accountId, products);
-
-    }
-
     public findForAccount(
         accountId: string,
         id: string

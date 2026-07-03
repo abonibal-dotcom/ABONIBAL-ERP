@@ -32,7 +32,9 @@ export class ProductService {
             return [];
         }
 
-        return this.repository.allForAccount(accountContext.accountId);
+        return this.repository
+            .allForAccount(accountContext.accountId)
+            .filter(product => !product.isDeleted);
 
     }
 
@@ -79,7 +81,7 @@ export class ProductService {
             id
         );
 
-        if (!current) {
+        if (!current || current.isDeleted) {
             return ["المنتج غير موجود."];
         }
 
@@ -107,18 +109,45 @@ export class ProductService {
 
     }
 
-    public remove(id: string): void {
+    public remove(id: string): string[] {
+
+        return this.safeDelete(id);
+
+    }
+
+    public safeDelete(id: string): string[] {
 
         const accountContext = this.currentAccountContext();
 
         if (!accountContext) {
-            return;
+            return ["Authenticated account is required."];
         }
 
-        this.repository.removeFromAccount(
+        const current = this.repository.findForAccount(
             accountContext.accountId,
             id
         );
+
+        if (!current || current.isDeleted) {
+            return ["Product not found."];
+        }
+
+        this.repository.updateForAccount(
+            accountContext.accountId,
+            id,
+            {
+                ...current,
+                accountId: accountContext.accountId,
+                createdBy: current.createdBy ?? accountContext.userId,
+                updatedBy: accountContext.userId,
+                deletedBy: accountContext.userId,
+                deletedAt: new Date().toISOString(),
+                isDeleted: true,
+                updatedAt: new Date()
+            }
+        );
+
+        return [];
 
     }
 
@@ -130,10 +159,16 @@ export class ProductService {
             return undefined;
         }
 
-        return this.repository.findForAccount(
+        const product = this.repository.findForAccount(
             accountContext.accountId,
             id
         );
+
+        if (product?.isDeleted) {
+            return undefined;
+        }
+
+        return product;
 
     }
 

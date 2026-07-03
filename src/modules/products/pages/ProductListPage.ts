@@ -86,17 +86,25 @@ export class ProductListPage extends Page {
             "[data-action=\"edit-product\"]"
         );
 
-        if (!editButton) {
-            return;
-        }
+        const deleteButton = target.closest<HTMLButtonElement>(
+            "[data-action=\"safe-delete-product\"]"
+        );
 
-        const productId = editButton.dataset.productId;
+        const productId = editButton?.dataset.productId
+            ?? deleteButton?.dataset.productId;
 
         if (!productId) {
             return;
         }
 
-        this.openEditDialog(productId);
+        if (editButton) {
+            this.openEditDialog(productId);
+            return;
+        }
+
+        if (deleteButton) {
+            this.safeDeleteProduct(productId);
+        }
 
     };
 
@@ -198,6 +206,13 @@ export class ProductListPage extends Page {
         const products = this.readProducts();
 
         if (products.length === 0) {
+            productsBody.innerHTML = `
+                <tr>
+                    <td colspan="6">
+                        ظ„ط§ طھظˆط¬ط¯ ظ…ظ†طھط¬ط§طھ ط­طھظ‰ ط§ظ„ط¢ظ†.
+                    </td>
+                </tr>
+            `;
             return;
         }
 
@@ -234,6 +249,13 @@ export class ProductListPage extends Page {
                         data-product-id="${this.escapeHtml(product.id)}"
                     >
                         Edit
+                    </button>
+                    <button
+                        type="button"
+                        data-action="safe-delete-product"
+                        data-product-id="${this.escapeHtml(product.id)}"
+                    >
+                        Delete
                     </button>
                 </td>
 
@@ -275,6 +297,22 @@ export class ProductListPage extends Page {
         }
 
         this.closeDialog();
+
+        this.renderProductsIntoTable();
+
+    }
+
+    private safeDeleteProduct(productId: string): void {
+
+        if (!window.confirm("Archive this product?")) {
+            return;
+        }
+
+        const errors = this.productService.safeDelete(productId);
+
+        if (errors.length > 0) {
+            return;
+        }
 
         this.renderProductsIntoTable();
 

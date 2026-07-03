@@ -1,5 +1,24 @@
 # Changelog
 
+## ECS-009 - Product Safe Delete Path
+
+- Implemented the minimal Product Safe Delete path on top of accepted account-scoped Product persistence.
+- Confirmed baseline unauthenticated Products access is blocked by Route Guard.
+- Confirmed baseline login succeeds, `AuthSession.accountId` exists, and Products render from `products:{accountId}`.
+- Confirmed baseline Product Edit exists and Product Safe Delete UI/action did not exist.
+- Added a Safe Delete action per Product row.
+- Reused the Product service account boundary and repository update path.
+- Removed the hard-delete repository path from the active Product persistence boundary.
+- Verified cancelled delete does not update Product data.
+- Verified confirmed safe delete keeps the Product record in `products:{accountId}` and hides it from the active list.
+- Verified active Product count decreases from 3 to 2 while total stored Product count remains 3.
+- Verified deleted Product keeps the same `id`, same `accountId`, and safe-delete metadata.
+- Verified deleted Product remains hidden after reload.
+- Verified legacy `localStorage.products` remains present and hash-unchanged.
+- Confirmed no Product Search / Filter, destructive migration, legacy deletion, Route Guard weakening, Firebase Auth change, credentials, default account fallback, Firebase UID/accountId assumption, or hard delete was introduced.
+- Verified TypeScript, build, and runtime verification passed with console errors = 0 and page exceptions = 0.
+- Final status: `ECS-009 Ready for Architect / Owner Review`.
+
 ## ECS-008 - Product Edit Path
 
 - Implemented the minimal Product Edit path on top of accepted account-scoped Product persistence.
