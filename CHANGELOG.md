@@ -1,5 +1,80 @@
 # Changelog
 
+## ECS-007 - Product Create Path
+
+- Implemented the minimal Product Create path on top of accepted account-scoped Product persistence.
+- Confirmed baseline unauthenticated Products access is blocked by Route Guard.
+- Confirmed baseline login succeeds, `AuthSession.accountId` exists, and Products render from `products:{accountId}`.
+- Confirmed baseline Product Create button, dialog, and Save button existed, but Save was not connected to a working create path.
+- Connected the existing Product dialog values to `ProductFactory` and `ProductService.add()` from `ProductListPage`.
+- Verified invalid create attempts do not write Products.
+- Verified valid create writes exactly one Product to `products:{accountId}`.
+- Verified the created Product contains `accountId`, `createdBy`, and `updatedBy`.
+- Verified the created Product renders in the Products UI and remains visible after reload.
+- Verified legacy `localStorage.products` remains present and hash-unchanged.
+- Confirmed no Product Edit UI, Product Delete UI, Product Search / Filter, destructive migration, legacy deletion, Route Guard weakening, Firebase Auth change, credentials, default account fallback, or Firebase UID/accountId assumption were introduced.
+- Verified TypeScript, build, and runtime verification passed with console errors = 0 and page exceptions = 0.
+- Final status: `ECS-007 Ready for Architect / Owner Review`.
+
+## V1-PER-006 - Legacy Product Scoped Import
+
+- Implemented a controlled owner-approved legacy Product import path before Product CRUD.
+- Confirmed baseline legacy `products` existed with one Product and scoped `products:{accountId}` was empty.
+- Confirmed baseline Products UI did not show legacy Products because active reads use scoped storage.
+- Added legacy Product key and legacy import backup key helpers.
+- Added Product repository methods for reading legacy Products, saving scoped collections, and saving import backups.
+- Added `ProductService.importLegacyProducts()` to copy missing legacy Products into `products:{accountId}`.
+- Preserved existing scoped Products and skipped duplicate legacy Products by stable Product id.
+- Attached `accountId`, `createdBy`, and `updatedBy` to imported Products.
+- Created non-destructive backup keys before import operations.
+- Verified duplicate import safety: second import copied 0 Products and skipped 1 duplicate.
+- Verified legacy `localStorage.products` remained present and hash-unchanged.
+- Verified Products UI rendered imported scoped Products and continued reading the scoped key, not legacy `products`.
+- Confirmed no Product Create/Edit/Delete UI, Product search/filter, destructive migration, legacy deletion, Route Guard weakening, Firebase Auth change, credentials, default account fallback, or Firebase UID/accountId assumption were introduced.
+- Verified TypeScript, build, and runtime verification passed with console errors = 0 and page exceptions = 0.
+- Final status: `V1-PER-006 Ready for Architect / Owner Review`.
+
+## V1-PER-005 - Product Account-Scoped Persistence Compatibility Layer
+
+- Implemented the minimal account-scoped Product persistence compatibility layer before Product CRUD.
+- Confirmed baseline Product reads used legacy `products` and did not read the current account scoped key.
+- Added optional Product ownership metadata: `accountId`, `createdBy`, and `updatedBy`.
+- Added Product account-scoped key resolution for `products:{accountId}`.
+- Updated Product repository/service reads and writes to use the authenticated `AuthSession` account boundary.
+- Verified empty scoped storage renders an empty Product list.
+- Verified malformed scoped storage does not crash.
+- Verified scoped Product writes attach ownership metadata and render from `products:{accountId}`.
+- Verified legacy `localStorage.products` remains present and hash-unchanged.
+- Confirmed no Product Create/Edit/Delete UI, Product search/filter, legacy migration, legacy deletion, Route Guard weakening, Firebase Auth change, persistence driver change, credentials, or Firebase UID/accountId assumption were introduced.
+- Verified TypeScript, build, and runtime verification passed with console errors = 0 and page exceptions = 0.
+- Final status: `V1-PER-005 Ready for Architect / Owner Review`.
+
+## V1-PER-004 - Product Account-Scoped Persistence Plan
+
+- Created an implementation-ready Product account-scoped persistence plan without source changes.
+- Confirmed the current Product key remains `localStorage.products`.
+- Confirmed Product records still lack `accountId`, `createdBy`, and `updatedBy`.
+- Compared global embedded filtering, account-scoped keys, and a compatibility layer preserving legacy global storage.
+- Recommended a compatibility layer before Product CRUD: preserve `localStorage.products`, write new scoped Products to `products:{accountId}`, and migrate legacy data only through an owner-approved no-data-loss flow.
+- Added a no-data-loss plan for backup, owner-approved account assignment, copy/transform, count verification, and legacy key preservation.
+- Added a rollback plan that forbids deleting `localStorage.products`, clearing all localStorage, or treating Firebase UID as `accountId`.
+- Confirmed no source files, Product files, persistence files, Auth files, Route Guard behavior, localStorage migration, account-scoped implementation, Product schema change, Product CRUD, credentials, or `.env` tracking changes were introduced.
+- Final status: `V1-PER-004 Ready for Architect / Owner Review`.
+
+## V1-PER-003 - Product Persistence Boundary Assessment
+
+- Assessed the Product persistence boundary from the accepted `ecs-006-product-list-read-path` baseline.
+- Confirmed TypeScript and build verification passed.
+- Verified Route Guard remains active, Firebase login succeeds, Products is accessible after login, and the ECS-006 Product renders.
+- Confirmed Product storage uses the global localStorage key `products`.
+- Confirmed no account-scoped Product storage keys were observed.
+- Confirmed Product records contain `id`, product name/title, and price fields, but do not contain `accountId`, `createdBy`, or `updatedBy`.
+- Confirmed Product data did not change during runtime inspection.
+- Confirmed console errors = 0 and page exceptions = 0.
+- Confirmed no source files, Product files, persistence files, Auth files, Route Guard behavior, localStorage migration, account-scoped implementation, Product schema, Product CRUD, credentials, or `.env` tracking changes were introduced.
+- Recommended a separate Product account-scoped persistence plan before Product Create/Edit/Delete work.
+- Final status: `V1-PER-003 Ready for Architect / Owner Review`.
+
 ## ECS-006 - Product List Read Path
 
 - Started from the accepted `v1-auth-015-route-guard-foundation` baseline.

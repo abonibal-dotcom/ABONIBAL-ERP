@@ -190,6 +190,36 @@ The official V1 mapping source must return explicit provider, providerUserId, ac
 
 Product-code work resumed through ECS-006 after owner approval and the accepted V1-AUTH-015 Route Guard foundation baseline.
 
+## Product Persistence Boundary Gate
+
+V1-PER-003 assessed Product persistence after ECS-006.
+
+Current Product persistence uses the global localStorage key `products`.
+
+Current Product records do not contain `accountId`, `createdBy`, or `updatedBy`.
+
+Product reads and existing write methods do not currently receive account context.
+
+Recommended next Product persistence step:
+
+`V1-PER-004 - Product Account-scoped Persistence Plan`
+
+Product Create/Edit/Delete should wait for an approved Product account-scoped persistence plan and no-data-loss compatibility strategy.
+
+V1-PER-004 recommends the next implementation mission:
+
+`V1-PER-005 - Product Account-Scoped Persistence Compatibility Layer`
+
+The recommended strategy is to preserve `localStorage.products`, write new scoped Products to `products:{accountId}`, and migrate legacy global Products only through an owner-approved no-data-loss flow.
+
+V1-PER-005 implemented the compatibility layer. Normal Product reads and writes now use `products:{accountId}` from the authenticated account boundary, while legacy `localStorage.products` remains preserved and unmigrated.
+
+V1-PER-006 implemented the owner-approved controlled legacy Product import into `products:{accountId}` with backup, duplicate handling, ownership metadata, and legacy key preservation.
+
+ECS-007 implemented the minimal Product Create path on top of the accepted account-scoped Product persistence foundation.
+
+Product Edit/Delete may proceed only after ECS-007 is reviewed and accepted by the Architect / Owner.
+
 ## Verification Expectation
 
 Each future ECS must include:

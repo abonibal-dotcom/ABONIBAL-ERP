@@ -30,6 +30,10 @@ export interface Product {
     // الحالة
     isActive: boolean;
 
+    accountId?: string;
+    createdBy?: string;
+    updatedBy?: string;
+
     // التواريخ
     createdAt: Date;
     updatedAt: Date;

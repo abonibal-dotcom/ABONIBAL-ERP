@@ -2,6 +2,11 @@ import type { Product } from "../Product";
 
 import { Repository } from "../../../core/repositories/Repository";
 import type { Driver } from "../../../core/persistence/Driver";
+import {
+    legacyProductStorageKey,
+    productLegacyImportBackupKeyForAccount,
+    productStorageKeyForAccount
+} from "../persistence/ProductPersistenceKey";
 
 export class ProductRepository extends Repository<Product> {
 
@@ -11,19 +16,45 @@ export class ProductRepository extends Repository<Product> {
 
     }
 
-    public add(product: Product): void {
+    public allForAccount(accountId: string): Product[] {
 
-        const products = this.all();
-
-        products.push(product);
-
-        this.save(products);
+        return this.driver.read<Product[]>(
+            productStorageKeyForAccount(accountId)
+        ) ?? [];
 
     }
 
-    public update(id: string, data: Partial<Product>): void {
+    public allLegacy(): Product[] {
 
-        const products = this.all();
+        return this.driver.read<Product[]>(
+            legacyProductStorageKey()
+        ) ?? [];
+
+    }
+
+    public saveAllForAccount(accountId: string, products: Product[]): void {
+
+        this.saveForAccount(accountId, products);
+
+    }
+
+    public addToAccount(accountId: string, product: Product): void {
+
+        const products = this.allForAccount(accountId);
+
+        products.push(product);
+
+        this.saveForAccount(accountId, products);
+
+    }
+
+    public updateForAccount(
+        accountId: string,
+        id: string,
+        data: Partial<Product>
+    ): void {
+
+        const products = this.allForAccount(accountId);
 
         const index = products.findIndex(
             product => product.id === id
@@ -38,26 +69,70 @@ export class ProductRepository extends Repository<Product> {
             ...data
         };
 
-        this.save(products);
+        this.saveForAccount(accountId, products);
 
     }
 
-    public remove(id: string): void {
+    public removeFromAccount(accountId: string, id: string): void {
 
         const products = this
-            .all()
+            .allForAccount(accountId)
             .filter(product => product.id !== id);
 
-        this.save(products);
+        this.saveForAccount(accountId, products);
 
     }
 
-    public find(id: string): Product | undefined {
+    public findForAccount(
+        accountId: string,
+        id: string
+    ): Product | undefined {
 
         return this
-            .all()
+            .allForAccount(accountId)
             .find(product => product.id === id);
 
     }
+
+    private saveForAccount(accountId: string, products: Product[]): void {
+
+        this.driver.write<Product[]>(
+            productStorageKeyForAccount(accountId),
+            products
+        );
+
+    }
+
+    public saveLegacyImportBackup(
+        accountId: string,
+        backup: ProductLegacyImportBackup
+    ): string {
+
+        const backupKey = productLegacyImportBackupKeyForAccount(
+            accountId,
+            backup.createdAt
+        );
+
+        this.driver.write<ProductLegacyImportBackup>(
+            backupKey,
+            backup
+        );
+
+        return backupKey;
+
+    }
+
+}
+
+export interface ProductLegacyImportBackup {
+
+    version: 1;
+    createdAt: string;
+    accountId: string;
+    createdBy: string;
+    legacyProductCount: number;
+    scopedProductCountBefore: number;
+    legacyProducts: Product[];
+    scopedProductsBefore: Product[];
 
 }

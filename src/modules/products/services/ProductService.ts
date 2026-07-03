@@ -1,37 +1,66 @@
 import type { Product } from "../Product";
-import { ProductRepository } from "../repositories/ProductRepository";
+import {
+    ProductRepository,
+    type ProductLegacyImportBackup
+} from "../repositories/ProductRepository";
 import { ProductValidator } from "../validators/ProductValidator";
+import type { AuthStateService } from "../../auth/AuthStateService";
 
 export class ProductService {
 
     private repository: ProductRepository;
     private validator: ProductValidator;
+    private authStateService: AuthStateService;
 
     constructor(
         repository: ProductRepository,
-        validator: ProductValidator
+        validator: ProductValidator,
+        authStateService: AuthStateService
     ) {
 
         this.repository = repository;
         this.validator = validator;
+        this.authStateService = authStateService;
 
     }
 
     public getAll(): Product[] {
 
-        return this.repository.all();
+        const accountContext = this.currentAccountContext();
+
+        if (!accountContext) {
+            return [];
+        }
+
+        return this.repository.allForAccount(accountContext.accountId);
 
     }
 
     public add(product: Product): string[] {
 
-        const errors = this.validator.validate(product);
+        const accountContext = this.currentAccountContext();
+
+        if (!accountContext) {
+            return ["Authenticated account is required."];
+        }
+
+        const ownedProduct: Product = {
+            ...product,
+            accountId: accountContext.accountId,
+            createdBy: product.createdBy ?? accountContext.userId,
+            updatedBy: product.updatedBy ?? accountContext.userId
+        };
+
+        const errors = this.validator.validate(ownedProduct);
 
         if (errors.length > 0) {
             return errors;
         }
 
-        this.repository.add(product);
+        this.repository.addToAccount(
+            accountContext.accountId,
+            ownedProduct
+        );
 
         return [];
 
@@ -39,7 +68,16 @@ export class ProductService {
 
     public update(id: string, data: Partial<Product>): string[] {
 
-        const current = this.repository.find(id);
+        const accountContext = this.currentAccountContext();
+
+        if (!accountContext) {
+            return ["Authenticated account is required."];
+        }
+
+        const current = this.repository.findForAccount(
+            accountContext.accountId,
+            id
+        );
 
         if (!current) {
             return ["المنتج غير موجود."];
@@ -47,7 +85,10 @@ export class ProductService {
 
         const updated: Product = {
             ...current,
-            ...data
+            ...data,
+            accountId: accountContext.accountId,
+            createdBy: current.createdBy ?? accountContext.userId,
+            updatedBy: accountContext.userId
         };
 
         const errors = this.validator.validate(updated);
@@ -56,7 +97,11 @@ export class ProductService {
             return errors;
         }
 
-        this.repository.update(id, data);
+        this.repository.updateForAccount(
+            accountContext.accountId,
+            id,
+            updated
+        );
 
         return [];
 
@@ -64,14 +109,176 @@ export class ProductService {
 
     public remove(id: string): void {
 
-        this.repository.remove(id);
+        const accountContext = this.currentAccountContext();
+
+        if (!accountContext) {
+            return;
+        }
+
+        this.repository.removeFromAccount(
+            accountContext.accountId,
+            id
+        );
 
     }
 
     public find(id: string): Product | undefined {
 
-        return this.repository.find(id);
+        const accountContext = this.currentAccountContext();
+
+        if (!accountContext) {
+            return undefined;
+        }
+
+        return this.repository.findForAccount(
+            accountContext.accountId,
+            id
+        );
 
     }
+
+    public importLegacyProducts(): LegacyProductImportResult {
+
+        const accountContext = this.currentAccountContext();
+
+        if (!accountContext) {
+            return failedLegacyImportResult(
+                "Authenticated account is required."
+            );
+        }
+
+        const legacyProducts = this.repository.allLegacy();
+        const scopedProducts = this.repository.allForAccount(
+            accountContext.accountId
+        );
+        const backup: ProductLegacyImportBackup = {
+            version: 1,
+            createdAt: new Date().toISOString(),
+            accountId: accountContext.accountId,
+            createdBy: accountContext.userId,
+            legacyProductCount: legacyProducts.length,
+            scopedProductCountBefore: scopedProducts.length,
+            legacyProducts,
+            scopedProductsBefore: scopedProducts
+        };
+        const backupKey = this.repository.saveLegacyImportBackup(
+            accountContext.accountId,
+            backup
+        );
+        const scopedProductIds = new Set(
+            scopedProducts.map(product => product.id)
+        );
+        const importedProducts: Product[] = [];
+        const skippedDuplicateIds: string[] = [];
+
+        for (const legacyProduct of legacyProducts) {
+
+            const productId = legacyProduct.id.trim();
+
+            if (!productId || scopedProductIds.has(productId)) {
+                skippedDuplicateIds.push(productId);
+                continue;
+            }
+
+            scopedProductIds.add(productId);
+
+            importedProducts.push({
+                ...legacyProduct,
+                id: productId,
+                accountId: accountContext.accountId,
+                createdBy: legacyProduct.createdBy ?? accountContext.userId,
+                updatedBy: legacyProduct.updatedBy ?? accountContext.userId
+            });
+
+        }
+
+        const nextScopedProducts = [
+            ...scopedProducts,
+            ...importedProducts
+        ];
+
+        if (importedProducts.length > 0) {
+            this.repository.saveAllForAccount(
+                accountContext.accountId,
+                nextScopedProducts
+            );
+        }
+
+        return {
+            success: true,
+            errors: [],
+            backupKey,
+            legacyProductCount: legacyProducts.length,
+            scopedProductCountBefore: scopedProducts.length,
+            copiedProductCount: importedProducts.length,
+            skippedDuplicateCount: skippedDuplicateIds.length,
+            scopedProductCountAfter: nextScopedProducts.length,
+            copiedProductIds: importedProducts.map(product => product.id),
+            skippedDuplicateIds
+        };
+
+    }
+
+    private currentAccountContext(): ProductAccountContext | null {
+
+        const state = this.authStateService.getState();
+
+        if (state.status !== "authenticated") {
+            return null;
+        }
+
+        const accountId = state.session.account.id.trim();
+        const userAccountId = state.session.user.accountId.trim();
+        const userId = state.session.user.id.trim();
+
+        if (!accountId || accountId !== userAccountId || !userId) {
+            return null;
+        }
+
+        return {
+            accountId,
+            userId
+        };
+
+    }
+
+}
+
+export interface LegacyProductImportResult {
+
+    success: boolean;
+    errors: string[];
+    backupKey: string | null;
+    legacyProductCount: number;
+    scopedProductCountBefore: number;
+    copiedProductCount: number;
+    skippedDuplicateCount: number;
+    scopedProductCountAfter: number;
+    copiedProductIds: string[];
+    skippedDuplicateIds: string[];
+
+}
+
+function failedLegacyImportResult(error: string): LegacyProductImportResult {
+
+    return {
+        success: false,
+        errors: [error],
+        backupKey: null,
+        legacyProductCount: 0,
+        scopedProductCountBefore: 0,
+        copiedProductCount: 0,
+        skippedDuplicateCount: 0,
+        scopedProductCountAfter: 0,
+        copiedProductIds: [],
+        skippedDuplicateIds: []
+    };
+
+}
+
+interface ProductAccountContext {
+
+    accountId: string;
+    userId: string;
 
 }

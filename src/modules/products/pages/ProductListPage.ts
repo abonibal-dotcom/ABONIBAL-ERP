@@ -1,6 +1,7 @@
 import { Page } from "../../../framework/Page";
 import { Container } from "../../../core/Container";
 import { ProductDialog } from "../dialogs/ProductDialog";
+import { ProductFactory } from "../factories/ProductFactory";
 import type { Product } from "../Product";
 import type { ProductService } from "../services/ProductService";
 
@@ -10,7 +11,11 @@ export class ProductListPage extends Page {
 
     private productService: ProductService;
 
+    private productFactory: ProductFactory;
+
     private openButton: HTMLElement | null = null;
+
+    private saveButton: HTMLElement | null = null;
 
     private closeButton: HTMLElement | null = null;
 
@@ -30,11 +35,31 @@ export class ProductListPage extends Page {
 
     };
 
+    private readonly saveProduct = (): void => {
+
+        const product = this.productFactory.create(
+            this.dialog.values()
+        );
+
+        const errors = this.productService.add(product);
+
+        if (errors.length > 0) {
+            return;
+        }
+
+        this.closeDialog();
+
+        this.renderProductsIntoTable();
+
+    };
+
     constructor() {
 
         super();
 
         this.dialog = new ProductDialog();
+
+        this.productFactory = new ProductFactory();
 
         this.productService = Container.get<ProductService>("productService");
 
@@ -190,6 +215,7 @@ export class ProductListPage extends Page {
         this.onLeave();
 
         this.openButton = document.getElementById("create-product");
+        this.saveButton = document.getElementById("save-product");
         this.dialogElement = document.getElementById("product-dialog");
         this.closeButton = document.getElementById("close-product-dialog");
         this.cancelButton = document.getElementById("cancel-product");
@@ -197,6 +223,8 @@ export class ProductListPage extends Page {
         this.renderProductsIntoTable();
 
         this.openButton?.addEventListener("click", this.openDialog);
+
+        this.saveButton?.addEventListener("click", this.saveProduct);
 
         this.closeButton?.addEventListener("click", this.closeDialog);
 
@@ -208,11 +236,15 @@ export class ProductListPage extends Page {
 
         this.openButton?.removeEventListener("click", this.openDialog);
 
+        this.saveButton?.removeEventListener("click", this.saveProduct);
+
         this.closeButton?.removeEventListener("click", this.closeDialog);
 
         this.cancelButton?.removeEventListener("click", this.closeDialog);
 
         this.openButton = null;
+
+        this.saveButton = null;
 
         this.closeButton = null;
 
