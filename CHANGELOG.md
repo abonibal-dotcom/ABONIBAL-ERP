@@ -1,5 +1,29 @@
 # Changelog
 
+## ECS-011 - Product Module Regression Baseline
+
+- Created the Product module runtime regression baseline from the accepted `ecs-010-product-search-filter` tag.
+- Confirmed Route Guard remains active and unauthenticated Dashboard / Products access redirects to Login.
+- Confirmed Firebase login succeeds, `AuthSession.accountId` exists, and Products is accessible after login.
+- Confirmed `accountId` is explicit and distinct from Firebase UID / provider user id.
+- Confirmed Product reads use `products:{accountId}` and do not use legacy `localStorage.products` as the active source.
+- Verified invalid create does not write data.
+- Verified valid create writes exactly one scoped Product.
+- Verified created Products persist after reload.
+- Verified invalid edit does not update data.
+- Verified valid edit updates exactly one scoped Product while preserving id and accountId.
+- Verified cancelled delete does not update Product data.
+- Verified confirmed safe delete marks one scoped Product as deleted without hard delete.
+- Verified deleted Product remains in scoped storage and hidden after reload.
+- Verified matching search returns a retained active Product.
+- Verified non-matching search returns zero rows and shows the no-results state.
+- Verified deleted Product does not appear in search.
+- Verified clearing search restores the active list.
+- Verified legacy `localStorage.products` remains absent/unchanged with no automatic migration.
+- Confirmed no source fix was needed and no Product source files were changed.
+- Verified TypeScript, build, and runtime verification passed with console errors = 0 and page exceptions = 0.
+- Final status: `ECS-011 Ready for Architect / Owner Review`.
+
 ## ECS-010 - Product Search / Filter Path
 
 - Implemented the minimal Product Search / Filter path on top of accepted account-scoped Product persistence.

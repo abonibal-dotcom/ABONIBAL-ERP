@@ -224,7 +224,9 @@ ECS-009 implemented the minimal Product Safe Delete path on top of the accepted 
 
 ECS-010 implemented the minimal Product Search / Filter path on top of the accepted account-scoped Product persistence foundation.
 
-The next Product or Inventory mission may proceed only after ECS-010 is reviewed and accepted by the Architect / Owner.
+ECS-011 created the Product module runtime regression baseline across read, create, edit, safe delete, search/filter, account-scoped persistence, legacy key preservation, and Route Guard behavior.
+
+The next Product or Inventory mission may proceed only after ECS-011 is reviewed and accepted by the Architect / Owner.
 
 ## Verification Expectation
 
