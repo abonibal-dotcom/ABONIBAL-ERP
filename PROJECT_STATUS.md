@@ -68,6 +68,8 @@ ECS-010 Product Search / Filter Path is complete from execution side and ready f
 
 ECS-011 Product Module Regression Baseline is complete from execution side and ready for Architect / Owner review.
 
+V1-INV-001 Inventory / Stock Foundation Baseline is complete from execution side and ready for Architect / Owner review.
+
 Completed stabilization work:
 
 - `PATCH-000-ECS-001 - Route Registry Stabilization`
@@ -172,6 +174,9 @@ Completed stabilization work:
 - ECS-010 added the minimal Product Search / Filter path on top of the accepted account-scoped Product persistence foundation.
 - ECS-010 verified matching Product name search, non-matching no-results, deleted Product exclusion from search results, clear-search restoration, unchanged scoped Product storage count, and legacy `localStorage.products` hash preservation.
 - ECS-011 verified the accepted Product module end to end across Route Guard, account-scoped read, create, edit, safe delete, search/filter, legacy key preservation, and runtime stability without source changes.
+- V1-INV-001 assessed Inventory / Stock foundation and confirmed no standalone Inventory module, route, active UI, stock service, stock repository, stock movement model, invoice module, or stock storage boundary exists yet.
+- V1-INV-001 confirmed Product contains `quantity` and `minimumQuantity`, but recommended against using direct Product quantity as the authoritative V1 stock model.
+- V1-INV-001 recommended an account-scoped stock movement ledger with `stockMovements:{accountId}` before invoice stock deduction work.
 - Product dialog lifecycle was stabilized.
 - Malformed product localStorage read failures were contained.
 - Inventory is missing as a module.
@@ -189,11 +194,11 @@ Completed stabilization work:
 
 Current mission:
 
-`ECS-011 - Product Module Regression Baseline`
+`V1-INV-001 - Inventory / Stock Foundation Baseline`
 
 Current next mission:
 
-ECS-011 complete from execution side and ready for Architect / Owner review.
+V1-INV-001 complete from execution side and ready for Architect / Owner review.
 
 Classification:
 
@@ -201,12 +206,12 @@ Classification:
 
 Allowed scope:
 
-Product module runtime regression baseline only.
+Inventory / Stock foundation assessment and documentation only.
 
 Forbidden scope:
 
-No new Product feature, no invoices, no stock, no inventory, no Auth redesign, no Route Guard weakening, no destructive migration, no legacy Product deletion, no legacy `localStorage.products` mutation, no automatic import on app startup, no permission matrix, no advanced roles, no hardcoded credentials, no real credentials committed, and no Firebase uid to `accountId` assumption.
+No Inventory implementation, no stock operations, no stock adjustment, no inventory UI, no invoices, no Product behavior change, no Product persistence change, no Auth redesign, no Route Guard weakening, no destructive migration, no legacy Product deletion, no legacy `localStorage.products` mutation, no automatic import on app startup, no permission matrix, no advanced roles, no hardcoded credentials, no real credentials committed, and no Firebase uid to `accountId` assumption.
 
 ## Next State
 
-Await Architect / Owner review for ECS-011. The next mission remains blocked until this mission is reviewed and accepted.
+Await Architect / Owner review for V1-INV-001. The next mission remains blocked until this mission is reviewed and accepted.
