@@ -234,7 +234,15 @@ Recommended next Inventory mission:
 
 `V1-INV-002 - Account-Scoped Stock Movement Ledger Design Plan`
 
-The next Product, Inventory, or Invoice mission may proceed only after V1-INV-001 is reviewed and accepted by the Architect / Owner.
+V1-INV-002 designed the account-scoped Stock Movement Ledger as the authoritative Inventory model, with `stockMovements:{accountId}` as the target storage boundary and `inventorySnapshots:{accountId}` reserved as an optional rebuildable cache.
+
+Recommended next Inventory mission:
+
+`V1-INV-003 - Stock Movement Ledger Persistence Baseline`
+
+Invoice stock deduction remains blocked until Inventory ledger persistence and current quantity computation are implemented and verified.
+
+The next Product, Inventory, or Invoice mission may proceed only after V1-INV-002 is reviewed and accepted by the Architect / Owner.
 
 ## Verification Expectation
 
