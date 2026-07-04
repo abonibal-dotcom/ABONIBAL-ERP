@@ -2,6 +2,7 @@ import { Page } from "../../../framework/Page";
 import { Container } from "../../../core/Container";
 import type { Product } from "../../products/Product";
 import type { ProductService } from "../../products/services/ProductService";
+import type { StockMovement } from "../StockMovement";
 import type { StockMovementType } from "../StockMovementType";
 import type { InventoryService } from "../services/InventoryService";
 
@@ -24,6 +25,7 @@ export class InventoryPage extends Page {
     private messageElement: HTMLElement | null = null;
     private currentQuantityElement: HTMLElement | null = null;
     private productsBody: HTMLElement | null = null;
+    private movementHistoryBody: HTMLElement | null = null;
     private selectedProductId = "";
 
     private readonly handleSubmit = (event: Event): void => {
@@ -122,21 +124,52 @@ export class InventoryPage extends Page {
                     Current quantity: 0
                 </p>
 
-                <table id="inventory-products-table">
+                <section id="inventory-current-stock-view">
 
-                    <thead>
+                    <h2>Current stock</h2>
 
-                        <tr>
-                            <th>Product</th>
-                            <th>Barcode</th>
-                            <th>Current quantity</th>
-                        </tr>
+                    <table id="inventory-products-table">
 
-                    </thead>
+                        <thead>
 
-                    <tbody id="inventory-products-body"></tbody>
+                            <tr>
+                                <th>Product</th>
+                                <th>Barcode</th>
+                                <th>Current quantity</th>
+                            </tr>
 
-                </table>
+                        </thead>
+
+                        <tbody id="inventory-products-body"></tbody>
+
+                    </table>
+
+                </section>
+
+                <section id="inventory-movement-history-view">
+
+                    <h2>Movement history</h2>
+
+                    <table id="inventory-movement-history-table">
+
+                        <thead>
+
+                            <tr>
+                                <th>Product</th>
+                                <th>Type</th>
+                                <th>Quantity</th>
+                                <th>Reason</th>
+                                <th>Created at</th>
+                                <th>Status</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="inventory-movement-history-body"></tbody>
+
+                    </table>
+
+                </section>
 
             </section>
         `;
@@ -156,6 +189,7 @@ export class InventoryPage extends Page {
         this.messageElement = document.getElementById("inventory-message");
         this.currentQuantityElement = document.getElementById("inventory-current-quantity");
         this.productsBody = document.getElementById("inventory-products-body");
+        this.movementHistoryBody = document.getElementById("inventory-movement-history-body");
 
         this.form?.addEventListener("submit", this.handleSubmit);
         this.productSelect?.addEventListener("change", this.handleProductChange);
@@ -178,6 +212,7 @@ export class InventoryPage extends Page {
         this.messageElement = null;
         this.currentQuantityElement = null;
         this.productsBody = null;
+        this.movementHistoryBody = null;
 
     }
 
@@ -258,6 +293,7 @@ export class InventoryPage extends Page {
 
         this.renderProductOptions(products);
         this.renderProductRows(products);
+        this.renderMovementHistory(products);
         this.updateCurrentQuantity();
         this.updateDisabledState(products.length === 0);
 
@@ -336,6 +372,63 @@ export class InventoryPage extends Page {
 
     }
 
+    private renderMovementHistory(products: Product[]): void {
+
+        if (!this.movementHistoryBody) {
+            return;
+        }
+
+        const movements = this.inventoryService.getAll();
+
+        if (movements.length === 0) {
+            this.movementHistoryBody.innerHTML = `
+                <tr data-empty-history="true">
+                    <td colspan="6">No stock movements.</td>
+                </tr>
+            `;
+            return;
+        }
+
+        const productsById = new Map(
+            products.map(product => [product.id, product])
+        );
+
+        this.movementHistoryBody.innerHTML = movements
+            .map(movement => this.renderMovementHistoryRow(
+                movement,
+                productsById.get(movement.productId)
+            ))
+            .join("");
+
+    }
+
+    private renderMovementHistoryRow(
+        movement: StockMovement,
+        product: Product | undefined
+    ): string {
+
+        const isVoided = Boolean(movement.voidedAt);
+        const productLabel = product?.name ?? movement.productId;
+
+        return `
+            <tr
+                data-movement-id="${this.escapeHtml(movement.id)}"
+                data-product-id="${this.escapeHtml(movement.productId)}"
+                data-movement-type="${this.escapeHtml(movement.type)}"
+                data-quantity-delta="${this.escapeHtml(movement.quantityDelta)}"
+                data-voided="${isVoided}"
+            >
+                <td>${this.escapeHtml(productLabel)}</td>
+                <td>${this.escapeHtml(this.formatMovementType(movement.type))}</td>
+                <td>${this.formatNumber(movement.quantityDelta)}</td>
+                <td>${this.escapeHtml(movement.reason)}</td>
+                <td>${this.escapeHtml(this.formatDateTime(movement.createdAt))}</td>
+                <td>${isVoided ? "Voided" : "Active"}</td>
+            </tr>
+        `;
+
+    }
+
     private updateDisabledState(disabled: boolean): void {
 
         if (this.productSelect) {
@@ -367,6 +460,27 @@ export class InventoryPage extends Page {
     ): value is InventoryUiMovementType {
 
         return value === "opening_balance" || value === "manual_adjustment";
+
+    }
+
+    private formatMovementType(value: string): string {
+
+        return value
+            .split("_")
+            .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+            .join(" ");
+
+    }
+
+    private formatDateTime(value: string): string {
+
+        const date = new Date(value);
+
+        if (Number.isNaN(date.getTime())) {
+            return value;
+        }
+
+        return date.toISOString();
 
     }
 

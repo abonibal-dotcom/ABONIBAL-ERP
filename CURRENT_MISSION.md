@@ -2,31 +2,33 @@
 
 ## Mission
 
-`V1-INV-005 - Manual Opening Balance / Adjustment Flow`
+`V1-INV-006 - Inventory Movement History / Current Stock View`
 
 ## Classification
 
 `ECS`
 
-This is the first minimal Inventory UI / manual stock movement flow.
+This is an Inventory read/reporting stabilization mission.
 
 This is not invoice implementation, invoice stock deduction, Product CRUD, Product quantity migration, Auth redesign, or Product behavior work.
 
 ## Objective
 
-Implement and verify a minimal authenticated Inventory flow that allows an owner/user to create manual stock movements through the accepted account-scoped Stock Movement Ledger.
+Implement and verify a minimal read-only Inventory movement history and current stock view on top of the accepted account-scoped Stock Movement Ledger.
 
-The flow supports:
+The flow proves:
 
-- Opening balance movement.
-- Manual adjustment movement.
-- Current quantity display computed from ledger movements.
-- Product selection from active account-scoped Products.
-- Storage only in `stockMovements:{AuthSession.accountId}`.
+- Current stock is displayed from ledger computation.
+- Movement history is visible from `stockMovements:{AuthSession.accountId}`.
+- Movements are listed clearly by Product or productId.
+- Voided movements remain visible and are excluded from current quantity.
+- Missing Product references do not crash the page.
+- Product records are not mutated by Inventory read/history display.
+- Invoice work remains blocked.
 
 ## Accepted Baseline
 
-- Baseline tag: `v1-inv-004-stock-movement-ledger-runtime-verification`.
+- Baseline tag: `v1-inv-005-manual-opening-balance-adjustment-flow`.
 - Firebase Auth.
 - Explicit `accountId`.
 - Route Guard.
@@ -34,10 +36,11 @@ The flow supports:
 - Product CRUD/search regression PASS through ECS-011.
 - Stock Movement Ledger persistence PASS through V1-INV-003.
 - Stock Movement Ledger runtime verification PASS through V1-INV-004.
+- Manual Inventory opening balance / adjustment flow PASS through V1-INV-005.
 
 ## Current Status
 
-`V1-INV-005 Ready for Architect / Owner Review`
+`V1-INV-006 Ready for Architect / Owner Review`
 
 ## Runtime Verification Result
 
@@ -49,18 +52,23 @@ The flow supports:
 - accountId is not Firebase UID.
 - accountId is not providerUserId.
 - Inventory route is accessible after login.
-- Inventory page renders.
-- Product selector uses active Products returned from `ProductService.getAll()`.
-- Soft-deleted Products are not selectable.
-- Invalid opening balance does not write.
-- Valid opening balance writes one movement to `stockMovements:{accountId}`.
-- Invalid manual adjustment does not write.
-- Valid manual adjustment writes one movement to `stockMovements:{accountId}`.
-- Current quantity updates from 0 to 10 after opening balance.
-- Current quantity updates to 7 after manual adjustment.
-- Reload preserves movement records and displayed current quantity.
-- Product scoped hash remains unchanged after Inventory UI actions.
-- Product records are not mutated by the Inventory flow.
+- Current stock view renders.
+- Active Product rows render.
+- Current quantity displayed equals ledger computation.
+- `Product.quantity` is not authoritative.
+- Soft-deleted Products are not shown as active stock rows.
+- Movement history renders.
+- Opening balance movement appears.
+- Manual adjustment movement appears.
+- Movement count displayed matches valid ledger count.
+- Voided movement is shown as voided.
+- Voided movement is excluded from current quantity.
+- Missing Product reference does not crash the page.
+- Malformed movement record does not crash the page.
+- Reload preserves current stock display.
+- Reload preserves movement history display.
+- Product scoped hash remains unchanged.
+- Product records are not mutated by Inventory read/history display.
 - `Product.quantity` is not updated.
 - Legacy `localStorage.products` remains unchanged if present.
 - No invoice implementation added.
@@ -82,8 +90,8 @@ The flow supports:
 
 ## Scope Confirmation
 
-- Source files changed only for Inventory UI and route/navigation access.
-- Product records were not mutated by Inventory movement submission.
+- Source file changed only for Inventory read/history UI.
+- Product records were not mutated by Inventory read/history display.
 - `Product.quantity` was not updated.
 - `Product.quantity` was not treated as authoritative.
 - No Product files changed.
@@ -101,25 +109,25 @@ The flow supports:
 ## Evidence
 
 ```text
-PATCHES/V1-INV-005/verification.md
-PATCHES/V1-INV-005/closure-report.md
-outputs/V1-INV-005/baseline-runtime.json
-outputs/V1-INV-005/baseline-dom.json
-outputs/V1-INV-005/baseline-console.log
-outputs/V1-INV-005/baseline-storage-snapshot-sanitized.json
-outputs/V1-INV-005/baseline-screenshot.png
-outputs/V1-INV-005/after-runtime.json
-outputs/V1-INV-005/after-dom.json
-outputs/V1-INV-005/after-console.log
-outputs/V1-INV-005/after-storage-snapshot-sanitized.json
-outputs/V1-INV-005/after-screenshot.png
-outputs/V1-INV-005/inventory-flow-summary.json
+PATCHES/V1-INV-006/verification.md
+PATCHES/V1-INV-006/closure-report.md
+outputs/V1-INV-006/baseline-runtime.json
+outputs/V1-INV-006/baseline-dom.json
+outputs/V1-INV-006/baseline-console.log
+outputs/V1-INV-006/baseline-storage-snapshot-sanitized.json
+outputs/V1-INV-006/baseline-screenshot.png
+outputs/V1-INV-006/after-runtime.json
+outputs/V1-INV-006/after-dom.json
+outputs/V1-INV-006/after-console.log
+outputs/V1-INV-006/after-storage-snapshot-sanitized.json
+outputs/V1-INV-006/after-screenshot.png
+outputs/V1-INV-006/inventory-read-summary.json
 ```
 
 ## Next Mission
 
 Recommended next mission:
 
-`V1-INV-006 - Inventory Movement Regression / Reporting Baseline`
+`V1-INV-007 - Inventory Stock Availability / Invoice Dependency Gate`
 
-Do not start the next mission until V1-INV-005 is reviewed and accepted.
+Do not start the next mission until V1-INV-006 is reviewed and accepted.

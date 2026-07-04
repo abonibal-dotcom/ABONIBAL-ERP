@@ -78,6 +78,8 @@ V1-INV-004 Stock Movement Ledger Runtime Verification is complete from execution
 
 V1-INV-005 Manual Opening Balance / Adjustment Flow is complete from execution side and ready for Architect / Owner review.
 
+V1-INV-006 Inventory Movement History / Current Stock View is complete from execution side and ready for Architect / Owner review.
+
 Completed stabilization work:
 
 - `PATCH-000-ECS-001 - Route Registry Stabilization`
@@ -200,9 +202,13 @@ Completed stabilization work:
 - V1-INV-005 writes manual movements only to `stockMovements:{accountId}` through the accepted `InventoryService`.
 - V1-INV-005 verifies invalid manual movement submissions do not write, valid opening balance and manual adjustment each write one movement, current quantity updates and survives reload, soft-deleted Products are not selectable, Product storage hashes remain unchanged, and `Product.quantity` is not updated.
 - V1-INV-005 did not add invoice implementation, invoice stock deduction, Product CRUD changes, Product files, Product quantity migration, Auth behavior changes, Route Guard weakening, Firebase uid/provider user id as accountId, or default account fallback.
+- V1-INV-006 added the minimal read-only Inventory current stock section and movement history section.
+- V1-INV-006 displays valid movements from `stockMovements:{accountId}`, shows voided movements as voided, uses productId fallback for missing Product references, and keeps current quantity computed from non-voided ledger movements.
+- V1-INV-006 verifies current quantity display matches service computation, movement history row count matches valid ledger count, reload preserves both views, Product storage hashes remain unchanged, and `Product.quantity` is not authoritative.
+- V1-INV-006 did not add invoice implementation, invoice stock deduction, Product CRUD changes, Product files, Product quantity migration, Auth behavior changes, Route Guard weakening, Firebase uid/provider user id as accountId, or default account fallback.
 - Product dialog lifecycle was stabilized.
 - Malformed product localStorage read failures were contained.
-- Inventory now has a minimal stock movement ledger persistence module and a minimal authenticated manual movement flow.
+- Inventory now has a minimal stock movement ledger persistence module, a minimal authenticated manual movement flow, and a read-only movement history/current stock view.
 - Clients are missing.
 - Suppliers are missing.
 - Sales and invoices are missing.
@@ -217,11 +223,11 @@ Completed stabilization work:
 
 Current mission:
 
-`V1-INV-005 - Manual Opening Balance / Adjustment Flow`
+`V1-INV-006 - Inventory Movement History / Current Stock View`
 
 Current next mission:
 
-V1-INV-005 complete from execution side and ready for Architect / Owner review.
+V1-INV-006 complete from execution side and ready for Architect / Owner review.
 
 Classification:
 
@@ -229,12 +235,12 @@ Classification:
 
 Allowed scope:
 
-Manual Inventory opening balance / adjustment flow only.
+Inventory movement history and current stock read/view stabilization only.
 
 Forbidden scope:
 
-No invoices, no invoice stock deduction, no Product CRUD behavior change, no Product quantity migration, no Product record mutation by Inventory submissions, no Auth redesign, no Route Guard weakening, no destructive migration, no legacy Product deletion, no legacy `localStorage.products` mutation, no automatic import on app startup, no permission matrix, no advanced roles, no hardcoded credentials, no real credentials committed, and no Firebase uid to `accountId` assumption.
+No invoices, no invoice stock deduction, no Product CRUD behavior change, no Product quantity migration, no Product record mutation by Inventory read/history display, no Auth redesign, no Route Guard weakening, no destructive migration, no legacy Product deletion, no legacy `localStorage.products` mutation, no automatic import on app startup, no permission matrix, no advanced roles, no hardcoded credentials, no real credentials committed, and no Firebase uid to `accountId` assumption.
 
 ## Next State
 
-Await Architect / Owner review for V1-INV-005. The next mission remains blocked until this mission is reviewed and accepted.
+Await Architect / Owner review for V1-INV-006. The next mission remains blocked until this mission is reviewed and accepted.

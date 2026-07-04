@@ -1,5 +1,20 @@
 # Changelog
 
+## V1-INV-006 - Inventory Movement History / Current Stock View
+
+- Added a read-only current stock section to the Inventory page.
+- Added a read-only movement history section to the Inventory page.
+- Movement history reads valid movement records from `InventoryService.getAll()` / `stockMovements:{accountId}`.
+- Movement history displays Product name when available and productId fallback for missing Product references.
+- Movement history displays movement type, quantityDelta, reason, createdAt, and status.
+- Voided movements remain visible as `Voided` and are excluded from current quantity.
+- Verified current stock display matches ledger computation.
+- Verified movement history row count matches valid ledger movement count.
+- Verified reload preserves current stock display and movement history display.
+- Verified Product scoped/legacy storage hashes remain unchanged and `Product.quantity` is not authoritative.
+- Confirmed no invoice implementation, invoice stock deduction, Product CRUD behavior change, Product file change, Auth behavior change, Route Guard weakening, Firebase UID/accountId fallback, providerUserId/accountId fallback, or default account fallback was introduced.
+- Final status: `V1-INV-006 Ready for Architect / Owner Review`.
+
 ## V1-INV-005 - Manual Opening Balance / Adjustment Flow
 
 - Added a protected `inventory` route and minimal authenticated Inventory page.
