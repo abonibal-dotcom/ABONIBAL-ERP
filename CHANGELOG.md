@@ -1,5 +1,22 @@
 # Changelog
 
+## V1-INV-001 - Inventory / Stock Foundation Baseline
+
+- Assessed the Inventory / Stock foundation from the accepted `ecs-011-product-module-regression-baseline` tag.
+- Confirmed no standalone Inventory / Stock module exists.
+- Confirmed no Inventory route or active Inventory UI exists.
+- Confirmed no stock service, stock repository, stock movement model, invoice module, or stock storage key exists.
+- Confirmed Product model includes `quantity` and `minimumQuantity`, with `ProductFactory` defaulting both to `0`.
+- Confirmed active Product create/edit dialog does not manage quantity fields.
+- Confirmed Product storage uses `products:{accountId}` and Product can safely serve as an Inventory reference dependency.
+- Confirmed Product direct `quantity` should not become the authoritative V1 stock source because invoice deduction, returns, corrections, and adjustments require audit history.
+- Recommended an account-scoped stock movement ledger as the V1 Inventory model.
+- Recommended `stockMovements:{accountId}` as the authoritative Inventory storage boundary.
+- Recommended next mission: `V1-INV-002 - Account-Scoped Stock Movement Ledger Design Plan`.
+- Verified TypeScript, build, and read-only runtime verification passed with console errors = 0 and page exceptions = 0.
+- Confirmed no source files, Product files, Auth files, Product data, localStorage migration, route guard behavior, or credentials were changed.
+- Final status: `V1-INV-001 Ready for Architect / Owner Review`.
+
 ## ECS-011 - Product Module Regression Baseline
 
 - Created the Product module runtime regression baseline from the accepted `ecs-010-product-search-filter` tag.

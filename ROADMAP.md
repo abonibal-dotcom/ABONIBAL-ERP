@@ -226,7 +226,15 @@ ECS-010 implemented the minimal Product Search / Filter path on top of the accep
 
 ECS-011 created the Product module runtime regression baseline across read, create, edit, safe delete, search/filter, account-scoped persistence, legacy key preservation, and Route Guard behavior.
 
-The next Product or Inventory mission may proceed only after ECS-011 is reviewed and accepted by the Architect / Owner.
+V1-INV-001 assessed the Inventory / Stock foundation and confirmed that no standalone Inventory module, route, stock service, stock repository, stock movement model, invoice module, or stock storage boundary exists yet.
+
+Inventory should proceed through an account-scoped stock movement ledger design before invoice stock deduction work.
+
+Recommended next Inventory mission:
+
+`V1-INV-002 - Account-Scoped Stock Movement Ledger Design Plan`
+
+The next Product, Inventory, or Invoice mission may proceed only after V1-INV-001 is reviewed and accepted by the Architect / Owner.
 
 ## Verification Expectation
 
