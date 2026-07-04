@@ -1,5 +1,19 @@
 # Changelog
 
+## V1-INV-004 - Stock Movement Ledger Runtime Verification
+
+- Verified the accepted account-scoped Stock Movement Ledger runtime behavior after V1-INV-003.
+- Confirmed no source fix was needed.
+- Verified valid opening balance, manual adjustment, correction, and missing Product reference movements append successfully.
+- Verified invalid movement attempts are rejected and do not write records.
+- Verified malformed existing records do not crash current quantity computation.
+- Verified current quantities are computed from non-voided movement deltas for multiple Products.
+- Verified Product A / Product B isolation and other-account movement isolation.
+- Verified non-destructive void behavior, re-void safety, non-existing void safety, and reload persistence.
+- Verified Product scoped/legacy storage hashes remain unchanged and `Product.quantity` is not authoritative.
+- Confirmed no Inventory UI, Inventory route, invoice implementation, Product CRUD change, Auth change, Route Guard weakening, Firebase UID/accountId fallback, providerUserId/accountId fallback, or default account fallback was introduced.
+- Final status: `V1-INV-004 Ready for Architect / Owner Review`.
+
 ## V1-INV-003 - Stock Movement Ledger Persistence Baseline
 
 - Added the minimal account-scoped Stock Movement Ledger persistence baseline under `src/modules/inventory/`.

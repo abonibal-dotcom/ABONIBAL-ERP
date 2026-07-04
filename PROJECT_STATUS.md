@@ -74,6 +74,8 @@ V1-INV-002 Account-Scoped Stock Movement Ledger Design Plan is complete from exe
 
 V1-INV-003 Stock Movement Ledger Persistence Baseline is complete from execution side and ready for Architect / Owner review.
 
+V1-INV-004 Stock Movement Ledger Runtime Verification is complete from execution side and ready for Architect / Owner review.
+
 Completed stabilization work:
 
 - `PATCH-000-ECS-001 - Route Registry Stabilization`
@@ -189,6 +191,9 @@ Completed stabilization work:
 - V1-INV-003 implemented `stockMovements:{accountId}` storage, movement validation, append, current quantity computation, and non-destructive void behavior.
 - V1-INV-003 verified opening balance and manual adjustment writes, non-voided current quantity computation, void preservation, reload persistence, unchanged Product storage hashes, clean console, and zero page exceptions.
 - V1-INV-003 did not add Inventory UI, Inventory routes, invoice implementation, invoice stock deduction, Product CRUD changes, Product quantity migration, Auth changes, Route Guard weakening, Firebase uid/accountId fallback, or default account fallback.
+- V1-INV-004 verified the Stock Movement Ledger runtime behavior without requiring a source fix.
+- V1-INV-004 verified valid appends, invalid rejection, malformed record tolerance, multi-product current quantity computation, other-account movement isolation, non-destructive void behavior, reload persistence, Product storage safety, clean console, and zero page exceptions.
+- V1-INV-004 did not change source files, add Inventory UI, add Inventory routes, add invoice implementation, alter Product CRUD, mutate Product records, change Auth, weaken Route Guard, use Firebase uid/provider user id as accountId, or add default account fallback.
 - Product dialog lifecycle was stabilized.
 - Malformed product localStorage read failures were contained.
 - Inventory now has a minimal stock movement ledger persistence module.
@@ -206,11 +211,11 @@ Completed stabilization work:
 
 Current mission:
 
-`V1-INV-003 - Stock Movement Ledger Persistence Baseline`
+`V1-INV-004 - Stock Movement Ledger Runtime Verification`
 
 Current next mission:
 
-V1-INV-003 complete from execution side and ready for Architect / Owner review.
+V1-INV-004 complete from execution side and ready for Architect / Owner review.
 
 Classification:
 
@@ -218,7 +223,7 @@ Classification:
 
 Allowed scope:
 
-Minimal account-scoped Stock Movement Ledger persistence baseline only.
+Stock Movement Ledger runtime verification and hardening only.
 
 Forbidden scope:
 
@@ -226,4 +231,4 @@ No Inventory UI, no Inventory route, no invoices, no invoice stock deduction, no
 
 ## Next State
 
-Await Architect / Owner review for V1-INV-003. The next mission remains blocked until this mission is reviewed and accepted.
+Await Architect / Owner review for V1-INV-004. The next mission remains blocked until this mission is reviewed and accepted.

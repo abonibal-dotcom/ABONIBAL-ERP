@@ -2,52 +2,61 @@
 
 ## Mission
 
-`V1-INV-003 - Stock Movement Ledger Persistence Baseline`
+`V1-INV-004 - Stock Movement Ledger Runtime Verification`
 
 ## Classification
 
 `ECS`
 
-This is the first Inventory persistence implementation mission.
+This is an Inventory ledger runtime hardening and verification mission.
 
 This is not Inventory UI, invoice implementation, Product CRUD, Product quantity migration, route work, Auth redesign, or Product behavior work.
 
 ## Objective
 
-Implement the minimal account-scoped Stock Movement Ledger persistence baseline using:
+Verify and harden the accepted account-scoped Stock Movement Ledger behavior after V1-INV-003.
 
-```text
-stockMovements:{AuthSession.accountId}
-```
-
-The ledger is the future authoritative source for Inventory movement history and current quantity computation.
+V1-INV-004 proves the ledger is stable enough to remain the dependency path for future Inventory UI and invoice stock deduction planning.
 
 ## Accepted Baseline
 
-- Baseline tag: `v1-inv-002-stock-movement-ledger-design-plan`.
+- Baseline tag: `v1-inv-003-stock-movement-ledger-persistence-baseline`.
 - Firebase Auth.
 - Explicit `accountId`.
 - Route Guard.
 - Account-scoped Products.
 - Product CRUD/search regression PASS through ECS-011.
-- Inventory foundation assessment PASS.
-- Inventory ledger design accepted through V1-INV-002.
+- Stock Movement Ledger persistence PASS through V1-INV-003.
 
 ## Current Status
 
-`V1-INV-003 Ready for Architect / Owner Review`
+`V1-INV-004 Ready for Architect / Owner Review`
 
-## Implementation Result
+## Runtime Verification Result
 
-- Added a minimal Inventory module boundary under `src/modules/inventory/`.
-- Added stock movement model/types.
-- Added `stockMovements:{accountId}` persistence key helper.
-- Added stock movement repository.
-- Added stock movement validator.
-- Added Inventory service.
-- Registered Inventory dependencies in `Container`.
-- Current quantity is computed from non-voided movement `quantityDelta` values.
-- Voiding marks a movement as voided and preserves the original record.
+- Source fix needed: no.
+- Login succeeds.
+- AuthSession exists.
+- AuthSession.accountId exists.
+- accountId is not Firebase UID.
+- accountId is not providerUserId.
+- Route Guard remains active.
+- Scoped key used: `stockMovements:{accountId}`.
+- No global stock movement key is used.
+- No other account movement key affects current account quantities.
+- Opening balance append PASS.
+- Manual adjustment append PASS.
+- Correction append PASS.
+- Invalid append attempts rejected.
+- Invalid attempts did not write records.
+- Malformed existing record did not crash quantity computation.
+- Multi-product current quantity isolation PASS.
+- Missing Product reference handled safely.
+- Void behavior PASS.
+- Re-void behavior safe.
+- Non-existing void behavior safe.
+- Reload persistence PASS.
+- Product storage hashes unchanged.
 
 ## Verification Completed
 
@@ -60,36 +69,20 @@ The ledger is the future authoritative source for Inventory movement history and
 - Console errors: 0.
 - Page exceptions: 0.
 
-## Runtime Result
-
-- Login succeeds.
-- AuthSession exists.
-- AuthSession.accountId exists.
-- accountId is not Firebase UID.
-- accountId is not providerUserId.
-- Route Guard remains active.
-- Scoped key used: `stockMovements:{accountId}`.
-- No global stock movement key is used.
-- Opening balance write PASS.
-- Manual adjustment write PASS.
-- Current quantity before void: 7.
-- Current quantity after void: 10.
-- Voided movement remains stored.
-- Movement count does not decrease after void.
-- Reload preserves ledger and computed quantity.
-- Product scoped storage hash remains unchanged.
-- Legacy `localStorage.products` hash remains unchanged.
-
 ## Scope Confirmation
 
+- No source fix was needed.
+- No `src/` files changed in V1-INV-004.
 - Product records were not mutated.
-- `Product.quantity` was not made authoritative.
+- `Product.quantity` was not updated.
+- `Product.quantity` was not treated as authoritative.
 - No Product files changed.
 - No Product CRUD behavior changed.
+- No Product quantity migration.
 - No Inventory UI added.
 - No Inventory route added.
 - No invoice implementation added.
-- No Product quantity migration.
+- No invoice stock deduction.
 - No Product legacy data mutation.
 - No `localStorage.products` mutation.
 - No Route Guard weakening.
@@ -102,20 +95,20 @@ The ledger is the future authoritative source for Inventory movement history and
 ## Evidence
 
 ```text
-PATCHES/V1-INV-003/verification.md
-PATCHES/V1-INV-003/closure-report.md
-outputs/V1-INV-003/runtime.json
-outputs/V1-INV-003/dom.json
-outputs/V1-INV-003/console.log
-outputs/V1-INV-003/storage-snapshot-sanitized.json
-outputs/V1-INV-003/screenshot.png
-outputs/V1-INV-003/ledger-summary.json
+PATCHES/V1-INV-004/verification.md
+PATCHES/V1-INV-004/closure-report.md
+outputs/V1-INV-004/runtime.json
+outputs/V1-INV-004/dom.json
+outputs/V1-INV-004/console.log
+outputs/V1-INV-004/storage-snapshot-sanitized.json
+outputs/V1-INV-004/screenshot.png
+outputs/V1-INV-004/ledger-runtime-summary.json
 ```
 
 ## Next Mission
 
 Recommended next mission:
 
-`V1-INV-004 - Stock Movement Append / Current Quantity Runtime Verification`
+`V1-INV-005 - Manual Opening Balance / Adjustment Flow`
 
-Do not start the next mission until V1-INV-003 is reviewed and accepted.
+Do not start the next mission until V1-INV-004 is reviewed and accepted.
