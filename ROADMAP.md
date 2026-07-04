@@ -264,9 +264,11 @@ Recommended next Inventory mission:
 
 `V1-INV-007 - Inventory Stock Availability / Invoice Dependency Gate`
 
-Invoice stock deduction remains blocked until the Inventory ledger runtime path and future owner-approved stock movement workflows are reviewed and accepted.
+V1-INV-007 implemented the minimal read-only Inventory stock availability gate for future invoice dependency checks. The gate uses the ledger as the stock source of truth and rejects unavailable, invalid, missing, and soft-deleted Product requests safely.
 
-The next Product, Inventory, or Invoice mission may proceed only after V1-INV-006 is reviewed and accepted by the Architect / Owner.
+Invoice implementation and invoice stock deduction remain blocked until a future owner-approved Sales / Invoice foundation mission explicitly depends on the accepted availability gate.
+
+The next Product, Inventory, or Invoice mission may proceed only after V1-INV-007 is reviewed and accepted by the Architect / Owner.
 
 ## Verification Expectation
 

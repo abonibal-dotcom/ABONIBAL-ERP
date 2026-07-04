@@ -2,33 +2,33 @@
 
 ## Mission
 
-`V1-INV-006 - Inventory Movement History / Current Stock View`
+`V1-INV-007 - Inventory Stock Availability / Invoice Dependency Gate`
 
 ## Classification
 
 `ECS`
 
-This is an Inventory read/reporting stabilization mission.
+This is an Inventory stock availability service/gate mission.
 
-This is not invoice implementation, invoice stock deduction, Product CRUD, Product quantity migration, Auth redesign, or Product behavior work.
+This is not invoice implementation, invoice UI, invoice stock deduction, Product CRUD, Product quantity migration, Auth redesign, or Product behavior work.
 
 ## Objective
 
-Implement and verify a minimal read-only Inventory movement history and current stock view on top of the accepted account-scoped Stock Movement Ledger.
+Implement and verify a minimal account-scoped stock availability gate that future invoice code can depend on safely.
 
-The flow proves:
+The gate proves:
 
-- Current stock is displayed from ledger computation.
-- Movement history is visible from `stockMovements:{AuthSession.accountId}`.
-- Movements are listed clearly by Product or productId.
-- Voided movements remain visible and are excluded from current quantity.
-- Missing Product references do not crash the page.
-- Product records are not mutated by Inventory read/history display.
+- Current available quantity for an active Product is computed from the ledger.
+- A requested quantity can be accepted or rejected without writing stock movements.
+- Shortage quantity is reported when stock is insufficient.
+- Missing Product references fail safely.
+- Soft-deleted Products fail safely.
+- `Product.quantity` is not authoritative and is not updated.
 - Invoice work remains blocked.
 
 ## Accepted Baseline
 
-- Baseline tag: `v1-inv-005-manual-opening-balance-adjustment-flow`.
+- Baseline tag: `v1-inv-006-inventory-movement-history-current-stock-view`.
 - Firebase Auth.
 - Explicit `accountId`.
 - Route Guard.
@@ -37,10 +37,11 @@ The flow proves:
 - Stock Movement Ledger persistence PASS through V1-INV-003.
 - Stock Movement Ledger runtime verification PASS through V1-INV-004.
 - Manual Inventory opening balance / adjustment flow PASS through V1-INV-005.
+- Inventory current stock/history view PASS through V1-INV-006.
 
 ## Current Status
 
-`V1-INV-006 Ready for Architect / Owner Review`
+`V1-INV-007 Ready for Architect / Owner Review`
 
 ## Runtime Verification Result
 
@@ -52,23 +53,22 @@ The flow proves:
 - accountId is not Firebase UID.
 - accountId is not providerUserId.
 - Inventory route is accessible after login.
-- Current stock view renders.
-- Active Product rows render.
-- Current quantity displayed equals ledger computation.
-- `Product.quantity` is not authoritative.
-- Soft-deleted Products are not shown as active stock rows.
-- Movement history renders.
-- Opening balance movement appears.
-- Manual adjustment movement appears.
-- Movement count displayed matches valid ledger count.
-- Voided movement is shown as voided.
-- Voided movement is excluded from current quantity.
-- Missing Product reference does not crash the page.
-- Malformed movement record does not crash the page.
-- Reload preserves current stock display.
-- Reload preserves movement history display.
+- Availability reads `stockMovements:{accountId}`.
+- Available quantity equals ledger current quantity.
+- In-stock request returns `canFulfill = true`.
+- Over-stock request returns `canFulfill = false`.
+- Shortage quantity is correct.
+- Missing productId is rejected.
+- Missing Product reference is rejected.
+- Non-numeric requested quantity is rejected.
+- Zero requested quantity is rejected.
+- Negative requested quantity is rejected.
+- Soft-deleted Product is not fulfillable.
+- Voided movements are excluded from availability.
+- Availability checks do not create stock movements.
+- Availability checks do not mutate Product records.
+- Reload preserves availability results.
 - Product scoped hash remains unchanged.
-- Product records are not mutated by Inventory read/history display.
 - `Product.quantity` is not updated.
 - Legacy `localStorage.products` remains unchanged if present.
 - No invoice implementation added.
@@ -90,8 +90,8 @@ The flow proves:
 
 ## Scope Confirmation
 
-- Source file changed only for Inventory read/history UI.
-- Product records were not mutated by Inventory read/history display.
+- Source changes are limited to Inventory service and required Container wiring.
+- Product records were not mutated by availability checks.
 - `Product.quantity` was not updated.
 - `Product.quantity` was not treated as authoritative.
 - No Product files changed.
@@ -99,6 +99,7 @@ The flow proves:
 - No Product quantity migration.
 - No invoice implementation added.
 - No invoice stock deduction added.
+- No `sale_deduction` movement creation added.
 - No Auth behavior change.
 - No Route Guard weakening.
 - No Firebase UID or provider user id as `accountId`.
@@ -109,25 +110,23 @@ The flow proves:
 ## Evidence
 
 ```text
-PATCHES/V1-INV-006/verification.md
-PATCHES/V1-INV-006/closure-report.md
-outputs/V1-INV-006/baseline-runtime.json
-outputs/V1-INV-006/baseline-dom.json
-outputs/V1-INV-006/baseline-console.log
-outputs/V1-INV-006/baseline-storage-snapshot-sanitized.json
-outputs/V1-INV-006/baseline-screenshot.png
-outputs/V1-INV-006/after-runtime.json
-outputs/V1-INV-006/after-dom.json
-outputs/V1-INV-006/after-console.log
-outputs/V1-INV-006/after-storage-snapshot-sanitized.json
-outputs/V1-INV-006/after-screenshot.png
-outputs/V1-INV-006/inventory-read-summary.json
+PATCHES/V1-INV-007/verification.md
+PATCHES/V1-INV-007/closure-report.md
+outputs/V1-INV-007/baseline-runtime.json
+outputs/V1-INV-007/baseline-dom.json
+outputs/V1-INV-007/baseline-console.log
+outputs/V1-INV-007/baseline-storage-snapshot-sanitized.json
+outputs/V1-INV-007/baseline-screenshot.png
+outputs/V1-INV-007/after-runtime.json
+outputs/V1-INV-007/after-dom.json
+outputs/V1-INV-007/after-console.log
+outputs/V1-INV-007/after-storage-snapshot-sanitized.json
+outputs/V1-INV-007/after-screenshot.png
+outputs/V1-INV-007/availability-summary.json
 ```
 
-## Next Mission
+## Next
 
-Recommended next mission:
+Await Architect / Owner review.
 
-`V1-INV-007 - Inventory Stock Availability / Invoice Dependency Gate`
-
-Do not start the next mission until V1-INV-006 is reviewed and accepted.
+Do not start the next mission from this file alone.

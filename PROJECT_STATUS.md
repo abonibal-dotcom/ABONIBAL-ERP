@@ -80,6 +80,8 @@ V1-INV-005 Manual Opening Balance / Adjustment Flow is complete from execution s
 
 V1-INV-006 Inventory Movement History / Current Stock View is complete from execution side and ready for Architect / Owner review.
 
+V1-INV-007 Inventory Stock Availability / Invoice Dependency Gate is complete from execution side and ready for Architect / Owner review.
+
 Completed stabilization work:
 
 - `PATCH-000-ECS-001 - Route Registry Stabilization`

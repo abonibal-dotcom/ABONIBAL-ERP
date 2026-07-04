@@ -55,7 +55,8 @@ export class Container {
         const inventoryService = new InventoryService(
             stockMovementRepository,
             stockMovementValidator,
-            getAuthStateService()
+            getAuthStateService(),
+            productService
         );
 
         this.register("inventoryService", inventoryService);

@@ -1,5 +1,18 @@
 # Changelog
 
+## V1-INV-007 - Inventory Stock Availability / Invoice Dependency Gate
+
+- Added a read-only Inventory availability gate on top of the accepted `stockMovements:{accountId}` ledger.
+- Added `InventoryService.getAvailableQuantity()`, `InventoryService.checkAvailability()`, and `InventoryService.checkAvailabilityBatch()`.
+- Availability checks use ledger current quantity and the active Product boundary to reject missing or soft-deleted Products safely.
+- Verified in-stock requests return `canFulfill = true`.
+- Verified over-stock requests return `canFulfill = false` with correct shortage quantity.
+- Verified missing productId, missing Product, non-numeric quantity, zero quantity, negative quantity, and soft-deleted Product requests fail safely.
+- Verified batch availability aggregates repeated Product requests before fulfillment checks.
+- Verified availability checks do not create stock movements, mutate Product records, update `Product.quantity`, or touch legacy `localStorage.products`.
+- Confirmed no invoice implementation, invoice UI, invoice stock deduction, sale deduction movement creation, Product CRUD behavior change, Auth behavior change, Route Guard weakening, Firebase UID/accountId fallback, providerUserId/accountId fallback, or default account fallback was introduced.
+- Final status: `V1-INV-007 Ready for Architect / Owner Review`.
+
 ## V1-INV-006 - Inventory Movement History / Current Stock View
 
 - Added a read-only current stock section to the Inventory page.
