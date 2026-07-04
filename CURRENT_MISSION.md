@@ -2,32 +2,33 @@
 
 ## Mission
 
-`V1-SALES-001 - Sales / Invoice Foundation Baseline`
+`V1-SALES-002 - Account-Scoped Invoice Persistence Design Plan`
 
 ## Classification
 
 `INF`
 
-This is a Sales / Invoice foundation assessment mission.
+This is a Sales / Invoice design planning mission.
 
-This is not invoice implementation, invoice UI, invoice create/edit/delete, invoice stock deduction, Product work, Inventory implementation, Auth work, or localStorage migration.
+This is not invoice implementation, invoice UI, invoice create/edit/delete, invoice stock deduction, Product work, Inventory implementation, Auth work, routing work, or localStorage migration.
 
 ## Objective
 
-Assess the current Sales / Invoice foundation before invoice creation or stock deduction begins.
+Define the implementation-ready account-scoped invoice persistence plan before invoice code begins.
 
-The assessment proves:
+The plan documents:
 
-- No Sales / Invoice source module exists yet.
-- No invoice route or invoice UI exists yet.
-- No invoice persistence or storage key exists yet.
-- Products are accepted as the stable invoice line reference dependency.
-- Inventory stock availability is accepted as the required future invoice confirmation dependency.
-- Invoice implementation should not begin before account-scoped invoice persistence and lifecycle planning.
+- Target invoice storage boundary.
+- Invoice header and line contract.
+- Draft / issued / cancelled lifecycle policy.
+- Invoice numbering policy.
+- Product snapshot dependency.
+- Inventory availability and future stock deduction dependency.
+- Risks and the next approved implementation candidate.
 
 ## Accepted Baseline
 
-- Baseline tag: `v1-inv-007-stock-availability-invoice-gate`.
+- Baseline tag: `v1-sales-001-invoice-foundation-baseline`.
 - Firebase Auth.
 - Explicit `accountId`.
 - Route Guard.
@@ -37,27 +38,24 @@ The assessment proves:
 - Manual Inventory flow PASS through V1-INV-005.
 - Inventory current stock/history PASS through V1-INV-006.
 - Stock availability gate PASS through V1-INV-007.
+- V1-SALES-001 confirmed no invoice module, route, UI, service, repository, persistence key, or storage boundary exists yet.
 
 ## Current Status
 
-`V1-SALES-001 Ready for Architect / Owner Review`
+`V1-SALES-002 Ready for Architect / Owner Review`
 
-## Runtime Verification Result
+## Design Result
 
-- Unauthenticated protected routes are blocked.
-- Login succeeds.
-- AuthSession.accountId exists.
-- Products route works.
-- Inventory route works.
-- Stock availability gate remains available.
-- No invoice route exists.
-- No sales route exists.
-- No invoice storage keys exist.
-- Product scoped key hash before/after is unchanged/null.
-- Stock movement count before/after is 0 / 0.
-- Console errors: 0.
-- Page exceptions: 0.
-- `.env` remains untracked.
+- Recommended invoice storage boundary: `invoices:{accountId}`.
+- Global `invoices` storage is rejected.
+- Firebase UID/provider user id scoped invoice storage is rejected.
+- Default account fallback is rejected.
+- No invoice legacy migration is recommended because no legacy invoice storage exists in the accepted baseline.
+- Recommended V1 lifecycle states: `draft`, `issued`, `cancelled`.
+- Recommended numbering policy: `INV-{YYYYMMDD}-{accountLocalSequence}` with uniqueness check inside `invoices:{accountId}`.
+- Future invoice lines should reference stable Product ids and store Product snapshot fields.
+- Future issuing flow must call the accepted Inventory availability gate before any stock deduction.
+- Future stock deduction must create `sale_deduction` movements and must not update `Product.quantity`.
 
 ## Verification Completed
 
@@ -66,9 +64,7 @@ The assessment proves:
 - Source inspection: PASS.
 - TypeScript: PASS.
 - Build: PASS.
-- Runtime verification: PASS.
-- Console errors: 0.
-- Page exceptions: 0.
+- Runtime verification: not required for this INF design mission.
 
 ## Scope Confirmation
 
@@ -77,6 +73,7 @@ The assessment proves:
 - No Inventory source files changed.
 - No invoice implementation added.
 - No invoice UI added.
+- No invoice route added.
 - No invoice stock deduction added.
 - No `sale_deduction` movements created.
 - No Product data mutation.
@@ -92,21 +89,17 @@ The assessment proves:
 ## Evidence
 
 ```text
-PATCHES/V1-SALES-001/invoice-foundation-baseline.md
-PATCHES/V1-SALES-001/invoice-dependency-assessment.md
-PATCHES/V1-SALES-001/verification.md
-PATCHES/V1-SALES-001/closure-report.md
-outputs/V1-SALES-001/runtime.json
-outputs/V1-SALES-001/dom.json
-outputs/V1-SALES-001/console.log
-outputs/V1-SALES-001/storage-snapshot-sanitized.json
-outputs/V1-SALES-001/screenshot.png
+PATCHES/V1-SALES-002/account-scoped-invoice-persistence-design-plan.md
+PATCHES/V1-SALES-002/invoice-lifecycle-plan.md
+PATCHES/V1-SALES-002/invoice-numbering-plan.md
+PATCHES/V1-SALES-002/invoice-stock-integration-plan.md
+PATCHES/V1-SALES-002/closure-report.md
 ```
 
 ## Next
 
 Recommended next mission:
 
-`V1-SALES-002 - Account-Scoped Invoice Persistence Design Plan`
+`V1-SALES-003 - Account-Scoped Invoice Persistence Baseline`
 
-Do not start invoice UI or invoice stock deduction before persistence, lifecycle, and storage boundary planning are approved.
+Invoice UI and invoice stock deduction remain blocked until the account-scoped invoice persistence baseline is approved and verified.

@@ -1,5 +1,18 @@
 # Changelog
 
+## V1-SALES-002 - Account-Scoped Invoice Persistence Design Plan
+
+- Designed the future account-scoped invoice storage boundary as `invoices:{accountId}`.
+- Rejected global invoice storage, Firebase UID/provider user id storage, and default account fallback.
+- Documented the recommended invoice header and line contracts for the future persistence baseline.
+- Documented the V1-now lifecycle states: `draft`, `issued`, and `cancelled`.
+- Documented invoice numbering policy using account-scoped date prefix plus local sequence with collision checks.
+- Documented Product dependency: stable Product id references and snapshot fields, with no Product mutation.
+- Documented Inventory dependency: future issue flow must use the stock availability gate and later create `sale_deduction` movements instead of editing `Product.quantity`.
+- Recommended `V1-SALES-003 - Account-Scoped Invoice Persistence Baseline` as the next Sales / Invoice mission.
+- Confirmed this mission is documentation/design only, with no source changes, no invoice UI, no invoice route, no invoice stock deduction, no Product data mutation, and no Inventory mutation.
+- Final status: `V1-SALES-002 Ready for Architect / Owner Review`.
+
 ## V1-SALES-001 - Sales / Invoice Foundation Baseline
 
 - Assessed the current Sales / Invoice foundation from the accepted `v1-inv-007-stock-availability-invoice-gate` tag.

@@ -84,6 +84,8 @@ V1-INV-007 Inventory Stock Availability / Invoice Dependency Gate is complete fr
 
 V1-SALES-001 Sales / Invoice Foundation Baseline is complete from execution side and ready for Architect / Owner review.
 
+V1-SALES-002 Account-Scoped Invoice Persistence Design Plan is complete from execution side and ready for Architect / Owner review.
+
 Completed stabilization work:
 
 - `PATCH-000-ECS-001 - Route Registry Stabilization`
@@ -216,6 +218,11 @@ Completed stabilization work:
 - Clients are missing.
 - Suppliers are missing.
 - Sales and invoices are missing.
+- V1-SALES-001 confirmed no invoice module, route, UI, service, repository, persistence key, or storage boundary exists yet.
+- V1-SALES-002 designed the future invoice persistence boundary as `invoices:{accountId}`.
+- V1-SALES-002 rejected global invoice storage, Firebase UID/provider user id storage, and default account fallback.
+- V1-SALES-002 documented the future invoice header/line contracts, draft/issued/cancelled lifecycle, account-scoped numbering policy, Product snapshot dependency, and Inventory stock availability/deduction dependency.
+- V1-SALES-002 did not change source files, add invoice UI, add invoice routes, implement invoice persistence, create stock movements, mutate Products, mutate Inventory, change Auth, weaken Route Guard, or migrate localStorage.
 - Expenses are missing.
 - Safes and cash movement are missing.
 - Basic ledger is missing.
@@ -227,24 +234,24 @@ Completed stabilization work:
 
 Current mission:
 
-`V1-INV-006 - Inventory Movement History / Current Stock View`
+`V1-SALES-002 - Account-Scoped Invoice Persistence Design Plan`
 
 Current next mission:
 
-V1-INV-006 complete from execution side and ready for Architect / Owner review.
+V1-SALES-002 complete from execution side and ready for Architect / Owner review.
 
 Classification:
 
-`ECS`
+`INF`
 
 Allowed scope:
 
-Inventory movement history and current stock read/view stabilization only.
+Sales / Invoice persistence design documentation only.
 
 Forbidden scope:
 
-No invoices, no invoice stock deduction, no Product CRUD behavior change, no Product quantity migration, no Product record mutation by Inventory read/history display, no Auth redesign, no Route Guard weakening, no destructive migration, no legacy Product deletion, no legacy `localStorage.products` mutation, no automatic import on app startup, no permission matrix, no advanced roles, no hardcoded credentials, no real credentials committed, and no Firebase uid to `accountId` assumption.
+No source changes, no invoice implementation, no invoice UI, no invoice route, no invoice create/edit/delete behavior, no invoice stock deduction, no Product CRUD behavior change, no Product quantity migration, no Product record mutation, no Inventory mutation, no Auth redesign, no Route Guard weakening, no destructive migration, no legacy Product deletion, no legacy `localStorage.products` mutation, no automatic import on app startup, no permission matrix, no advanced roles, no hardcoded credentials, no real credentials committed, and no Firebase uid to `accountId` assumption.
 
 ## Next State
 
-Await Architect / Owner review for V1-INV-006. The next mission remains blocked until this mission is reviewed and accepted.
+Await Architect / Owner review for V1-SALES-002. Recommended next mission is `V1-SALES-003 - Account-Scoped Invoice Persistence Baseline`. Invoice UI and invoice stock deduction remain blocked until the persistence baseline is approved and verified.

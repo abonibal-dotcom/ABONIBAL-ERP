@@ -289,6 +289,26 @@ Recommended next Sales / Invoice mission:
 
 Invoice UI and invoice stock deduction remain blocked until account-scoped invoice persistence, invoice lifecycle, invoice numbering, Product snapshot policy, and stock deduction dependency are planned and approved.
 
+V1-SALES-002 completed the account-scoped invoice persistence design plan.
+
+Accepted design direction:
+
+- Future invoice storage boundary: `invoices:{accountId}`.
+- Global `invoices` storage is rejected.
+- Firebase UID/provider user id scoped invoice storage is rejected.
+- Default account fallback is rejected.
+- Future V1 invoice lifecycle states: `draft`, `issued`, `cancelled`.
+- Future invoice numbering policy: account-scoped date prefix plus local sequence with collision checks.
+- Future invoice lines must reference stable Product ids and store Product snapshot fields.
+- Future invoice issue flow must call the accepted Inventory availability gate before stock deduction.
+- Future stock deduction must create `sale_deduction` movements and must not edit `Product.quantity`.
+
+Recommended next Sales / Invoice mission:
+
+`V1-SALES-003 - Account-Scoped Invoice Persistence Baseline`
+
+Invoice UI and invoice stock deduction remain blocked until the account-scoped invoice persistence baseline is approved and verified.
+
 ## Verification Expectation
 
 Each future ECS must include:
