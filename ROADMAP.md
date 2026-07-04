@@ -270,6 +270,25 @@ Invoice implementation and invoice stock deduction remain blocked until a future
 
 The next Product, Inventory, or Invoice mission may proceed only after V1-INV-007 is reviewed and accepted by the Architect / Owner.
 
+## Sales / Invoice Foundation Gate
+
+V1-SALES-001 assessed the current Sales / Invoice foundation after the accepted Inventory stock availability gate.
+
+Current finding:
+
+- No Sales / Invoice module exists.
+- No invoice route or UI exists.
+- No invoice service, repository, persistence key, or storage boundary exists.
+- No invoice or sales storage keys were observed during read-only runtime verification.
+- Products are ready to serve as invoice line references.
+- Inventory stock availability is ready to serve as the future invoice confirmation dependency.
+
+Recommended next Sales / Invoice mission:
+
+`V1-SALES-002 - Account-Scoped Invoice Persistence Design Plan`
+
+Invoice UI and invoice stock deduction remain blocked until account-scoped invoice persistence, invoice lifecycle, invoice numbering, Product snapshot policy, and stock deduction dependency are planned and approved.
+
 ## Verification Expectation
 
 Each future ECS must include:

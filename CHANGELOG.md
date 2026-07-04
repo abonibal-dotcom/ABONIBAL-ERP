@@ -1,5 +1,18 @@
 # Changelog
 
+## V1-SALES-001 - Sales / Invoice Foundation Baseline
+
+- Assessed the current Sales / Invoice foundation from the accepted `v1-inv-007-stock-availability-invoice-gate` tag.
+- Confirmed no Sales / Invoice module, route, UI, service, repository, persistence key, or storage boundary exists yet.
+- Confirmed no invoice or sales storage keys were present during read-only runtime verification.
+- Confirmed Products are the accepted future invoice line reference dependency, with stable Product ids and soft-delete behavior.
+- Confirmed Inventory stock availability is the accepted future invoice confirmation dependency.
+- Recommended `invoices:{accountId}` as the safest V1 invoice storage boundary.
+- Recommended draft / issued / cancelled as V1-now invoice lifecycle states.
+- Recommended `V1-SALES-002 - Account-Scoped Invoice Persistence Design Plan` as the next Sales / Invoice mission.
+- Verified TypeScript, build, read-only runtime, clean console, zero page exceptions, no Product data mutation, no stock movement mutation, no source changes, and `.env` untracked.
+- Final status: `V1-SALES-001 Ready for Architect / Owner Review`.
+
 ## V1-INV-007 - Inventory Stock Availability / Invoice Dependency Gate
 
 - Added a read-only Inventory availability gate on top of the accepted `stockMovements:{accountId}` ledger.
