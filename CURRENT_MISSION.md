@@ -2,33 +2,43 @@
 
 ## Mission
 
-`V1-INV-001 - Inventory / Stock Foundation Baseline`
+`V1-INV-002 - Account-Scoped Stock Movement Ledger Design Plan`
 
 ## Classification
 
 `INF`
 
-This is an inventory / stock foundation assessment mission.
+This is an Inventory architecture and persistence design mission.
 
-This is not Inventory implementation, stock adjustment, invoices, Product work, Product migration, Auth work, or Product behavior change.
+This is not Inventory implementation, invoice implementation, Product work, stock adjustment, stock deduction, UI work, or migration execution.
 
 ## Objective
 
-Assess the current Inventory / Stock foundation before implementing stock operations or invoice integration.
+Design the V1 account-scoped Inventory / Stock Movement Ledger before implementing stock operations or invoice stock deduction.
 
-The goal is to determine:
+The design must be implementation-ready while preserving current accepted foundations:
 
-- Whether any Inventory / Stock module already exists.
-- Whether Products currently have stock-related fields.
-- Whether stock quantity is stored directly on Product records or in a separate stock ledger.
-- Whether the accepted Product module can safely become a dependency for Inventory.
-- Whether Inventory should use account-scoped persistence.
-- Whether stock movements require a ledger model before invoice work.
-- What the safest next Inventory mission should be.
+- Firebase Auth.
+- Explicit `accountId`.
+- Route Guard.
+- Account-scoped Products.
+- Product CRUD/search regression PASS.
+- Inventory foundation assessment PASS.
 
 ## Current Status
 
-`V1-INV-001 Ready for Architect / Owner Review`
+`V1-INV-002 Ready for Architect / Owner Review`
+
+## Design Result
+
+- Authoritative Inventory model: account-scoped stock movement ledger.
+- Authoritative storage boundary: `stockMovements:{accountId}`.
+- Optional future derived cache: `inventorySnapshots:{accountId}`.
+- Product reference: stable `Product.id`.
+- Product quantity policy: `Product.quantity` remains legacy/display-compatible and must not become the source of truth.
+- Current quantity computation: sum non-voided `quantityDelta` values grouped by `productId` for the current `accountId`.
+- Invoice dependency: invoices must create stock movements and must not directly edit `Product.quantity`.
+- Invoice stock deduction remains blocked until Inventory persistence is implemented and verified.
 
 ## Verification Completed
 
@@ -37,40 +47,16 @@ The goal is to determine:
 - Source inspection: PASS.
 - TypeScript: PASS.
 - Build: PASS.
-- Read-only Runtime Verification: PASS.
-- Console errors: 0.
-- Page exceptions: 0.
-
-## Assessment Result
-
-- No standalone Inventory / Stock module exists.
-- No Inventory route exists.
-- No Inventory UI exists.
-- No Stock service or repository exists.
-- No Inventory / Stock storage key exists.
-- Product records are modeled with `quantity` and `minimumQuantity`.
-- Current Product create/edit UI does not actively manage stock quantity.
-- Current Product persistence is account-scoped through `products:{accountId}`.
-- Runtime verification observed no Product storage mutation.
-- Runtime verification observed no legacy `localStorage.products` mutation.
-- Runtime verification observed no inventory storage keys.
-
-## Recommendation
-
-V1 Inventory should use an account-scoped stock movement ledger as the authoritative stock model.
-
-Recommended next mission:
-
-`V1-INV-002 - Account-Scoped Stock Movement Ledger Design Plan`
-
-Invoices should not proceed to stock deduction before Inventory movement semantics are approved and verified.
+- Runtime mutation: not required and not performed.
 
 ## Scope Confirmation
 
 - No source files changed.
 - No Product files changed.
-- No Auth files changed.
 - No Inventory implementation added.
+- No Inventory route added.
+- No Inventory UI added.
+- No Invoice implementation added.
 - No Product data mutation.
 - No localStorage migration.
 - No legacy Product deletion.
@@ -83,18 +69,16 @@ Invoices should not proceed to stock deduction before Inventory movement semanti
 ## Evidence
 
 ```text
-PATCHES/V1-INV-001/inventory-stock-foundation-baseline.md
-PATCHES/V1-INV-001/verification.md
-PATCHES/V1-INV-001/closure-report.md
-outputs/V1-INV-001/runtime.json
-outputs/V1-INV-001/dom.json
-outputs/V1-INV-001/console.log
-outputs/V1-INV-001/storage-snapshot-sanitized.json
-outputs/V1-INV-001/screenshot.png
+PATCHES/V1-INV-002/stock-movement-ledger-design-plan.md
+PATCHES/V1-INV-002/inventory-storage-boundary-plan.md
+PATCHES/V1-INV-002/invoice-stock-dependency-plan.md
+PATCHES/V1-INV-002/closure-report.md
 ```
 
 ## Next Mission
 
-Await Architect / Owner review.
+Recommended next mission:
 
-Do not start the next mission until V1-INV-001 is reviewed and accepted.
+`V1-INV-003 - Stock Movement Ledger Persistence Baseline`
+
+Do not start the next mission until V1-INV-002 is reviewed and accepted.

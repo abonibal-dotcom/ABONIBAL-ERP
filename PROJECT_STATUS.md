@@ -70,6 +70,8 @@ ECS-011 Product Module Regression Baseline is complete from execution side and r
 
 V1-INV-001 Inventory / Stock Foundation Baseline is complete from execution side and ready for Architect / Owner review.
 
+V1-INV-002 Account-Scoped Stock Movement Ledger Design Plan is complete from execution side and ready for Architect / Owner review.
+
 Completed stabilization work:
 
 - `PATCH-000-ECS-001 - Route Registry Stabilization`
@@ -177,6 +179,10 @@ Completed stabilization work:
 - V1-INV-001 assessed Inventory / Stock foundation and confirmed no standalone Inventory module, route, active UI, stock service, stock repository, stock movement model, invoice module, or stock storage boundary exists yet.
 - V1-INV-001 confirmed Product contains `quantity` and `minimumQuantity`, but recommended against using direct Product quantity as the authoritative V1 stock model.
 - V1-INV-001 recommended an account-scoped stock movement ledger with `stockMovements:{accountId}` before invoice stock deduction work.
+- V1-INV-002 designed the account-scoped Stock Movement Ledger as the authoritative V1 Inventory model.
+- V1-INV-002 recommended `stockMovements:{accountId}` as the authoritative storage boundary and `inventorySnapshots:{accountId}` only as an optional rebuildable cache.
+- V1-INV-002 documented that invoices must create stock movements and must not directly edit `Product.quantity`.
+- V1-INV-002 confirmed invoice stock deduction remains blocked until Inventory persistence and current quantity computation are implemented and verified.
 - Product dialog lifecycle was stabilized.
 - Malformed product localStorage read failures were contained.
 - Inventory is missing as a module.
@@ -194,11 +200,11 @@ Completed stabilization work:
 
 Current mission:
 
-`V1-INV-001 - Inventory / Stock Foundation Baseline`
+`V1-INV-002 - Account-Scoped Stock Movement Ledger Design Plan`
 
 Current next mission:
 
-V1-INV-001 complete from execution side and ready for Architect / Owner review.
+V1-INV-002 complete from execution side and ready for Architect / Owner review.
 
 Classification:
 
@@ -206,12 +212,12 @@ Classification:
 
 Allowed scope:
 
-Inventory / Stock foundation assessment and documentation only.
+Inventory architecture and persistence design documentation only.
 
 Forbidden scope:
 
-No Inventory implementation, no stock operations, no stock adjustment, no inventory UI, no invoices, no Product behavior change, no Product persistence change, no Auth redesign, no Route Guard weakening, no destructive migration, no legacy Product deletion, no legacy `localStorage.products` mutation, no automatic import on app startup, no permission matrix, no advanced roles, no hardcoded credentials, no real credentials committed, and no Firebase uid to `accountId` assumption.
+No source changes, no Inventory implementation, no stock operations, no stock adjustment, no inventory UI, no invoices, no Product behavior change, no Product persistence change, no Auth redesign, no Route Guard weakening, no destructive migration, no legacy Product deletion, no legacy `localStorage.products` mutation, no automatic import on app startup, no permission matrix, no advanced roles, no hardcoded credentials, no real credentials committed, and no Firebase uid to `accountId` assumption.
 
 ## Next State
 
-Await Architect / Owner review for V1-INV-001. The next mission remains blocked until this mission is reviewed and accepted.
+Await Architect / Owner review for V1-INV-002. The next mission remains blocked until this mission is reviewed and accepted.

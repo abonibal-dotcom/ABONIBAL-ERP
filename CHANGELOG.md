@@ -1,5 +1,20 @@
 # Changelog
 
+## V1-INV-002 - Account-Scoped Stock Movement Ledger Design Plan
+
+- Designed the V1 account-scoped Stock Movement Ledger before Inventory implementation or invoice stock deduction.
+- Confirmed the authoritative Inventory model should be a stock movement ledger, not direct Product quantity mutation.
+- Recommended authoritative storage key `stockMovements:{accountId}`.
+- Documented optional future derived cache `inventorySnapshots:{accountId}`.
+- Defined the proposed V1 stock movement record shape, movement types, reference policy, voiding policy, and current quantity computation.
+- Documented Product quantity field policy: `Product.quantity` remains legacy/display-compatible and `Product.minimumQuantity` remains alert metadata.
+- Documented invoice dependency policy: invoices must create stock movements and must not directly edit `Product.quantity`.
+- Confirmed invoice stock deduction remains blocked until Inventory persistence and current quantity computation are implemented and verified.
+- Recommended next mission: `V1-INV-003 - Stock Movement Ledger Persistence Baseline`.
+- Verified TypeScript and build pass.
+- Confirmed no source files, Product files, Inventory implementation, Invoice implementation, Product data, localStorage migration, or credentials were changed.
+- Final status: `V1-INV-002 Ready for Architect / Owner Review`.
+
 ## V1-INV-001 - Inventory / Stock Foundation Baseline
 
 - Assessed the Inventory / Stock foundation from the accepted `ecs-011-product-module-regression-baseline` tag.
