@@ -240,9 +240,15 @@ Recommended next Inventory mission:
 
 `V1-INV-003 - Stock Movement Ledger Persistence Baseline`
 
-Invoice stock deduction remains blocked until Inventory ledger persistence and current quantity computation are implemented and verified.
+V1-INV-003 implemented the minimal account-scoped Stock Movement Ledger persistence baseline with `stockMovements:{accountId}`, movement validation, append, current quantity computation, non-destructive void behavior, and runtime verification.
 
-The next Product, Inventory, or Invoice mission may proceed only after V1-INV-002 is reviewed and accepted by the Architect / Owner.
+Recommended next Inventory mission:
+
+`V1-INV-004 - Stock Movement Append / Current Quantity Runtime Verification`
+
+Invoice stock deduction remains blocked until the Inventory ledger persistence path and the next owner-approved stock movement runtime gates are reviewed and accepted.
+
+The next Product, Inventory, or Invoice mission may proceed only after V1-INV-003 is reviewed and accepted by the Architect / Owner.
 
 ## Verification Expectation
 

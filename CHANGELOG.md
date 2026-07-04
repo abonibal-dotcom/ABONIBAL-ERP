@@ -1,5 +1,16 @@
 # Changelog
 
+## V1-INV-003 - Stock Movement Ledger Persistence Baseline
+
+- Added the minimal account-scoped Stock Movement Ledger persistence baseline under `src/modules/inventory/`.
+- Added stock movement model/types, persistence key helper, repository, validator, and Inventory service.
+- Registered Inventory dependencies in `Container`.
+- Implemented scoped storage with `stockMovements:{accountId}` from authenticated `AuthSession.account.id`.
+- Implemented opening balance/manual adjustment persistence, current quantity computation from non-voided movement deltas, and non-destructive void behavior.
+- Verified login, AuthSession account boundary, Route Guard, scoped ledger writes, void preservation, reload persistence, unchanged Product scoped/legacy storage hashes, clean console, and zero page exceptions.
+- Confirmed no Inventory UI, Inventory route, invoice implementation, Product CRUD behavior change, Product quantity migration, Product record mutation, Auth behavior change, Route Guard weakening, Firebase UID/accountId fallback, providerUserId/accountId fallback, or default account fallback was introduced.
+- Final status: `V1-INV-003 Ready for Architect / Owner Review`.
+
 ## V1-INV-002 - Account-Scoped Stock Movement Ledger Design Plan
 
 - Designed the V1 account-scoped Stock Movement Ledger before Inventory implementation or invoice stock deduction.
