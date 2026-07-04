@@ -252,9 +252,15 @@ Recommended next Inventory mission:
 
 `V1-INV-005 - Manual Opening Balance / Adjustment Flow`
 
+V1-INV-005 implemented the minimal authenticated manual Inventory movement flow for opening balance and manual adjustment, using `stockMovements:{accountId}` through the accepted ledger service.
+
+Recommended next Inventory mission:
+
+`V1-INV-006 - Inventory Movement Regression / Reporting Baseline`
+
 Invoice stock deduction remains blocked until the Inventory ledger runtime path and future owner-approved stock movement workflows are reviewed and accepted.
 
-The next Product, Inventory, or Invoice mission may proceed only after V1-INV-004 is reviewed and accepted by the Architect / Owner.
+The next Product, Inventory, or Invoice mission may proceed only after V1-INV-005 is reviewed and accepted by the Architect / Owner.
 
 ## Verification Expectation
 

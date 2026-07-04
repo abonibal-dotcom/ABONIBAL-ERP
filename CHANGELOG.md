@@ -1,5 +1,19 @@
 # Changelog
 
+## V1-INV-005 - Manual Opening Balance / Adjustment Flow
+
+- Added a protected `inventory` route and minimal authenticated Inventory page.
+- Added manual movement UI for `opening_balance` and `manual_adjustment` only.
+- Product selector reads active Products through `ProductService.getAll()`.
+- Current quantity display is computed from the accepted Stock Movement Ledger.
+- Valid opening balance and manual adjustment submissions write to `stockMovements:{accountId}` through `InventoryService`.
+- Invalid opening balance and manual adjustment submissions do not write movement records.
+- Verified soft-deleted Products are not selectable.
+- Verified reload preserves movement records and displayed current quantity.
+- Verified Product scoped/legacy storage hashes remain unchanged and `Product.quantity` is not updated.
+- Confirmed no invoice implementation, invoice stock deduction, Product CRUD behavior change, Product file change, Auth behavior change, Route Guard weakening, Firebase UID/accountId fallback, providerUserId/accountId fallback, or default account fallback was introduced.
+- Final status: `V1-INV-005 Ready for Architect / Owner Review`.
+
 ## V1-INV-004 - Stock Movement Ledger Runtime Verification
 
 - Verified the accepted account-scoped Stock Movement Ledger runtime behavior after V1-INV-003.
