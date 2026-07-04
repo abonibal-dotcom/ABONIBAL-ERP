@@ -72,6 +72,10 @@ V1-INV-001 Inventory / Stock Foundation Baseline is complete from execution side
 
 V1-INV-002 Account-Scoped Stock Movement Ledger Design Plan is complete from execution side and ready for Architect / Owner review.
 
+V1-INV-003 Stock Movement Ledger Persistence Baseline is complete from execution side and ready for Architect / Owner review.
+
+V1-INV-004 Stock Movement Ledger Runtime Verification is complete from execution side and ready for Architect / Owner review.
+
 Completed stabilization work:
 
 - `PATCH-000-ECS-001 - Route Registry Stabilization`
@@ -183,9 +187,16 @@ Completed stabilization work:
 - V1-INV-002 recommended `stockMovements:{accountId}` as the authoritative storage boundary and `inventorySnapshots:{accountId}` only as an optional rebuildable cache.
 - V1-INV-002 documented that invoices must create stock movements and must not directly edit `Product.quantity`.
 - V1-INV-002 confirmed invoice stock deduction remains blocked until Inventory persistence and current quantity computation are implemented and verified.
+- V1-INV-003 added the minimal account-scoped Stock Movement Ledger persistence baseline under `src/modules/inventory/`.
+- V1-INV-003 implemented `stockMovements:{accountId}` storage, movement validation, append, current quantity computation, and non-destructive void behavior.
+- V1-INV-003 verified opening balance and manual adjustment writes, non-voided current quantity computation, void preservation, reload persistence, unchanged Product storage hashes, clean console, and zero page exceptions.
+- V1-INV-003 did not add Inventory UI, Inventory routes, invoice implementation, invoice stock deduction, Product CRUD changes, Product quantity migration, Auth changes, Route Guard weakening, Firebase uid/accountId fallback, or default account fallback.
+- V1-INV-004 verified the Stock Movement Ledger runtime behavior without requiring a source fix.
+- V1-INV-004 verified valid appends, invalid rejection, malformed record tolerance, multi-product current quantity computation, other-account movement isolation, non-destructive void behavior, reload persistence, Product storage safety, clean console, and zero page exceptions.
+- V1-INV-004 did not change source files, add Inventory UI, add Inventory routes, add invoice implementation, alter Product CRUD, mutate Product records, change Auth, weaken Route Guard, use Firebase uid/provider user id as accountId, or add default account fallback.
 - Product dialog lifecycle was stabilized.
 - Malformed product localStorage read failures were contained.
-- Inventory is missing as a module.
+- Inventory now has a minimal stock movement ledger persistence module.
 - Clients are missing.
 - Suppliers are missing.
 - Sales and invoices are missing.
@@ -200,11 +211,11 @@ Completed stabilization work:
 
 Current mission:
 
-`V1-INV-002 - Account-Scoped Stock Movement Ledger Design Plan`
+`V1-INV-004 - Stock Movement Ledger Runtime Verification`
 
 Current next mission:
 
-V1-INV-002 complete from execution side and ready for Architect / Owner review.
+V1-INV-004 complete from execution side and ready for Architect / Owner review.
 
 Classification:
 
@@ -212,12 +223,12 @@ Classification:
 
 Allowed scope:
 
-Inventory architecture and persistence design documentation only.
+Stock Movement Ledger runtime verification and hardening only.
 
 Forbidden scope:
 
-No source changes, no Inventory implementation, no stock operations, no stock adjustment, no inventory UI, no invoices, no Product behavior change, no Product persistence change, no Auth redesign, no Route Guard weakening, no destructive migration, no legacy Product deletion, no legacy `localStorage.products` mutation, no automatic import on app startup, no permission matrix, no advanced roles, no hardcoded credentials, no real credentials committed, and no Firebase uid to `accountId` assumption.
+No Inventory UI, no Inventory route, no invoices, no invoice stock deduction, no Product CRUD behavior change, no Product quantity migration, no Product record mutation, no Auth redesign, no Route Guard weakening, no destructive migration, no legacy Product deletion, no legacy `localStorage.products` mutation, no automatic import on app startup, no permission matrix, no advanced roles, no hardcoded credentials, no real credentials committed, and no Firebase uid to `accountId` assumption.
 
 ## Next State
 
-Await Architect / Owner review for V1-INV-002. The next mission remains blocked until this mission is reviewed and accepted.
+Await Architect / Owner review for V1-INV-004. The next mission remains blocked until this mission is reviewed and accepted.

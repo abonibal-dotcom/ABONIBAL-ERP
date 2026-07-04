@@ -7,6 +7,9 @@ import { LocalStorageDriver } from "./persistence/LocalStorageDriver";
 import { ProductRepository } from "../modules/products/repositories/ProductRepository";
 import { ProductValidator } from "../modules/products/validators/ProductValidator";
 import { ProductService } from "../modules/products/services/ProductService";
+import { StockMovementRepository } from "../modules/inventory/repositories/StockMovementRepository";
+import { StockMovementValidator } from "../modules/inventory/validators/StockMovementValidator";
+import { InventoryService } from "../modules/inventory/services/InventoryService";
 import { getAuthStateService } from "../modules/auth/AuthRuntime";
 
 export class Container {
@@ -40,6 +43,22 @@ export class Container {
         );
 
         this.register("productService", productService);
+
+        const stockMovementRepository = new StockMovementRepository(driver);
+
+        this.register("stockMovementRepository", stockMovementRepository);
+
+        const stockMovementValidator = new StockMovementValidator();
+
+        this.register("stockMovementValidator", stockMovementValidator);
+
+        const inventoryService = new InventoryService(
+            stockMovementRepository,
+            stockMovementValidator,
+            getAuthStateService()
+        );
+
+        this.register("inventoryService", inventoryService);
 
     }
 
