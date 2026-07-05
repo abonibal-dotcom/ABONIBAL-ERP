@@ -76,9 +76,13 @@ export class InvoiceDraftPage extends Page {
         const issueButton = target.closest<HTMLButtonElement>(
             "[data-action=\"issue-invoice-draft\"]"
         );
+        const cancelButton = target.closest<HTMLButtonElement>(
+            "[data-action=\"cancel-invoice\"]"
+        );
 
         const invoiceId = editButton?.dataset.invoiceId;
         const issueInvoiceId = issueButton?.dataset.invoiceId;
+        const cancelInvoiceId = cancelButton?.dataset.invoiceId;
 
         if (invoiceId) {
             this.openDraftForEdit(invoiceId);
@@ -87,6 +91,11 @@ export class InvoiceDraftPage extends Page {
 
         if (issueInvoiceId) {
             this.issueDraft(issueInvoiceId);
+            return;
+        }
+
+        if (cancelInvoiceId) {
+            this.cancelInvoice(cancelInvoiceId);
         }
 
     };
@@ -440,6 +449,7 @@ export class InvoiceDraftPage extends Page {
                         <th>Unit price</th>
                         <th>Line total</th>
                         <th>Stock movement</th>
+                        <th>Reversal movement</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -458,9 +468,14 @@ export class InvoiceDraftPage extends Page {
     ): string {
 
         const stockMovementId = line.stockMovementId?.trim() ?? "";
-        const stockMovementDisplay = invoice.status === "issued"
+        const reversalStockMovementId =
+            line.reversalStockMovementId?.trim() ?? "";
+        const stockMovementDisplay = invoice.status !== "draft"
             ? stockMovementId || "Missing movement"
             : "Not issued";
+        const reversalDisplay = invoice.status === "cancelled"
+            ? reversalStockMovementId || "Missing reversal"
+            : "-";
 
         return `
             <tr
@@ -468,6 +483,7 @@ export class InvoiceDraftPage extends Page {
                 data-invoice-id="${this.escapeHtml(invoice.id)}"
                 data-product-id="${this.escapeHtml(line.productId)}"
                 data-stock-movement-id="${this.escapeHtml(stockMovementId)}"
+                data-reversal-stock-movement-id="${this.escapeHtml(reversalStockMovementId)}"
             >
                 <td class="invoice-line-product-snapshot">
                     ${this.escapeHtml(line.productNameSnapshot)}
@@ -484,12 +500,27 @@ export class InvoiceDraftPage extends Page {
                 <td class="invoice-line-stock-movement-id">
                     ${this.escapeHtml(stockMovementDisplay)}
                 </td>
+                <td class="invoice-line-reversal-stock-movement-id">
+                    ${this.escapeHtml(reversalDisplay)}
+                </td>
             </tr>
         `;
 
     }
 
     private renderInvoiceActions(invoice: Invoice): string {
+
+        if (invoice.status === "issued") {
+            return `
+                <button
+                    type="button"
+                    data-action="cancel-invoice"
+                    data-invoice-id="${this.escapeHtml(invoice.id)}"
+                >
+                    Cancel
+                </button>
+            `;
+        }
 
         if (invoice.status !== "draft") {
             return `<span class="invoice-action-readonly">${this.escapeHtml(invoice.status)}</span>`;
@@ -680,6 +711,30 @@ export class InvoiceDraftPage extends Page {
         this.resetForm();
         this.renderDrafts();
         this.setMessage("Invoice issued.");
+
+    }
+
+    private cancelInvoice(invoiceId: string): void {
+
+        if (!confirm("Cancel this issued invoice and reverse its stock movement?")) {
+            this.setMessage("Invoice cancellation cancelled.");
+            return;
+        }
+
+        const result = this.invoiceService.markCancelled(
+            invoiceId,
+            "User confirmed invoice cancellation"
+        );
+
+        if (!result.success || !result.invoice) {
+            this.setMessage(result.errors.join(" "));
+            this.renderDrafts();
+            return;
+        }
+
+        this.resetForm();
+        this.renderDrafts();
+        this.setMessage("Invoice cancelled and stock reversed.");
 
     }
 

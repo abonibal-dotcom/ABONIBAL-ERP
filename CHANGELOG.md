@@ -1,5 +1,19 @@
 # Changelog
 
+## V1-SALES-008 - Invoice Cancellation / Stock Reversal Implementation
+
+- Added safe issued-invoice cancellation with full stock reversal.
+- Added optional invoice line `reversalStockMovementId`.
+- Updated `InvoiceService.markCancelled()` so only issued invoices can be cancelled.
+- Validated original `sale_deduction` movement integrity before cancellation.
+- Created additive positive `sale_return` movements with `referenceType: "invoice_return"`.
+- Linked reversal movements to the original `stockMovementId`, invoice, and invoice line through metadata.
+- Marked invoices `cancelled` only after reversal creation.
+- Added minimal Cancel action for issued invoices only and displayed reversal references in the audit view.
+- Verified draft cancellation blocked, missing invoice cancellation blocked, duplicate cancellation safe, original `sale_deduction` preserved, `sale_return` created, availability restored from 3 to 5, reload persistence, Product hash unchanged, clean console, zero page exceptions, and `.env` untracked.
+- Confirmed no returns implementation, no Product CRUD behavior change, no Product mutation, no `Product.quantity` update, no Auth change, no Route Guard weakening, no localStorage migration, no Firebase UID/accountId fallback, and no default account fallback.
+- Final status: `V1-SALES-008 Ready for Architect / Owner Review`.
+
 ## V1-SALES-007 - Invoice Cancellation / Stock Reversal Design Plan
 
 - Designed the V1 issued-invoice cancellation policy without source changes.

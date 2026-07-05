@@ -385,6 +385,32 @@ Recommended next Sales / Invoice mission:
 
 `V1-SALES-008 - Invoice Cancellation / Stock Reversal Implementation`.
 
+V1-SALES-008 implemented safe issued invoice cancellation and stock reversal.
+
+Accepted implementation result:
+
+- Only issued invoices can be cancelled through the cancellation flow.
+- Draft cancellation is blocked.
+- Missing invoice cancellation fails safely.
+- Already cancelled invoice cancellation fails safely and does not create
+  duplicate movements.
+- Original `sale_deduction` movements remain preserved.
+- Cancellation appends positive `sale_return` movements with
+  `referenceType: "invoice_return"`.
+- Reversal metadata links the reversal to the original `sale_deduction`, invoice,
+  and invoice line.
+- Invoice status becomes `cancelled` after reversal creation.
+- Invoice audit view displays cancelled status and reversal reference.
+- Available stock increases by the cancelled quantity through ledger summation.
+- Product records remain unchanged and `Product.quantity` remains
+  non-authoritative.
+- Returns remain deferred.
+
+Recommended next Sales / Invoice step:
+
+Architect / Owner review of V1-SALES-008 before any return, accounting, or next
+Sales workflow mission.
+
 ## Verification Expectation
 
 Each future ECS must include:

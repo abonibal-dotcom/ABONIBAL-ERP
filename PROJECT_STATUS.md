@@ -96,6 +96,8 @@ V1-SALES-006 Issued Invoice Read / Stock Deduction Audit View is complete from e
 
 V1-SALES-007 Invoice Cancellation / Stock Reversal Design Plan is complete from execution side and ready for Architect / Owner review.
 
+V1-SALES-008 Invoice Cancellation / Stock Reversal Implementation is complete from execution side and ready for Architect / Owner review.
+
 Completed stabilization work:
 
 - `PATCH-000-ECS-001 - Route Registry Stabilization`
@@ -254,6 +256,10 @@ Completed stabilization work:
 - V1-SALES-007 recommends reversal traceability through metadata linking the reversal to the original `sale_deduction`, invoice, and invoice line.
 - V1-SALES-007 verified read-only runtime evidence: issued invoice visible, sale deduction traceable, no cancellation UI, no reversal movement created, invoice/movement counts unchanged, Product hash unchanged, clean console, zero page exceptions, and `.env` untracked.
 - V1-SALES-007 did not change source files, implement cancellation, add cancellation UI, implement returns, create reversal movements, mutate Products, mutate Inventory, update `Product.quantity`, weaken Route Guard, change Auth, migrate localStorage, use Firebase uid/provider user id as `accountId`, or add default account fallback.
+- V1-SALES-008 implemented safe issued-invoice cancellation and stock reversal.
+- V1-SALES-008 added optional invoice line `reversalStockMovementId`, positive `sale_return` movement creation with `referenceType: "invoice_return"`, and reversal metadata linking the reversal to the original `sale_deduction`, invoice, and invoice line.
+- V1-SALES-008 verifies draft cancellation is blocked, missing invoice cancellation fails safely, issued invoice cancellation succeeds, invoice status becomes `cancelled`, original `sale_deduction` remains stored, one `sale_return` is created, duplicate cancellation creates no duplicate movement, available quantity increases from 3 to 5, reload preserves the audit trail, Product scoped hash remains unchanged, clean console, zero page exceptions, and `.env` untracked.
+- V1-SALES-008 did not implement returns, partial returns, invoice hard delete, Product CRUD changes, Product mutation, `Product.quantity` updates, Auth changes, Route Guard weakening, localStorage migration, Firebase uid/provider user id as `accountId`, or default account fallback.
 - Expenses are missing.
 - Safes and cash movement are missing.
 - Basic ledger is missing.
@@ -265,11 +271,11 @@ Completed stabilization work:
 
 Current mission:
 
-`V1-SALES-007 - Invoice Cancellation / Stock Reversal Design Plan`
+`V1-SALES-008 - Invoice Cancellation / Stock Reversal Implementation`
 
 Current next mission:
 
-V1-SALES-007 complete from execution side and ready for Architect / Owner review.
+V1-SALES-008 complete from execution side and ready for Architect / Owner review.
 
 Classification:
 
@@ -277,12 +283,12 @@ Classification:
 
 Allowed scope:
 
-Sales / Invoice cancellation and stock reversal design only.
+Issued invoice cancellation and stock reversal implementation only.
 
 Forbidden scope:
 
-No source file changes, no invoice cancellation implementation, no cancellation UI, no invoice return flow, no reversal movement creation, no invoice hard delete, no Product CRUD behavior change, no Product quantity migration, no Product record mutation, no Inventory mutation, no Auth redesign, no Route Guard weakening, no destructive migration, no localStorage migration, no hardcoded credentials, no real credentials committed, and no Firebase uid/provider user id to `accountId` assumption.
+No returns implementation, no partial returns, no invoice hard delete, no Product CRUD behavior change, no Product quantity migration, no Product record mutation, no Auth redesign, no Route Guard weakening, no destructive migration, no localStorage migration, no hardcoded credentials, no real credentials committed, and no Firebase uid/provider user id to `accountId` assumption.
 
 ## Next State
 
-Await Architect / Owner review for V1-SALES-007. Recommended next mission is `V1-SALES-008 - Invoice Cancellation / Stock Reversal Implementation`. Returns remain blocked until invoice cancellation and stock reversal implementation is approved, implemented, and verified.
+Await Architect / Owner review for V1-SALES-008. Returns remain blocked until a later owner-approved mission explicitly defines return policy and runtime verification gates.
