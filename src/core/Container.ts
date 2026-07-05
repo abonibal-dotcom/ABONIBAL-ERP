@@ -10,6 +10,9 @@ import { ProductService } from "../modules/products/services/ProductService";
 import { StockMovementRepository } from "../modules/inventory/repositories/StockMovementRepository";
 import { StockMovementValidator } from "../modules/inventory/validators/StockMovementValidator";
 import { InventoryService } from "../modules/inventory/services/InventoryService";
+import { InvoiceRepository } from "../modules/sales/repositories/InvoiceRepository";
+import { InvoiceValidator } from "../modules/sales/validators/InvoiceValidator";
+import { InvoiceService } from "../modules/sales/services/InvoiceService";
 import { getAuthStateService } from "../modules/auth/AuthRuntime";
 
 export class Container {
@@ -60,6 +63,22 @@ export class Container {
         );
 
         this.register("inventoryService", inventoryService);
+
+        const invoiceRepository = new InvoiceRepository(driver);
+
+        this.register("invoiceRepository", invoiceRepository);
+
+        const invoiceValidator = new InvoiceValidator();
+
+        this.register("invoiceValidator", invoiceValidator);
+
+        const invoiceService = new InvoiceService(
+            invoiceRepository,
+            invoiceValidator,
+            getAuthStateService()
+        );
+
+        this.register("invoiceService", invoiceService);
 
     }
 
