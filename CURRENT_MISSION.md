@@ -2,82 +2,82 @@
 
 ## Mission
 
-`V1-SALES-003 - Account-Scoped Invoice Persistence Baseline`
+`V1-SALES-004 - Invoice Draft Create / Update Flow`
 
 ## Classification
 
 `ECS`
 
-This is the first Sales / Invoice persistence implementation mission.
+This is the first minimal authenticated Invoice draft UI flow.
 
-This is not invoice UI implementation, invoice route implementation, invoice stock deduction, Product CRUD, Inventory mutation, Auth work, Route Guard work, or localStorage migration.
+This is not invoice issuing, invoice stock deduction, invoice cancellation, Product CRUD, Inventory mutation, Auth work, Route Guard weakening, or localStorage migration.
 
 ## Objective
 
-Implement the minimal account-scoped Invoice persistence baseline using:
-
-```text
-invoices:{accountId}
-```
+Implement and verify a minimal authenticated Invoice Draft Create / Update flow on top of the accepted account-scoped invoice persistence baseline.
 
 The mission proves:
 
-- Invoices are stored account-scoped.
-- Invoice records include `accountId`.
-- Invoice records support `draft`, `issued`, and `cancelled` lifecycle states at model/service level.
-- Invoice lines can store Product snapshot data.
-- Invoice persistence does not mutate Products.
-- Invoice persistence does not mutate Inventory.
-- No stock deduction is performed.
-- No invoice UI is added.
+- Protected invoice route exists.
+- Unauthenticated invoice access redirects to Login.
+- Authenticated invoice access shows the draft UI.
+- Active Products can be selected for invoice lines.
+- Soft-deleted Products are not selectable.
+- Invalid draft submissions do not write invoices.
+- Valid draft create writes exactly one draft invoice to `invoices:{accountId}`.
+- Existing draft can be updated without changing id, accountId, or status.
+- Invoice lines store Product snapshot data.
+- Totals are computed and persisted.
+- Reload preserves draft invoice state.
+- No invoice issuing, cancellation, or stock deduction behavior exists.
 
 ## Accepted Baseline
 
-- Baseline tag: `v1-sales-002-account-scoped-invoice-persistence-design-plan`.
+- Baseline tag: `v1-sales-003-account-scoped-invoice-persistence-baseline`.
 - Firebase Auth.
 - Explicit `accountId`.
 - Route Guard.
 - Account-scoped Products.
 - Product regression PASS through ECS-011.
-- Stock Movement Ledger and availability gate PASS through V1-INV-007.
-- V1-SALES-001 confirmed no invoice implementation existed.
-- V1-SALES-002 accepted the invoice persistence design.
+- Inventory availability gate PASS through V1-INV-007.
+- Invoice persistence baseline PASS through V1-SALES-003.
 
 ## Current Status
 
-`V1-SALES-003 Ready for Architect / Owner Review`
+`V1-SALES-004 Ready for Architect / Owner Review`
 
 ## Implementation Result
 
-- Added `src/modules/sales/` invoice model, status, persistence key, repository, validator, and service.
-- Registered invoice repository, validator, and service in `Container`.
-- Storage key: `invoices:{accountId}`.
-- Service methods: `getAll`, `getById`, `createDraft`, `updateDraft`, `markIssued`, and `markCancelled`.
-- `createDraft` stores account id, createdBy, invoice number, draft status, line snapshots, and totals.
-- `updateDraft` updates draft metadata without changing account id.
-- `markIssued` sets issued status and issue metadata without stock movements.
-- `markCancelled` sets cancellation status and metadata without hard delete.
+- Added protected `invoices` route.
+- Added `Invoices` Sidebar navigation entry.
+- Added `src/modules/sales/pages/InvoiceDraftPage.ts`.
+- Added minimal draft form with customer name, Product selector, quantity, unit price, discount, tax, and notes.
+- Added minimal draft list with edit action.
+- Used `ProductService.getAll()` for active Product selection.
+- Used `InvoiceService.createDraft()` and `InvoiceService.updateDraft()`.
+- Stored invoice records under `invoices:{accountId}` through the accepted service/repository path.
+- Kept invoice-level discount/tax at zero in the draft page so line-level discount/tax are not double-counted on update.
 
 ## Verification Completed
 
 - Pre-check: PASS.
 - Document read: PASS.
 - Source inspection: PASS.
+- Baseline runtime before source changes: PASS.
 - TypeScript: PASS.
 - Build: PASS.
-- Runtime verification: PASS.
+- Runtime verification after implementation: PASS.
 - Console errors: 0.
 - Page exceptions: 0.
 
 ## Scope Confirmation
 
-- No invoice UI added.
-- No invoice route added.
-- No invoice create/edit/delete screen added.
-- No invoice stock deduction added.
-- No `sale_deduction` movements created.
+- No invoice issuing implemented.
+- No invoice cancellation UI implemented.
+- No invoice stock deduction implemented.
+- No `sale_deduction` movement created.
 - No `stockMovements:{accountId}` mutation.
-- No Product records mutated.
+- No Product records mutated by invoice create/update.
 - `Product.quantity` not updated.
 - No Product CRUD behavior changed.
 - No Inventory behavior changed.
@@ -92,20 +92,25 @@ The mission proves:
 ## Evidence
 
 ```text
-PATCHES/V1-SALES-003/verification.md
-PATCHES/V1-SALES-003/closure-report.md
-outputs/V1-SALES-003/runtime.json
-outputs/V1-SALES-003/dom.json
-outputs/V1-SALES-003/console.log
-outputs/V1-SALES-003/storage-snapshot-sanitized.json
-outputs/V1-SALES-003/screenshot.png
-outputs/V1-SALES-003/invoice-persistence-summary.json
+PATCHES/V1-SALES-004/verification.md
+PATCHES/V1-SALES-004/closure-report.md
+outputs/V1-SALES-004/baseline-runtime.json
+outputs/V1-SALES-004/baseline-dom.json
+outputs/V1-SALES-004/baseline-console.log
+outputs/V1-SALES-004/baseline-storage-snapshot-sanitized.json
+outputs/V1-SALES-004/baseline-screenshot.png
+outputs/V1-SALES-004/after-runtime.json
+outputs/V1-SALES-004/after-dom.json
+outputs/V1-SALES-004/after-console.log
+outputs/V1-SALES-004/after-storage-snapshot-sanitized.json
+outputs/V1-SALES-004/after-screenshot.png
+outputs/V1-SALES-004/invoice-draft-flow-summary.json
 ```
 
 ## Next
 
 Recommended next mission:
 
-`V1-SALES-004 - Invoice Draft Create / Update Flow`
+Owner-approved invoice issue / stock deduction planning or implementation gate.
 
-Do not start invoice UI or invoice stock deduction until V1-SALES-003 is reviewed and accepted.
+Do not start invoice issuing, invoice stock deduction, or the next mission until V1-SALES-004 is reviewed and accepted.

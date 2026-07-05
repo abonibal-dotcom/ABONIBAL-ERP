@@ -5,6 +5,7 @@ import { LoginPage } from "../modules/auth/pages/LoginPage";
 import { InventoryPage } from "../modules/inventory/pages/InventoryPage";
 
 import { ProductListPage } from "../modules/products/pages/ProductListPage";
+import { InvoiceDraftPage } from "../modules/sales/pages/InvoiceDraftPage";
 import type { Page } from "../framework/Page";
 
 export type RouteAccess = "public" | "protected";
@@ -41,6 +42,11 @@ export const routeRegistry = {
         access: "protected" as const,
     },
 
+    invoices: {
+        page: InvoiceDraftPage,
+        access: "protected" as const,
+    },
+
 };
 
 export type RouteName = keyof typeof routeRegistry;
@@ -54,6 +60,8 @@ export const routes: Record<RouteName, RoutePage> = {
     products: routeRegistry.products.page,
 
     inventory: routeRegistry.inventory.page,
+
+    invoices: routeRegistry.invoices.page,
 
 };
 
@@ -109,6 +117,11 @@ export const navigationRoutes: NavigationRoute[] = [
     {
         name: "inventory",
         label: "Inventory"
+    },
+
+    {
+        name: "invoices",
+        label: "Invoices"
     },
 
 ];
