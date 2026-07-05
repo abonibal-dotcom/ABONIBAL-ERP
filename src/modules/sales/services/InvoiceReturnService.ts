@@ -1,4 +1,6 @@
 import type { AuthStateService } from "../../auth/AuthStateService";
+import type { StockMovement } from "../../inventory/StockMovement";
+import type { InventoryService } from "../../inventory/services/InventoryService";
 import type { Invoice, InvoiceLine } from "../Invoice";
 import type {
     InvoiceReturn,
@@ -16,18 +18,21 @@ export class InvoiceReturnService {
     private readonly validator: InvoiceReturnValidator;
     private readonly invoiceRepository: InvoiceRepository;
     private readonly authStateService: AuthStateService;
+    private readonly inventoryService: InventoryService;
 
     public constructor(
         repository: InvoiceReturnRepository,
         validator: InvoiceReturnValidator,
         invoiceRepository: InvoiceRepository,
-        authStateService: AuthStateService
+        authStateService: AuthStateService,
+        inventoryService: InventoryService
     ) {
 
         this.repository = repository;
         this.validator = validator;
         this.invoiceRepository = invoiceRepository;
         this.authStateService = authStateService;
+        this.inventoryService = inventoryService;
 
     }
 
@@ -129,6 +134,145 @@ export class InvoiceReturnService {
             success: true,
             errors: [],
             invoiceReturn
+        };
+
+    }
+
+    public executeReturn(invoiceReturnId: string): InvoiceReturnResult {
+
+        const accountContext = this.currentAccountContext();
+        const normalizedInvoiceReturnId = invoiceReturnId.trim();
+
+        if (!accountContext) {
+            return failedInvoiceReturnResult("Authenticated account is required.");
+        }
+
+        if (!normalizedInvoiceReturnId) {
+            return failedInvoiceReturnResult("Invoice return id is required.");
+        }
+
+        const currentReturn = this.repository.findForAccount(
+            accountContext.accountId,
+            normalizedInvoiceReturnId
+        );
+
+        if (!currentReturn) {
+            return failedInvoiceReturnResult("Invoice return not found.");
+        }
+
+        if (currentReturn.accountId !== accountContext.accountId) {
+            return failedInvoiceReturnResult("Invoice return account mismatch.");
+        }
+
+        if (currentReturn.status !== "recorded") {
+            return failedInvoiceReturnResult(
+                "Only recorded invoice returns can be executed."
+            );
+        }
+
+        if (currentReturn.lines.some(isExecutedReturnLine)) {
+            return failedInvoiceReturnResult(
+                "Invoice return is already executed."
+            );
+        }
+
+        const invoice = this.invoiceRepository.findForAccount(
+            accountContext.accountId,
+            currentReturn.invoiceId
+        );
+
+        if (!invoice) {
+            return failedInvoiceReturnResult("Invoice not found.");
+        }
+
+        if (invoice.accountId !== accountContext.accountId) {
+            return failedInvoiceReturnResult("Invoice account mismatch.");
+        }
+
+        if (invoice.status !== "issued") {
+            return failedInvoiceReturnResult(
+                "Only issued invoices can be returned."
+            );
+        }
+
+        const validation = this.validateReturnExecution(
+            accountContext.accountId,
+            currentReturn,
+            invoice
+        );
+
+        if (validation.errors.length > 0) {
+            return failedInvoiceReturnResult(validation.errors);
+        }
+
+        const createdMovementIds = new Map<string, string>();
+
+        for (const line of validation.lines) {
+            const movementResult = this.inventoryService.addMovement({
+                productId: line.returnLine.productId,
+                type: "sale_return",
+                quantityDelta: line.returnLine.returnQuantity,
+                reason: `Invoice return ${currentReturn.returnNumber}`,
+                referenceType: "invoice_return",
+                referenceId: currentReturn.id,
+                metadata: {
+                    invoiceReturnId: currentReturn.id,
+                    invoiceReturnLineId: line.returnLine.id,
+                    invoiceId: invoice.id,
+                    invoiceLineId: line.invoiceLine.id,
+                    invoiceNumber: invoice.invoiceNumber,
+                    originalSaleDeductionMovementId:
+                        line.originalMovement.id,
+                    originalStockMovementId: line.originalMovement.id,
+                    reversesMovementId: line.originalMovement.id,
+                    originalMovementType: line.originalMovement.type
+                }
+            });
+
+            if (!movementResult.success || !movementResult.movement) {
+                return failedInvoiceReturnResult(movementResult.errors);
+            }
+
+            createdMovementIds.set(
+                line.returnLine.id,
+                movementResult.movement.id
+            );
+        }
+
+        const updatedAt = new Date().toISOString();
+        const executedReturn: InvoiceReturn = {
+            ...currentReturn,
+            status: "executed",
+            lines: currentReturn.lines.map(line => ({
+                ...line,
+                returnStockMovementId:
+                    createdMovementIds.get(line.id)
+                    ?? line.returnStockMovementId
+                    ?? null
+            })),
+            updatedAt,
+            updatedBy: accountContext.userId
+        };
+        const errors = this.validator.validate(executedReturn);
+
+        if (errors.length > 0) {
+            return failedInvoiceReturnResult(errors);
+        }
+
+        const savedReturn = this.repository.updateForAccount(
+            accountContext.accountId,
+            currentReturn.id,
+            executedReturn
+        );
+
+        if (!savedReturn) {
+            return failedInvoiceReturnResult("Invoice return not found.");
+        }
+
+        return {
+            success: true,
+            errors: [],
+            invoiceReturn: savedReturn
         };
 
     }
@@ -272,6 +416,142 @@ export class InvoiceReturnService {
 
     }
 
+    private validateReturnExecution(
+        accountId: string,
+        invoiceReturn: InvoiceReturn,
+        invoice: Invoice
+    ): InvoiceReturnExecutionValidation {
+
+        const errors: string[] = [];
+        const movements = this.inventoryService.getAll();
+        const lines: InvoiceReturnExecutionLine[] = [];
+        const seenInvoiceLineIds = new Set<string>();
+
+        for (const returnLine of invoiceReturn.lines) {
+            if (seenInvoiceLineIds.has(returnLine.invoiceLineId)) {
+                errors.push("Duplicate invoice return line is not allowed.");
+                continue;
+            }
+
+            seenInvoiceLineIds.add(returnLine.invoiceLineId);
+
+            const invoiceLine = invoice.lines.find(
+                currentLine => currentLine.id === returnLine.invoiceLineId
+            );
+
+            if (!invoiceLine) {
+                errors.push("Invoice line not found.");
+                continue;
+            }
+
+            if (returnLine.productId !== invoiceLine.productId) {
+                errors.push("Invoice return line Product mismatch.");
+            }
+
+            if (!Number.isFinite(returnLine.returnQuantity) || returnLine.returnQuantity <= 0) {
+                errors.push("Return quantity must be positive.");
+                continue;
+            }
+
+            const remainingQuantity = this.getRemainingReturnableQuantityExcludingReturn(
+                accountId,
+                invoice.id,
+                invoiceLine.id,
+                invoiceReturn.id
+            );
+
+            if (returnLine.returnQuantity > remainingQuantity) {
+                errors.push("Return quantity exceeds remaining returnable quantity.");
+            }
+
+            const originalMovementId = (
+                returnLine.originalSaleDeductionMovementId
+                ?? invoiceLine.stockMovementId
+                ?? ""
+            ).trim();
+
+            if (!originalMovementId) {
+                errors.push("Original sale deduction movement is required.");
+                continue;
+            }
+
+            const originalMovement = movements.find(
+                movement => movement.id === originalMovementId
+            );
+
+            if (!originalMovement) {
+                errors.push("Original sale deduction movement not found.");
+                continue;
+            }
+
+            if (
+                originalMovement.accountId !== accountId
+                || originalMovement.productId !== returnLine.productId
+                || originalMovement.type !== "sale_deduction"
+                || originalMovement.voidedAt
+            ) {
+                errors.push("Original sale deduction movement is invalid.");
+                continue;
+            }
+
+            if (
+                hasExistingReturnMovement(
+                    movements,
+                    invoiceReturn.id,
+                    returnLine.id
+                )
+            ) {
+                errors.push("Invoice return line is already executed.");
+                continue;
+            }
+
+            lines.push({
+                returnLine,
+                invoiceLine,
+                originalMovement
+            });
+        }
+
+        return {
+            errors,
+            lines
+        };
+
+    }
+
+    private getRemainingReturnableQuantityExcludingReturn(
+        accountId: string,
+        invoiceId: string,
+        invoiceLineId: string,
+        excludedInvoiceReturnId: string
+    ): number {
+
+        const invoice = this.invoiceRepository.findForAccount(
+            accountId,
+            invoiceId
+        );
+        const line = invoice?.lines.find(
+            currentLine => currentLine.id === invoiceLineId
+        );
+
+        if (!line) {
+            return 0;
+        }
+
+        const returnedQuantity = this.repository
+            .allForInvoice(accountId, invoiceId)
+            .filter(invoiceReturn => invoiceReturn.id !== excludedInvoiceReturnId)
+            .flatMap(invoiceReturn => invoiceReturn.lines)
+            .filter(returnLine => returnLine.invoiceLineId === invoiceLineId)
+            .reduce(
+                (total, returnLine) => total + returnLine.returnQuantity,
+                0
+            );
+
+        return Math.max(0, line.quantity - returnedQuantity);
+
+    }
+
     private validateReturnLineRequest(
         invoice: Invoice,
         lineInput: InvoiceReturnLineInput
@@ -364,6 +644,21 @@ interface InvoiceReturnAccountContext {
 
 }
 
+interface InvoiceReturnExecutionValidation {
+
+    errors: string[];
+    lines: InvoiceReturnExecutionLine[];
+
+}
+
+interface InvoiceReturnExecutionLine {
+
+    returnLine: InvoiceReturnLine;
+    invoiceLine: InvoiceLine;
+    originalMovement: StockMovement;
+
+}
+
 function buildReturnLines(
     invoice: Invoice,
     lines: InvoiceReturnLineInput[]
@@ -448,6 +743,43 @@ function normalizeOptionalString(value: string | undefined): string | undefined 
 }
 
 function normalizeRequiredString(value: unknown): string {
+
+    return typeof value === "string" ? value.trim() : "";
+
+}
+
+function isExecutedReturnLine(line: InvoiceReturnLine): boolean {
+
+    return typeof line.returnStockMovementId === "string"
+        && line.returnStockMovementId.trim().length > 0;
+
+}
+
+function hasExistingReturnMovement(
+    movements: StockMovement[],
+    invoiceReturnId: string,
+    invoiceReturnLineId: string
+): boolean {
+
+    return movements.some(movement => movement.type === "sale_return"
+        && movement.referenceType === "invoice_return"
+        && !movement.voidedAt
+        && (
+            movement.referenceId === invoiceReturnId
+            || movementMetadataString(movement, "invoiceReturnId")
+                === invoiceReturnId
+        )
+        && movementMetadataString(movement, "invoiceReturnLineId")
+            === invoiceReturnLineId);
+
+}
+
+function movementMetadataString(
+    movement: StockMovement,
+    key: string
+): string {
+
+    const value = movement.metadata?.[key];
 
     return typeof value === "string" ? value.trim() : "";
 

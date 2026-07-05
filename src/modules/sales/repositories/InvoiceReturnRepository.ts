@@ -50,6 +50,29 @@ export class InvoiceReturnRepository extends Repository<InvoiceReturn> {
 
     }
 
+    public updateForAccount(
+        accountId: string,
+        invoiceReturnId: string,
+        updatedReturn: InvoiceReturn
+    ): InvoiceReturn | null {
+
+        const invoiceReturns = this.allForAccount(accountId);
+        const invoiceReturnIndex = invoiceReturns.findIndex(
+            invoiceReturn => invoiceReturn.id === invoiceReturnId
+        );
+
+        if (invoiceReturnIndex === -1) {
+            return null;
+        }
+
+        invoiceReturns[invoiceReturnIndex] = updatedReturn;
+
+        this.saveForAccount(accountId, invoiceReturns);
+
+        return updatedReturn;
+
+    }
+
     public allForInvoice(
         accountId: string,
         invoiceId: string

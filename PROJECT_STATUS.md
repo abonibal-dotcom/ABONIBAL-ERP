@@ -104,6 +104,8 @@ V1-SALES-010 Invoice Returns / Partial Returns Design Plan is complete from exec
 
 V1-SALES-011 Account-Scoped Invoice Returns Persistence Baseline is complete from execution side and ready for Architect / Owner review.
 
+V1-SALES-012 Invoice Return Stock Restoration Execution is complete from execution side and ready for Architect / Owner review.
+
 Completed stabilization work:
 
 - `PATCH-000-ECS-001 - Route Registry Stabilization`
@@ -278,6 +280,11 @@ Completed stabilization work:
 - V1-SALES-011 implemented `invoiceReturns:{accountId}`, return model/types, repository, validator, service methods, returnable quantity computation, duplicate/over-return rejection, and Container registration.
 - V1-SALES-011 verified return records persist account-scoped, reference issued invoices and invoice lines, preserve Product snapshot data, survive reload, reject draft/cancelled/missing/over-return attempts, keep invoices and stock movements unchanged, create no `sale_return` movements, keep Product storage unchanged, clean console, zero page exceptions, and `.env` untracked.
 - V1-SALES-011 did not add return UI, return routes, stock restoration, invoice status changes to `partially_returned` or `returned`, invoice issue/cancellation behavior changes, Product CRUD changes, Product mutation, `Product.quantity` updates, Auth changes, Route Guard weakening, localStorage migration, Firebase uid/provider user id as `accountId`, or default account fallback.
+- V1-SALES-012 added service-level execution for existing invoice return records.
+- V1-SALES-012 executes return records by validating the issued invoice, original `sale_deduction`, remaining returnable quantity, and duplicate execution boundary before creating positive `sale_return` movements.
+- V1-SALES-012 writes created `sale_return` movement ids back to return lines as `returnStockMovementId` and marks return records `executed`.
+- V1-SALES-012 verified available stock increases through ledger summation, reload preserves the return execution audit trail, duplicate execution is safe, over-return is rejected, invoices remain unchanged, Product storage remains unchanged, clean console, zero page exceptions, and `.env` untracked.
+- V1-SALES-012 did not add return UI, add return routes, mutate invoices, change invoice statuses to `partially_returned` or `returned`, alter invoice issue/cancellation behavior, mutate Products, update `Product.quantity`, change Auth, weaken Route Guard, migrate localStorage, use Firebase uid/provider user id as `accountId`, or add default account fallback.
 - Expenses are missing.
 - Safes and cash movement are missing.
 - Basic ledger is missing.
@@ -289,11 +296,11 @@ Completed stabilization work:
 
 Current mission:
 
-`V1-SALES-011 - Account-Scoped Invoice Returns Persistence Baseline`
+`V1-SALES-012 - Invoice Return Stock Restoration Execution`
 
 Current next mission:
 
-V1-SALES-011 complete from execution side and ready for Architect / Owner review.
+V1-SALES-012 complete from execution side and ready for Architect / Owner review.
 
 Classification:
 
@@ -301,21 +308,20 @@ Classification:
 
 Allowed scope completed:
 
-Invoice return model/types, account-scoped storage key, repository, validator,
-service, returnable quantity computation, Container registration, runtime
-evidence, and documentation.
+Invoice return execution method, return status update, account-scoped return
+update support, `sale_return` stock restoration, `returnStockMovementId`
+linking, runtime evidence, and documentation.
 
 Forbidden scope preserved:
 
-No return UI, no return route, no stock restoration, no `sale_return` movement
-for returns, no invoice mutation, no stock movement mutation, no Product CRUD
-behavior change, no Product quantity migration, no Product record mutation, no
-Auth redesign, no Route Guard weakening, no destructive migration, no
-localStorage migration, no hardcoded credentials, no real credentials committed,
-and no Firebase uid/provider user id to `accountId` assumption.
+No return UI, no return route, no invoice mutation, no invoice status change to
+`partially_returned` or `returned`, no Product CRUD behavior change, no Product
+quantity migration, no Product record mutation, no Auth redesign, no Route
+Guard weakening, no destructive migration, no localStorage migration, no
+hardcoded credentials, no real credentials committed, and no Firebase
+uid/provider user id to `accountId` assumption.
 
 ## Next State
 
-Await Architect / Owner review for V1-SALES-011. Return UI and stock
-restoration remain blocked until a separately approved mission implements the
-next return lifecycle step.
+Await Architect / Owner review for V1-SALES-012. Return UI remains blocked
+until a separately approved mission implements the next return lifecycle step.

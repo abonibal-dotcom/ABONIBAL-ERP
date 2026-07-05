@@ -1,5 +1,37 @@
 # Changelog
 
+## V1-SALES-012 - Invoice Return Stock Restoration Execution
+
+- Added service-level invoice return execution for existing persisted return records.
+- Added `executed` as an invoice return lifecycle status.
+- Added account-scoped return update support to `InvoiceReturnRepository`.
+- Added `InvoiceReturnService.executeReturn()`.
+- Injected `InventoryService` into `InvoiceReturnService`.
+- Validated referenced issued invoice, return lines, original `sale_deduction`
+  movements, remaining returnable quantity, and duplicate execution before
+  writing stock movements.
+- Created positive `sale_return` movements in `stockMovements:{accountId}` with
+  `referenceType: "invoice_return"`.
+- Linked each executed return line to the created movement through
+  `returnStockMovementId`.
+- Verified return execution increases available stock from `3` to `4` for a
+  return quantity of `1`.
+- Verified reload preserves `returnStockMovementId`, `sale_return`, and restored
+  availability.
+- Verified draft invoice return execution, cancelled invoice return execution,
+  missing return, missing invoice, missing invoice line, zero/negative quantity,
+  over-return, and duplicate execution are rejected.
+- Verified original `sale_deduction` remains stored, `invoices:{accountId}` hash
+  remains unchanged, `products:{accountId}` hash remains unchanged, legacy
+  Product key remains unchanged/absent, clean console, zero page exceptions, and
+  `.env` untracked.
+- Confirmed no return UI, no return route, no invoice mutation, no invoice status
+  changes to `partially_returned` or `returned`, no Product CRUD behavior
+  change, no Product mutation, no Auth change, no Route Guard weakening, no
+  localStorage migration, no Firebase UID/accountId fallback, and no default
+  account fallback.
+- Final status: `V1-SALES-012 Ready for Architect / Owner Review`.
+
 ## V1-SALES-011 - Account-Scoped Invoice Returns Persistence Baseline
 
 - Added the first minimal account-scoped invoice return persistence baseline.

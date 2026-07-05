@@ -96,7 +96,8 @@ export class Container {
             invoiceReturnRepository,
             invoiceReturnValidator,
             invoiceRepository,
-            getAuthStateService()
+            getAuthStateService(),
+            inventoryService
         );
 
         this.register("invoiceReturnService", invoiceReturnService);
