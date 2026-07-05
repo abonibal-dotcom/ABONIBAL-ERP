@@ -2,32 +2,33 @@
 
 ## Mission
 
-`V1-SALES-011 - Account-Scoped Invoice Returns Persistence Baseline`
+`V1-SALES-012 - Invoice Return Stock Restoration Execution`
 
 ## Classification
 
 `ECS`
 
-This is the first Sales / Invoice returns persistence implementation mission.
+This is a service-level invoice return execution mission.
 
-This is not return UI, stock restoration, partial return execution, Product
-CRUD, invoice cancellation work, Auth work, Route Guard weakening, or
-localStorage migration.
+This is not return UI, return routing, Product CRUD, invoice cancellation work,
+invoice hard delete, Auth work, Route Guard weakening, or localStorage
+migration.
 
 ## Objective
 
-Implement the minimal account-scoped invoice return persistence baseline using:
+Implement and verify execution of an existing persisted invoice return record:
 
-`invoiceReturns:{AuthSession.accountId}`
-
-The mission proves that return records can be persisted safely, scoped by the
-authenticated account boundary, without mutating invoices, stock movements, or
-Products.
+- validate the return record;
+- create positive `sale_return` movements in `stockMovements:{accountId}`;
+- link each return line to `returnStockMovementId`;
+- preserve original `sale_deduction` movements;
+- preserve invoices and Products;
+- prevent duplicate execution.
 
 ## Accepted Baseline
 
 - Baseline tag:
-  `v1-sales-010-invoice-returns-partial-returns-design-plan`.
+  `v1-sales-011-account-scoped-invoice-returns-persistence-baseline`.
 - Firebase Auth.
 - Explicit `accountId`.
 - Route Guard.
@@ -35,22 +36,22 @@ Products.
 - Product regression PASS through ECS-011.
 - Inventory ledger and availability gate PASS through V1-INV-007.
 - Sales / Invoice lifecycle PASS through V1-SALES-009.
-- Returns / partial returns design accepted through V1-SALES-010.
+- Return persistence baseline PASS through V1-SALES-011.
 
 ## Current Status
 
-`V1-SALES-011 Ready for Architect / Owner Review`
+`V1-SALES-012 Ready for Architect / Owner Review`
 
 ## Implementation Result
 
-- Added `InvoiceReturn` and `InvoiceReturnLine` model contracts.
-- Added `InvoiceReturnStatus` with V1 baseline status `recorded`.
-- Added account-scoped storage key helper:
-  `invoiceReturns:{accountId}`.
-- Added `InvoiceReturnRepository`.
-- Added `InvoiceReturnValidator`.
-- Added `InvoiceReturnService`.
-- Registered invoice return dependencies in `Container`.
+- Added `executed` as an invoice return lifecycle status.
+- Added account-scoped return update support to `InvoiceReturnRepository`.
+- Added `InvoiceReturnService.executeReturn()`.
+- Injected `InventoryService` into `InvoiceReturnService`.
+- Execution appends positive `sale_return` stock movements with
+  `referenceType: "invoice_return"`.
+- Execution writes the created movement id back to each return line as
+  `returnStockMovementId`.
 
 ## Verification Result
 
@@ -59,19 +60,20 @@ Products.
 - Runtime: PASS.
 - Console errors: 0.
 - Page exceptions: 0.
-- Runtime evidence saved under `outputs/V1-SALES-011/`.
+- Runtime evidence saved under `outputs/V1-SALES-012/`.
 
 ## Scope Confirmation
 
 - No return UI.
 - No return route.
-- No stock restoration.
-- No `sale_return` movement created for returns.
-- `stockMovements:{accountId}` unchanged.
-- `invoices:{accountId}` unchanged.
-- Product scoped storage unchanged.
+- No invoice mutation.
+- No Product record mutation.
 - `Product.quantity` unchanged.
-- No invoice status changed to `partially_returned` or `returned`.
+- Original `sale_deduction` movements preserved.
+- `invoices:{accountId}` hash unchanged.
+- `products:{accountId}` hash unchanged.
+- `localStorage.products` unchanged/absent.
+- No invoice status changes to `partially_returned` or `returned`.
 - No invoice issue or cancellation flow behavior changed.
 - No Auth behavior changed.
 - Route Guard remains active.
@@ -82,21 +84,26 @@ Products.
 ## Evidence / Documents
 
 ```text
-outputs/V1-SALES-011/runtime.json
-outputs/V1-SALES-011/dom.json
-outputs/V1-SALES-011/console.log
-outputs/V1-SALES-011/storage-snapshot-sanitized.json
-outputs/V1-SALES-011/screenshot.png
-outputs/V1-SALES-011/invoice-returns-persistence-summary.json
-PATCHES/V1-SALES-011/verification.md
-PATCHES/V1-SALES-011/closure-report.md
+outputs/V1-SALES-012/baseline-runtime.json
+outputs/V1-SALES-012/baseline-dom.json
+outputs/V1-SALES-012/baseline-console.log
+outputs/V1-SALES-012/baseline-storage-snapshot-sanitized.json
+outputs/V1-SALES-012/baseline-screenshot.png
+outputs/V1-SALES-012/after-runtime.json
+outputs/V1-SALES-012/after-dom.json
+outputs/V1-SALES-012/after-console.log
+outputs/V1-SALES-012/after-storage-snapshot-sanitized.json
+outputs/V1-SALES-012/after-screenshot.png
+outputs/V1-SALES-012/invoice-return-execution-summary.json
+PATCHES/V1-SALES-012/verification.md
+PATCHES/V1-SALES-012/closure-report.md
 ```
 
 ## Next
 
 Recommended next step:
 
-Architect / Owner review of V1-SALES-011.
+Architect / Owner review of V1-SALES-012.
 
-Return UI and stock restoration remain blocked until a separately approved
-mission implements the next return lifecycle step.
+Return UI remains blocked until a separately approved mission implements the
+next return lifecycle step.

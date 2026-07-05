@@ -1,5 +1,6 @@
 export const invoiceReturnStatuses = [
     "recorded",
+    "executed",
 ] as const;
 
 export type InvoiceReturnStatus = typeof invoiceReturnStatuses[number];

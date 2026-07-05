@@ -492,6 +492,29 @@ return stock restoration execution, return UI planning, or a return lifecycle
 regression baseline. Return UI and stock restoration remain blocked until
 explicitly approved.
 
+V1-SALES-012 implemented service-level invoice return stock restoration
+execution.
+
+Accepted implementation result:
+
+- Existing `recorded` return records can be executed through
+  `InvoiceReturnService.executeReturn()`.
+- Execution validates the referenced issued invoice, original `sale_deduction`,
+  remaining returnable quantity, and duplicate execution boundary.
+- Execution appends positive `sale_return` movements with
+  `referenceType: "invoice_return"` to `stockMovements:{accountId}`.
+- Return lines are linked to the created movement through
+  `returnStockMovementId`.
+- Return records move from `recorded` to `executed`.
+- Original invoices and original `sale_deduction` movements remain preserved.
+- Product records remain unchanged and `Product.quantity` remains
+  non-authoritative.
+- No return UI or return route exists yet.
+
+Recommended next Sales / Invoice step:
+
+`V1-SALES-013 - Invoice Return Lifecycle Regression Baseline`.
+
 ## Verification Expectation
 
 Each future ECS must include:
