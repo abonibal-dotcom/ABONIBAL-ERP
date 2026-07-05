@@ -73,14 +73,21 @@ export class InvoiceDraftPage extends Page {
         const editButton = target.closest<HTMLButtonElement>(
             "[data-action=\"edit-invoice-draft\"]"
         );
+        const issueButton = target.closest<HTMLButtonElement>(
+            "[data-action=\"issue-invoice-draft\"]"
+        );
 
         const invoiceId = editButton?.dataset.invoiceId;
+        const issueInvoiceId = issueButton?.dataset.invoiceId;
 
-        if (!invoiceId) {
+        if (invoiceId) {
+            this.openDraftForEdit(invoiceId);
             return;
         }
 
-        this.openDraftForEdit(invoiceId);
+        if (issueInvoiceId) {
+            this.issueDraft(issueInvoiceId);
+        }
 
     };
 
@@ -215,10 +222,10 @@ export class InvoiceDraftPage extends Page {
 
                 <section id="invoice-draft-list">
 
-                    <h2>Draft invoices</h2>
+                    <h2>Invoices</h2>
 
                     <p>
-                        Draft count:
+                        Invoice count:
                         <span id="invoice-draft-count">0</span>
                     </p>
 
@@ -362,28 +369,26 @@ export class InvoiceDraftPage extends Page {
 
     private renderDrafts(): void {
 
-        const drafts = this.invoiceService
-            .getAll()
-            .filter(invoice => invoice.status === "draft");
+        const invoices = this.invoiceService.getAll();
 
         if (this.draftCountElement) {
-            this.draftCountElement.textContent = String(drafts.length);
+            this.draftCountElement.textContent = String(invoices.length);
         }
 
         if (!this.draftsBody) {
             return;
         }
 
-        if (drafts.length === 0) {
+        if (invoices.length === 0) {
             this.draftsBody.innerHTML = `
                 <tr>
-                    <td colspan="5">No draft invoices.</td>
+                    <td colspan="5">No invoices.</td>
                 </tr>
             `;
             return;
         }
 
-        this.draftsBody.innerHTML = drafts
+        this.draftsBody.innerHTML = invoices
             .map(invoice => this.renderDraftRow(invoice))
             .join("");
 
@@ -402,16 +407,33 @@ export class InvoiceDraftPage extends Page {
                 <td>${this.escapeHtml(this.customerDisplayName(invoice))}</td>
                 <td>${this.formatCurrency(invoice.total)}</td>
                 <td>${this.escapeHtml(invoice.status)}</td>
-                <td>
-                    <button
-                        type="button"
-                        data-action="edit-invoice-draft"
-                        data-invoice-id="${this.escapeHtml(invoice.id)}"
-                    >
-                        Edit
-                    </button>
-                </td>
+                <td>${this.renderInvoiceActions(invoice)}</td>
             </tr>
+        `;
+
+    }
+
+    private renderInvoiceActions(invoice: Invoice): string {
+
+        if (invoice.status !== "draft") {
+            return "Issued";
+        }
+
+        return `
+            <button
+                type="button"
+                data-action="edit-invoice-draft"
+                data-invoice-id="${this.escapeHtml(invoice.id)}"
+            >
+                Edit
+            </button>
+            <button
+                type="button"
+                data-action="issue-invoice-draft"
+                data-invoice-id="${this.escapeHtml(invoice.id)}"
+            >
+                Issue
+            </button>
         `;
 
     }
@@ -528,6 +550,11 @@ export class InvoiceDraftPage extends Page {
             return;
         }
 
+        if (invoice.status !== "draft") {
+            this.setMessage("Only draft invoices can be edited.");
+            return;
+        }
+
         this.editingInvoiceId = invoice.id;
         this.setEditingInvoiceId(invoice.id);
 
@@ -561,6 +588,22 @@ export class InvoiceDraftPage extends Page {
 
         this.renderTotalsPreview();
         this.setMessage("Editing draft invoice.");
+
+    }
+
+    private issueDraft(invoiceId: string): void {
+
+        const result = this.invoiceService.markIssued(invoiceId);
+
+        if (!result.success || !result.invoice) {
+            this.setMessage(result.errors.join(" "));
+            this.renderDrafts();
+            return;
+        }
+
+        this.resetForm();
+        this.renderDrafts();
+        this.setMessage("Invoice issued.");
 
     }
 

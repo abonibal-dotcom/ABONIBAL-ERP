@@ -1,4 +1,5 @@
 import type { AuthStateService } from "../../auth/AuthStateService";
+import type { InventoryService } from "../../inventory/services/InventoryService";
 import type {
     Invoice,
     InvoiceDraftInput,
@@ -14,16 +15,19 @@ export class InvoiceService {
     private readonly repository: InvoiceRepository;
     private readonly validator: InvoiceValidator;
     private readonly authStateService: AuthStateService;
+    private readonly inventoryService: InventoryService;
 
     public constructor(
         repository: InvoiceRepository,
         validator: InvoiceValidator,
-        authStateService: AuthStateService
+        authStateService: AuthStateService,
+        inventoryService: InventoryService
     ) {
 
         this.repository = repository;
         this.validator = validator;
         this.authStateService = authStateService;
+        this.inventoryService = inventoryService;
 
     }
 
@@ -201,11 +205,62 @@ export class InvoiceService {
             return failedInvoiceResult("Only draft invoices can be issued.");
         }
 
+        if (currentInvoice.lines.some(line => line.stockMovementId)) {
+            return failedInvoiceResult(
+                "Draft invoice already has stock movement references."
+            );
+        }
+
+        const availability = this.inventoryService.checkAvailabilityBatch(
+            currentInvoice.lines.map(line => ({
+                productId: line.productId,
+                requestedQuantity: line.quantity
+            }))
+        );
+
+        if (!availability.canFulfill) {
+            return failedInvoiceResult(
+                availability.results.flatMap(result => result.errors.length > 0
+                    ? result.errors
+                    : [
+                        `Insufficient stock for product ${result.productId}.`
+                    ])
+            );
+        }
+
         const issuedAt = new Date().toISOString();
+        const stockMovementIds = new Map<string, string>();
+
+        for (const line of currentInvoice.lines) {
+            const movementResult = this.inventoryService.addMovement({
+                productId: line.productId,
+                type: "sale_deduction",
+                quantityDelta: -line.quantity,
+                reason: `Invoice ${currentInvoice.invoiceNumber}`,
+                referenceType: "invoice",
+                referenceId: currentInvoice.id,
+                metadata: {
+                    invoiceId: currentInvoice.id,
+                    invoiceLineId: line.id,
+                    invoiceNumber: currentInvoice.invoiceNumber
+                }
+            });
+
+            if (!movementResult.success || !movementResult.movement) {
+                return failedInvoiceResult(movementResult.errors);
+            }
+
+            stockMovementIds.set(line.id, movementResult.movement.id);
+        }
+
         const issuedInvoice: Invoice = {
             ...currentInvoice,
             status: "issued",
             accountId: accountContext.accountId,
+            lines: currentInvoice.lines.map(line => ({
+                ...line,
+                stockMovementId: stockMovementIds.get(line.id) ?? null
+            })),
             issuedAt,
             issuedBy: accountContext.userId,
             updatedAt: issuedAt,

@@ -90,6 +90,8 @@ V1-SALES-003 Account-Scoped Invoice Persistence Baseline is complete from execut
 
 V1-SALES-004 Invoice Draft Create / Update Flow is complete from execution side and ready for Architect / Owner review.
 
+V1-SALES-005 Invoice Issue / Stock Deduction Flow is complete from execution side and ready for Architect / Owner review.
+
 Completed stabilization work:
 
 - `PATCH-000-ECS-001 - Route Registry Stabilization`
@@ -235,6 +237,9 @@ Completed stabilization work:
 - V1-SALES-004 added a protected `invoices` route and `Invoices` Sidebar entry.
 - V1-SALES-004 verifies invalid draft submissions do not write, valid draft create writes exactly one invoice to `invoices:{accountId}`, draft update preserves id/accountId/status, Product snapshot fields are persisted, totals are correct, and reload preserves the draft.
 - V1-SALES-004 did not add invoice issue behavior, cancellation UI, stock deduction, `sale_deduction` movements, Product mutation, Inventory mutation, Auth changes, Route Guard weakening, localStorage migration, Firebase uid/provider user id as `accountId`, or default account fallback.
+- V1-SALES-005 added the minimal Invoice issue / stock deduction flow.
+- V1-SALES-005 verifies insufficient-stock issue is blocked without writing movements, successful issue creates `sale_deduction` movements, invoice lines store `stockMovementId`, availability decreases through the stock ledger, duplicate issue attempts do not duplicate movements, and reload preserves the issued invoice and movement.
+- V1-SALES-005 did not add cancellation, returns, hard delete, Product CRUD behavior changes, Product mutation, `Product.quantity` updates, Auth changes, Route Guard weakening, localStorage migration, Firebase uid/provider user id as `accountId`, or default account fallback.
 - Expenses are missing.
 - Safes and cash movement are missing.
 - Basic ledger is missing.
@@ -246,11 +251,11 @@ Completed stabilization work:
 
 Current mission:
 
-`V1-SALES-004 - Invoice Draft Create / Update Flow`
+`V1-SALES-005 - Invoice Issue / Stock Deduction Flow`
 
 Current next mission:
 
-V1-SALES-004 complete from execution side and ready for Architect / Owner review.
+V1-SALES-005 complete from execution side and ready for Architect / Owner review.
 
 Classification:
 
@@ -258,12 +263,12 @@ Classification:
 
 Allowed scope:
 
-Sales / Invoice draft create/update UI flow only.
+Sales / Invoice issue and stock deduction flow only.
 
 Forbidden scope:
 
-No invoice issuing, no invoice cancellation UI, no invoice stock deduction, no `sale_deduction`, no Product CRUD behavior change, no Product quantity migration, no Product record mutation by invoice flow, no Inventory mutation, no Auth redesign, no Route Guard weakening, no destructive migration, no legacy Product deletion, no legacy `localStorage.products` mutation, no automatic import on app startup, no permission matrix, no advanced roles, no hardcoded credentials, no real credentials committed, and no Firebase uid/provider user id to `accountId` assumption.
+No invoice cancellation UI, no invoice return flow, no invoice hard delete, no Product CRUD behavior change, no Product quantity migration, no Product record mutation by invoice flow, no Inventory manual adjustment behavior change, no Auth redesign, no Route Guard weakening, no destructive migration, no legacy Product deletion, no legacy `localStorage.products` mutation, no automatic import on app startup, no permission matrix, no advanced roles, no hardcoded credentials, no real credentials committed, and no Firebase uid/provider user id to `accountId` assumption.
 
 ## Next State
 
-Await Architect / Owner review for V1-SALES-004. Recommended next mission is an owner-approved invoice issue / stock deduction planning or implementation gate. Invoice issuing and invoice stock deduction remain blocked until a later approved mission explicitly integrates the accepted Inventory availability gate and stock movement ledger.
+Await Architect / Owner review for V1-SALES-005. Recommended next mission is an owner-approved invoice cancellation / reversal planning gate or the next Sales dependency gate. Invoice cancellation and reversal remain blocked until a later approved mission explicitly defines the reversal behavior against the accepted stock movement ledger.

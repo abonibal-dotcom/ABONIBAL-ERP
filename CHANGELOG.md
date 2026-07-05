@@ -1,5 +1,19 @@
 # Changelog
 
+## V1-SALES-005 - Invoice Issue / Stock Deduction Flow
+
+- Added the minimal Invoice issue flow on top of the accepted draft UI and invoice persistence baseline.
+- Updated `InvoiceService.markIssued()` to use the accepted Inventory availability gate before issuing.
+- Blocked insufficient-stock issue attempts without changing invoice status or writing `sale_deduction` movements.
+- Created `sale_deduction` stock movements for successful invoice issue.
+- Stored created movement ids on invoice lines as `stockMovementId`.
+- Verified successful issue changes invoice status to `issued`, sets `issuedAt`, preserves invoice id/accountId, and survives reload.
+- Verified availability decreases through the stock ledger from 5 to 3 after issue and remains 3 after reload.
+- Verified duplicate issue attempts do not create duplicate stock movements.
+- Verified Product records remain unchanged and `Product.quantity` is not updated or made authoritative.
+- Verified no invoice cancellation behavior, no Product CRUD behavior change, no Auth change, no Route Guard weakening, no localStorage migration, clean console, zero page exceptions, and `.env` untracked.
+- Final status: `V1-SALES-005 Ready for Architect / Owner Review`.
+
 ## V1-SALES-004 - Invoice Draft Create / Update Flow
 
 - Added the first minimal authenticated Invoice draft UI flow.

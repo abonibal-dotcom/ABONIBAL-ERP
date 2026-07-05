@@ -266,7 +266,7 @@ Recommended next Inventory mission:
 
 V1-INV-007 implemented the minimal read-only Inventory stock availability gate for future invoice dependency checks. The gate uses the ledger as the stock source of truth and rejects unavailable, invalid, missing, and soft-deleted Product requests safely.
 
-Invoice implementation and invoice stock deduction remain blocked until a future owner-approved Sales / Invoice foundation mission explicitly depends on the accepted availability gate.
+Invoice implementation proceeded through owner-approved Sales / Invoice missions after the accepted Inventory availability gate.
 
 The next Product, Inventory, or Invoice mission may proceed only after V1-INV-007 is reviewed and accepted by the Architect / Owner.
 
@@ -342,7 +342,21 @@ Accepted implementation result:
 - No invoice issue behavior, cancellation UI, stock deduction, or `sale_deduction` movement exists yet.
 - Product and Inventory data remain unmutated by invoice draft create/update.
 
-Invoice stock deduction remains blocked until a later owner-approved mission explicitly integrates invoice issue behavior with the accepted Inventory availability gate and stock movement ledger.
+V1-SALES-005 implemented the minimal Invoice issue / stock deduction flow.
+
+Accepted implementation result:
+
+- Draft issue with insufficient stock is blocked without writing `sale_deduction`.
+- Successful issue creates `sale_deduction` movements through `InventoryService`.
+- Invoice lines store the created movement id as `stockMovementId`.
+- Available stock decreases through the accepted Stock Movement Ledger.
+- Duplicate issue attempts do not duplicate stock movements.
+- Product records remain unchanged and `Product.quantity` is not authoritative.
+- No invoice cancellation, return, or hard delete behavior exists yet.
+
+Recommended next Sales / Invoice mission:
+
+Owner-approved invoice cancellation / reversal planning or the next Sales dependency gate.
 
 ## Verification Expectation
 
