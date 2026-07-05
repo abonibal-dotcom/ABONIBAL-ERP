@@ -73,14 +73,30 @@ export class InvoiceDraftPage extends Page {
         const editButton = target.closest<HTMLButtonElement>(
             "[data-action=\"edit-invoice-draft\"]"
         );
+        const issueButton = target.closest<HTMLButtonElement>(
+            "[data-action=\"issue-invoice-draft\"]"
+        );
+        const cancelButton = target.closest<HTMLButtonElement>(
+            "[data-action=\"cancel-invoice\"]"
+        );
 
         const invoiceId = editButton?.dataset.invoiceId;
+        const issueInvoiceId = issueButton?.dataset.invoiceId;
+        const cancelInvoiceId = cancelButton?.dataset.invoiceId;
 
-        if (!invoiceId) {
+        if (invoiceId) {
+            this.openDraftForEdit(invoiceId);
             return;
         }
 
-        this.openDraftForEdit(invoiceId);
+        if (issueInvoiceId) {
+            this.issueDraft(issueInvoiceId);
+            return;
+        }
+
+        if (cancelInvoiceId) {
+            this.cancelInvoice(cancelInvoiceId);
+        }
 
     };
 
@@ -215,10 +231,10 @@ export class InvoiceDraftPage extends Page {
 
                 <section id="invoice-draft-list">
 
-                    <h2>Draft invoices</h2>
+                    <h2>Invoices</h2>
 
                     <p>
-                        Draft count:
+                        Invoice count:
                         <span id="invoice-draft-count">0</span>
                     </p>
 
@@ -230,6 +246,8 @@ export class InvoiceDraftPage extends Page {
 
                                 <th>Invoice</th>
                                 <th>Customer</th>
+                                <th>Created</th>
+                                <th>Issued</th>
                                 <th>Total</th>
                                 <th>Status</th>
                                 <th>Actions</th>
@@ -362,28 +380,26 @@ export class InvoiceDraftPage extends Page {
 
     private renderDrafts(): void {
 
-        const drafts = this.invoiceService
-            .getAll()
-            .filter(invoice => invoice.status === "draft");
+        const invoices = this.invoiceService.getAll();
 
         if (this.draftCountElement) {
-            this.draftCountElement.textContent = String(drafts.length);
+            this.draftCountElement.textContent = String(invoices.length);
         }
 
         if (!this.draftsBody) {
             return;
         }
 
-        if (drafts.length === 0) {
+        if (invoices.length === 0) {
             this.draftsBody.innerHTML = `
                 <tr>
-                    <td colspan="5">No draft invoices.</td>
+                    <td colspan="7">No invoices.</td>
                 </tr>
             `;
             return;
         }
 
-        this.draftsBody.innerHTML = drafts
+        this.draftsBody.innerHTML = invoices
             .map(invoice => this.renderDraftRow(invoice))
             .join("");
 
@@ -397,21 +413,134 @@ export class InvoiceDraftPage extends Page {
                 data-invoice-id="${this.escapeHtml(invoice.id)}"
                 data-invoice-status="${this.escapeHtml(invoice.status)}"
                 data-invoice-total="${this.escapeHtml(invoice.total)}"
+                data-issued-at="${this.escapeHtml(invoice.issuedAt ?? "")}"
             >
                 <td>${this.escapeHtml(invoice.invoiceNumber)}</td>
                 <td>${this.escapeHtml(this.customerDisplayName(invoice))}</td>
+                <td>${this.escapeHtml(this.formatDateTime(invoice.createdAt))}</td>
+                <td>${this.escapeHtml(this.formatOptionalDateTime(invoice.issuedAt))}</td>
                 <td>${this.formatCurrency(invoice.total)}</td>
                 <td>${this.escapeHtml(invoice.status)}</td>
-                <td>
-                    <button
-                        type="button"
-                        data-action="edit-invoice-draft"
-                        data-invoice-id="${this.escapeHtml(invoice.id)}"
-                    >
-                        Edit
-                    </button>
+                <td>${this.renderInvoiceActions(invoice)}</td>
+            </tr>
+            <tr
+                class="invoice-line-audit-container"
+                data-invoice-id="${this.escapeHtml(invoice.id)}"
+            >
+                <td colspan="7">
+                    ${this.renderInvoiceLines(invoice)}
                 </td>
             </tr>
+        `;
+
+    }
+
+    private renderInvoiceLines(invoice: Invoice): string {
+
+        return `
+            <table
+                class="invoice-line-audit-table"
+                aria-label="Invoice lines ${this.escapeHtml(invoice.invoiceNumber)}"
+            >
+                <thead>
+                    <tr>
+                        <th>Product snapshot</th>
+                        <th>Quantity</th>
+                        <th>Unit price</th>
+                        <th>Line total</th>
+                        <th>Stock movement</th>
+                        <th>Reversal movement</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${invoice.lines
+                        .map(line => this.renderInvoiceLine(invoice, line))
+                        .join("")}
+                </tbody>
+            </table>
+        `;
+
+    }
+
+    private renderInvoiceLine(
+        invoice: Invoice,
+        line: Invoice["lines"][number]
+    ): string {
+
+        const stockMovementId = line.stockMovementId?.trim() ?? "";
+        const reversalStockMovementId =
+            line.reversalStockMovementId?.trim() ?? "";
+        const stockMovementDisplay = invoice.status !== "draft"
+            ? stockMovementId || "Missing movement"
+            : "Not issued";
+        const reversalDisplay = invoice.status === "cancelled"
+            ? reversalStockMovementId || "Missing reversal"
+            : "-";
+
+        return `
+            <tr
+                class="invoice-line-audit-row"
+                data-invoice-id="${this.escapeHtml(invoice.id)}"
+                data-product-id="${this.escapeHtml(line.productId)}"
+                data-stock-movement-id="${this.escapeHtml(stockMovementId)}"
+                data-reversal-stock-movement-id="${this.escapeHtml(reversalStockMovementId)}"
+            >
+                <td class="invoice-line-product-snapshot">
+                    ${this.escapeHtml(line.productNameSnapshot)}
+                </td>
+                <td class="invoice-line-quantity">
+                    ${this.escapeHtml(line.quantity)}
+                </td>
+                <td class="invoice-line-unit-price">
+                    ${this.formatCurrency(line.unitPrice)}
+                </td>
+                <td class="invoice-line-total">
+                    ${this.formatCurrency(line.lineTotal)}
+                </td>
+                <td class="invoice-line-stock-movement-id">
+                    ${this.escapeHtml(stockMovementDisplay)}
+                </td>
+                <td class="invoice-line-reversal-stock-movement-id">
+                    ${this.escapeHtml(reversalDisplay)}
+                </td>
+            </tr>
+        `;
+
+    }
+
+    private renderInvoiceActions(invoice: Invoice): string {
+
+        if (invoice.status === "issued") {
+            return `
+                <button
+                    type="button"
+                    data-action="cancel-invoice"
+                    data-invoice-id="${this.escapeHtml(invoice.id)}"
+                >
+                    Cancel
+                </button>
+            `;
+        }
+
+        if (invoice.status !== "draft") {
+            return `<span class="invoice-action-readonly">${this.escapeHtml(invoice.status)}</span>`;
+        }
+
+        return `
+            <button
+                type="button"
+                data-action="edit-invoice-draft"
+                data-invoice-id="${this.escapeHtml(invoice.id)}"
+            >
+                Edit
+            </button>
+            <button
+                type="button"
+                data-action="issue-invoice-draft"
+                data-invoice-id="${this.escapeHtml(invoice.id)}"
+            >
+                Issue
+            </button>
         `;
 
     }
@@ -528,6 +657,11 @@ export class InvoiceDraftPage extends Page {
             return;
         }
 
+        if (invoice.status !== "draft") {
+            this.setMessage("Only draft invoices can be edited.");
+            return;
+        }
+
         this.editingInvoiceId = invoice.id;
         this.setEditingInvoiceId(invoice.id);
 
@@ -561,6 +695,46 @@ export class InvoiceDraftPage extends Page {
 
         this.renderTotalsPreview();
         this.setMessage("Editing draft invoice.");
+
+    }
+
+    private issueDraft(invoiceId: string): void {
+
+        const result = this.invoiceService.markIssued(invoiceId);
+
+        if (!result.success || !result.invoice) {
+            this.setMessage(result.errors.join(" "));
+            this.renderDrafts();
+            return;
+        }
+
+        this.resetForm();
+        this.renderDrafts();
+        this.setMessage("Invoice issued.");
+
+    }
+
+    private cancelInvoice(invoiceId: string): void {
+
+        if (!confirm("Cancel this issued invoice and reverse its stock movement?")) {
+            this.setMessage("Invoice cancellation cancelled.");
+            return;
+        }
+
+        const result = this.invoiceService.markCancelled(
+            invoiceId,
+            "User confirmed invoice cancellation"
+        );
+
+        if (!result.success || !result.invoice) {
+            this.setMessage(result.errors.join(" "));
+            this.renderDrafts();
+            return;
+        }
+
+        this.resetForm();
+        this.renderDrafts();
+        this.setMessage("Invoice cancelled and stock reversed.");
 
     }
 
@@ -710,6 +884,24 @@ export class InvoiceDraftPage extends Page {
         }
 
         return value.toFixed(2);
+
+    }
+
+    private formatOptionalDateTime(value: string | undefined): string {
+
+        return value ? this.formatDateTime(value) : "-";
+
+    }
+
+    private formatDateTime(value: string): string {
+
+        const date = new Date(value);
+
+        if (Number.isNaN(date.getTime())) {
+            return value;
+        }
+
+        return date.toISOString();
 
     }
 

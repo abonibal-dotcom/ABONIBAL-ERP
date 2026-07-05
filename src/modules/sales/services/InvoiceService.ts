@@ -1,4 +1,6 @@
 import type { AuthStateService } from "../../auth/AuthStateService";
+import type { InventoryService } from "../../inventory/services/InventoryService";
+import type { StockMovement } from "../../inventory/StockMovement";
 import type {
     Invoice,
     InvoiceDraftInput,
@@ -14,16 +16,19 @@ export class InvoiceService {
     private readonly repository: InvoiceRepository;
     private readonly validator: InvoiceValidator;
     private readonly authStateService: AuthStateService;
+    private readonly inventoryService: InventoryService;
 
     public constructor(
         repository: InvoiceRepository,
         validator: InvoiceValidator,
-        authStateService: AuthStateService
+        authStateService: AuthStateService,
+        inventoryService: InventoryService
     ) {
 
         this.repository = repository;
         this.validator = validator;
         this.authStateService = authStateService;
+        this.inventoryService = inventoryService;
 
     }
 
@@ -201,11 +206,62 @@ export class InvoiceService {
             return failedInvoiceResult("Only draft invoices can be issued.");
         }
 
+        if (currentInvoice.lines.some(line => line.stockMovementId)) {
+            return failedInvoiceResult(
+                "Draft invoice already has stock movement references."
+            );
+        }
+
+        const availability = this.inventoryService.checkAvailabilityBatch(
+            currentInvoice.lines.map(line => ({
+                productId: line.productId,
+                requestedQuantity: line.quantity
+            }))
+        );
+
+        if (!availability.canFulfill) {
+            return failedInvoiceResult(
+                availability.results.flatMap(result => result.errors.length > 0
+                    ? result.errors
+                    : [
+                        `Insufficient stock for product ${result.productId}.`
+                    ])
+            );
+        }
+
         const issuedAt = new Date().toISOString();
+        const stockMovementIds = new Map<string, string>();
+
+        for (const line of currentInvoice.lines) {
+            const movementResult = this.inventoryService.addMovement({
+                productId: line.productId,
+                type: "sale_deduction",
+                quantityDelta: -line.quantity,
+                reason: `Invoice ${currentInvoice.invoiceNumber}`,
+                referenceType: "invoice",
+                referenceId: currentInvoice.id,
+                metadata: {
+                    invoiceId: currentInvoice.id,
+                    invoiceLineId: line.id,
+                    invoiceNumber: currentInvoice.invoiceNumber
+                }
+            });
+
+            if (!movementResult.success || !movementResult.movement) {
+                return failedInvoiceResult(movementResult.errors);
+            }
+
+            stockMovementIds.set(line.id, movementResult.movement.id);
+        }
+
         const issuedInvoice: Invoice = {
             ...currentInvoice,
             status: "issued",
             accountId: accountContext.accountId,
+            lines: currentInvoice.lines.map(line => ({
+                ...line,
+                stockMovementId: stockMovementIds.get(line.id) ?? null
+            })),
             issuedAt,
             issuedBy: accountContext.userId,
             updatedAt: issuedAt,
@@ -260,14 +316,69 @@ export class InvoiceService {
             return failedInvoiceResult("Invoice is already cancelled.");
         }
 
+        if (currentInvoice.status !== "issued") {
+            return failedInvoiceResult("Only issued invoices can be cancelled.");
+        }
+
+        const normalizedReason =
+            normalizeOptionalString(reason) || "Invoice cancellation";
+        const reversalPlan = this.buildCancellationReversalPlan(
+            currentInvoice,
+            normalizedReason,
+            accountContext
+        );
+
+        if (!reversalPlan.success) {
+            return failedInvoiceResult(reversalPlan.errors);
+        }
+
+        const reversalStockMovementIds =
+            new Map(reversalPlan.existingReversalMovementIds);
+
+        for (const item of reversalPlan.items) {
+            const movementResult = this.inventoryService.addMovement({
+                productId: item.line.productId,
+                type: "sale_return",
+                quantityDelta: item.line.quantity,
+                reason: `Invoice ${currentInvoice.invoiceNumber} cancellation: ${normalizedReason}`,
+                referenceType: "invoice_return",
+                referenceId: currentInvoice.id,
+                metadata: {
+                    reversesMovementId: item.originalMovement.id,
+                    originalStockMovementId: item.originalMovement.id,
+                    originalMovementType: "sale_deduction",
+                    reversalOfInvoiceId: currentInvoice.id,
+                    reversalOfInvoiceLineId: item.line.id,
+                    invoiceNumber: currentInvoice.invoiceNumber,
+                    cancellationReason: normalizedReason
+                }
+            });
+
+            if (!movementResult.success || !movementResult.movement) {
+                return failedInvoiceResult(movementResult.errors);
+            }
+
+            reversalStockMovementIds.set(
+                item.line.id,
+                movementResult.movement.id
+            );
+        }
+
         const cancelledAt = new Date().toISOString();
         const cancelledInvoice: Invoice = {
             ...currentInvoice,
             status: "cancelled",
             accountId: accountContext.accountId,
+            lines: currentInvoice.lines.map(line => ({
+                ...line,
+                reversalStockMovementId:
+                    reversalStockMovementIds.get(line.id)
+                    ?? line.reversalStockMovementId
+                    ?? null
+            })),
             cancelledAt,
             cancelledBy: accountContext.userId,
-            cancelReason: normalizeOptionalString(reason),
+            cancelReason: normalizedReason,
             updatedAt: cancelledAt,
             updatedBy: accountContext.userId
         };
@@ -292,6 +403,80 @@ export class InvoiceService {
             success: true,
             errors: [],
             invoice: savedInvoice
+        };
+
+    }
+
+    private buildCancellationReversalPlan(
+        invoice: Invoice,
+        reason: string,
+        accountContext: InvoiceAccountContext
+    ): CancellationReversalPlan {
+
+        if (!reason.trim()) {
+            return failedCancellationReversalPlan(
+                "Cancellation reason is required."
+            );
+        }
+
+        const movements = this.inventoryService.getAll();
+        const items: CancellationReversalPlanItem[] = [];
+        const existingReversalMovementIds = new Map<string, string>();
+
+        for (const line of invoice.lines) {
+            const originalStockMovementId =
+                line.stockMovementId?.trim() ?? "";
+
+            if (!originalStockMovementId) {
+                return failedCancellationReversalPlan(
+                    "Invoice line is missing stock movement reference."
+                );
+            }
+
+            const originalMovement = movements.find(
+                movement => movement.id === originalStockMovementId
+            );
+
+            if (!originalMovement) {
+                return failedCancellationReversalPlan(
+                    "Original sale deduction movement was not found."
+                );
+            }
+
+            const movementErrors = validateOriginalSaleDeduction(
+                originalMovement,
+                invoice,
+                line,
+                accountContext
+            );
+
+            if (movementErrors.length > 0) {
+                return failedCancellationReversalPlan(movementErrors);
+            }
+
+            const existingReversal = findExistingReversalMovement(
+                movements,
+                invoice,
+                line,
+                originalMovement.id
+            );
+
+            if (existingReversal) {
+                existingReversalMovementIds.set(line.id, existingReversal.id);
+                continue;
+            }
+
+            items.push({
+                line,
+                originalMovement
+            });
+        }
+
+        return {
+            success: true,
+            errors: [],
+            items,
+            existingReversalMovementIds
         };
 
     }
@@ -359,7 +544,8 @@ function buildInvoiceLines(lines: InvoiceDraftLineInput[]): InvoiceLine[] {
             tax,
             lineSubtotal,
             lineTotal: lineSubtotal - discount + tax,
-            stockMovementId: null
+            stockMovementId: null,
+            reversalStockMovementId: null
         };
 
     });
@@ -433,6 +619,103 @@ function normalizeAmount(value: number | undefined): number {
     return typeof value === "number" && Number.isFinite(value)
         ? value
         : 0;
+
+}
+
+interface CancellationReversalPlan {
+
+    success: boolean;
+    errors: string[];
+    items: CancellationReversalPlanItem[];
+    existingReversalMovementIds: Map<string, string>;
+
+}
+
+interface CancellationReversalPlanItem {
+
+    line: InvoiceLine;
+    originalMovement: StockMovement;
+
+}
+
+function failedCancellationReversalPlan(
+    errors: string | string[]
+): CancellationReversalPlan {
+
+    return {
+        success: false,
+        errors: Array.isArray(errors) ? errors : [errors],
+        items: [],
+        existingReversalMovementIds: new Map()
+    };
+
+}
+
+function validateOriginalSaleDeduction(
+    movement: StockMovement,
+    invoice: Invoice,
+    line: InvoiceLine,
+    accountContext: InvoiceAccountContext
+): string[] {
+
+    const errors: string[] = [];
+
+    if (movement.type !== "sale_deduction") {
+        errors.push("Original stock movement must be a sale deduction.");
+    }
+
+    if (movement.voidedAt) {
+        errors.push("Original sale deduction movement must not be voided.");
+    }
+
+    if (movement.accountId !== accountContext.accountId) {
+        errors.push("Original stock movement account does not match invoice.");
+    }
+
+    if (movement.accountId !== invoice.accountId) {
+        errors.push("Original stock movement invoice account is invalid.");
+    }
+
+    if (movement.productId !== line.productId) {
+        errors.push("Original stock movement Product does not match invoice line.");
+    }
+
+    if (movement.referenceType !== "invoice") {
+        errors.push("Original stock movement reference type is invalid.");
+    }
+
+    if (movement.referenceId !== invoice.id) {
+        errors.push("Original stock movement does not reference the invoice.");
+    }
+
+    if (!Number.isFinite(movement.quantityDelta) || movement.quantityDelta >= 0) {
+        errors.push("Original sale deduction quantity must be negative.");
+    }
+
+    return errors;
+
+}
+
+function findExistingReversalMovement(
+    movements: StockMovement[],
+    invoice: Invoice,
+    line: InvoiceLine,
+    originalStockMovementId: string
+): StockMovement | undefined {
+
+    return movements.find(movement => {
+        const metadata = movement.metadata ?? {};
+
+        return movement.type === "sale_return"
+            && movement.referenceType === "invoice_return"
+            && movement.referenceId === invoice.id
+            && movement.accountId === invoice.accountId
+            && movement.productId === line.productId
+            && (
+                metadata.reversesMovementId === originalStockMovementId
+                || metadata.originalStockMovementId === originalStockMovementId
+            );
+    });
 
 }
 

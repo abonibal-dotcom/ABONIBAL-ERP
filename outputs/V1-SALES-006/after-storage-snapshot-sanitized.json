@@ -1,0 +1,13 @@
+{
+  "keyCount": 3,
+  "hasGlobalInvoicesKey": false,
+  "invoiceKeys": [
+    "invoices:abonib...0af0acc578"
+  ],
+  "productKeys": [
+    "products:abonib...0af0acc578"
+  ],
+  "stockMovementKeys": [
+    "stockMovements:abonib...0af0acc578"
+  ]
+}

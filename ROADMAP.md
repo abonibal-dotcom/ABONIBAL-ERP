@@ -266,7 +266,7 @@ Recommended next Inventory mission:
 
 V1-INV-007 implemented the minimal read-only Inventory stock availability gate for future invoice dependency checks. The gate uses the ledger as the stock source of truth and rejects unavailable, invalid, missing, and soft-deleted Product requests safely.
 
-Invoice implementation and invoice stock deduction remain blocked until a future owner-approved Sales / Invoice foundation mission explicitly depends on the accepted availability gate.
+Invoice implementation proceeded through owner-approved Sales / Invoice missions after the accepted Inventory availability gate.
 
 The next Product, Inventory, or Invoice mission may proceed only after V1-INV-007 is reviewed and accepted by the Architect / Owner.
 
@@ -342,7 +342,101 @@ Accepted implementation result:
 - No invoice issue behavior, cancellation UI, stock deduction, or `sale_deduction` movement exists yet.
 - Product and Inventory data remain unmutated by invoice draft create/update.
 
-Invoice stock deduction remains blocked until a later owner-approved mission explicitly integrates invoice issue behavior with the accepted Inventory availability gate and stock movement ledger.
+V1-SALES-005 implemented the minimal Invoice issue / stock deduction flow.
+
+Accepted implementation result:
+
+- Draft issue with insufficient stock is blocked without writing `sale_deduction`.
+- Successful issue creates `sale_deduction` movements through `InventoryService`.
+- Invoice lines store the created movement id as `stockMovementId`.
+- Available stock decreases through the accepted Stock Movement Ledger.
+- Duplicate issue attempts do not duplicate stock movements.
+- Product records remain unchanged and `Product.quantity` is not authoritative.
+- No invoice cancellation, return, or hard delete behavior exists yet.
+
+V1-SALES-006 implemented minimal issued invoice read / stock deduction audit visibility.
+
+Accepted implementation result:
+
+- Issued invoice remains visible after reload.
+- Issued invoice status, number, total, and issuedAt are displayed.
+- Invoice line Product snapshot, quantity, unit price, line total, and `stockMovementId` are displayed.
+- The referenced `sale_deduction` movement can be verified against the invoice line, Product id, accountId, and negative quantityDelta.
+- Duplicate issue attempts do not duplicate stock movements.
+- Product records remain unchanged and `Product.quantity` is not authoritative.
+- No invoice cancellation, return, reversal, or hard delete behavior exists yet.
+
+V1-SALES-007 designed the V1 invoice cancellation and stock reversal policy.
+
+Accepted design recommendation:
+
+- Issued invoice cancellation should be audit-preserving.
+- V1 cancellation transition should be `issued -> cancelled`.
+- Cancellation should set `cancelledAt`, `cancelledBy`, and `cancelReason`.
+- Original invoice id, invoice number, accountId, issued data, totals, and Product snapshot lines must remain preserved.
+- Original `sale_deduction` movements must not be deleted or used as mutable stock correction.
+- Cancellation should append positive `sale_return` movements with `referenceType: "invoice_return"`.
+- Reversal movements should link to the original `sale_deduction`, invoice, and invoice line through metadata and optional future invoice-line reversal ids.
+- Duplicate cancellation must be prevented by checking existing reversal movements by original deduction id.
+- Product records remain unchanged and `Product.quantity` remains non-authoritative.
+- Returns remain deferred until cancellation and stock reversal implementation is accepted.
+
+Recommended next Sales / Invoice mission:
+
+`V1-SALES-008 - Invoice Cancellation / Stock Reversal Implementation`.
+
+V1-SALES-008 implemented safe issued invoice cancellation and stock reversal.
+
+Accepted implementation result:
+
+- Only issued invoices can be cancelled through the cancellation flow.
+- Draft cancellation is blocked.
+- Missing invoice cancellation fails safely.
+- Already cancelled invoice cancellation fails safely and does not create
+  duplicate movements.
+- Original `sale_deduction` movements remain preserved.
+- Cancellation appends positive `sale_return` movements with
+  `referenceType: "invoice_return"`.
+- Reversal metadata links the reversal to the original `sale_deduction`, invoice,
+  and invoice line.
+- Invoice status becomes `cancelled` after reversal creation.
+- Invoice audit view displays cancelled status and reversal reference.
+- Available stock increases by the cancelled quantity through ledger summation.
+- Product records remain unchanged and `Product.quantity` remains
+  non-authoritative.
+- Returns remain deferred.
+
+Recommended next Sales / Invoice step:
+
+`V1-SALES-009 - Sales / Invoice Lifecycle Regression Baseline`.
+
+V1-SALES-009 verified the accepted Sales / Invoice lifecycle end to end after
+V1-SALES-008.
+
+Accepted verification result:
+
+- No source fix was needed.
+- Protected Invoice route, Products route, Inventory route, AuthSession, and
+  Route Guard remained valid.
+- Draft create/update passed and invalid draft submission did not write.
+- Insufficient-stock issue was blocked without creating `sale_deduction`.
+- Successful issue created one negative `sale_deduction`, linked
+  `stockMovementId`, and reduced available stock from 3 to 1.
+- Duplicate issue did not create duplicate movement records.
+- Issued audit view remained visible after reload.
+- Issued cancellation created one positive `sale_return`, preserved the original
+  `sale_deduction`, and restored available stock from 1 to 3.
+- Duplicate cancellation did not create duplicate reversal movement records.
+- Reload preserved draft, issued, cancelled, deduction, reversal, and audit
+  traceability.
+- Product scoped storage hash stayed unchanged and `Product.quantity` stayed
+  non-authoritative.
+- Returns remain deferred.
+
+Recommended next Sales / Invoice step:
+
+Architect / Owner review of V1-SALES-009 before any return, accounting, or next
+Sales workflow mission.
 
 ## Verification Expectation
 

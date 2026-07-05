@@ -90,6 +90,16 @@ V1-SALES-003 Account-Scoped Invoice Persistence Baseline is complete from execut
 
 V1-SALES-004 Invoice Draft Create / Update Flow is complete from execution side and ready for Architect / Owner review.
 
+V1-SALES-005 Invoice Issue / Stock Deduction Flow is complete from execution side and ready for Architect / Owner review.
+
+V1-SALES-006 Issued Invoice Read / Stock Deduction Audit View is complete from execution side and ready for Architect / Owner review.
+
+V1-SALES-007 Invoice Cancellation / Stock Reversal Design Plan is complete from execution side and ready for Architect / Owner review.
+
+V1-SALES-008 Invoice Cancellation / Stock Reversal Implementation is complete from execution side and ready for Architect / Owner review.
+
+V1-SALES-009 Sales / Invoice Lifecycle Regression Baseline is complete from execution side and ready for Architect / Owner review.
+
 Completed stabilization work:
 
 - `PATCH-000-ECS-001 - Route Registry Stabilization`
@@ -235,6 +245,26 @@ Completed stabilization work:
 - V1-SALES-004 added a protected `invoices` route and `Invoices` Sidebar entry.
 - V1-SALES-004 verifies invalid draft submissions do not write, valid draft create writes exactly one invoice to `invoices:{accountId}`, draft update preserves id/accountId/status, Product snapshot fields are persisted, totals are correct, and reload preserves the draft.
 - V1-SALES-004 did not add invoice issue behavior, cancellation UI, stock deduction, `sale_deduction` movements, Product mutation, Inventory mutation, Auth changes, Route Guard weakening, localStorage migration, Firebase uid/provider user id as `accountId`, or default account fallback.
+- V1-SALES-005 added the minimal Invoice issue / stock deduction flow.
+- V1-SALES-005 verifies insufficient-stock issue is blocked without writing movements, successful issue creates `sale_deduction` movements, invoice lines store `stockMovementId`, availability decreases through the stock ledger, duplicate issue attempts do not duplicate movements, and reload preserves the issued invoice and movement.
+- V1-SALES-005 did not add cancellation, returns, hard delete, Product CRUD behavior changes, Product mutation, `Product.quantity` updates, Auth changes, Route Guard weakening, localStorage migration, Firebase uid/provider user id as `accountId`, or default account fallback.
+- V1-SALES-006 added read-only issued invoice and stock deduction audit visibility.
+- V1-SALES-006 verifies issued invoice status, number, total, issuedAt, line Product snapshot, quantity, unit price, line total, and `stockMovementId` are visible after reload.
+- V1-SALES-006 verifies the referenced movement exists as `sale_deduction`, has negative quantityDelta, matches the invoice line Product/account boundary, and available stock remains reduced after reload.
+- V1-SALES-006 did not add cancellation, returns, reversal movements, hard delete, Product CRUD behavior changes, Product mutation, `Product.quantity` updates, Auth changes, Route Guard weakening, localStorage migration, Firebase uid/provider user id as `accountId`, or default account fallback.
+- V1-SALES-007 designed the V1 invoice cancellation and stock reversal policy without changing source files.
+- V1-SALES-007 recommends audit-preserving `issued -> cancelled` cancellation with `cancelledAt`, `cancelledBy`, and `cancelReason`.
+- V1-SALES-007 recommends additive positive `sale_return` movements with `referenceType: "invoice_return"` to reverse prior `sale_deduction` movements.
+- V1-SALES-007 recommends reversal traceability through metadata linking the reversal to the original `sale_deduction`, invoice, and invoice line.
+- V1-SALES-007 verified read-only runtime evidence: issued invoice visible, sale deduction traceable, no cancellation UI, no reversal movement created, invoice/movement counts unchanged, Product hash unchanged, clean console, zero page exceptions, and `.env` untracked.
+- V1-SALES-007 did not change source files, implement cancellation, add cancellation UI, implement returns, create reversal movements, mutate Products, mutate Inventory, update `Product.quantity`, weaken Route Guard, change Auth, migrate localStorage, use Firebase uid/provider user id as `accountId`, or add default account fallback.
+- V1-SALES-008 implemented safe issued-invoice cancellation and stock reversal.
+- V1-SALES-008 added optional invoice line `reversalStockMovementId`, positive `sale_return` movement creation with `referenceType: "invoice_return"`, and reversal metadata linking the reversal to the original `sale_deduction`, invoice, and invoice line.
+- V1-SALES-008 verifies draft cancellation is blocked, missing invoice cancellation fails safely, issued invoice cancellation succeeds, invoice status becomes `cancelled`, original `sale_deduction` remains stored, one `sale_return` is created, duplicate cancellation creates no duplicate movement, available quantity increases from 3 to 5, reload preserves the audit trail, Product scoped hash remains unchanged, clean console, zero page exceptions, and `.env` untracked.
+- V1-SALES-008 did not implement returns, partial returns, invoice hard delete, Product CRUD changes, Product mutation, `Product.quantity` updates, Auth changes, Route Guard weakening, localStorage migration, Firebase uid/provider user id as `accountId`, or default account fallback.
+- V1-SALES-009 verified the accepted Sales / Invoice lifecycle end to end without requiring a source fix.
+- V1-SALES-009 verifies protected invoice route, draft create/update, failed issue blocking, successful issue, `sale_deduction`, issued audit visibility, duplicate issue safety, issued cancellation, `sale_return`, duplicate cancellation safety, reload persistence, Product storage safety, Inventory ledger correctness, clean console, zero page exceptions, and `.env` untracked.
+- V1-SALES-009 did not implement returns, partial returns, invoice hard delete, Product CRUD changes, Product mutation, `Product.quantity` updates, Auth changes, Route Guard weakening, localStorage migration, Firebase uid/provider user id as `accountId`, or default account fallback.
 - Expenses are missing.
 - Safes and cash movement are missing.
 - Basic ledger is missing.
@@ -246,24 +276,24 @@ Completed stabilization work:
 
 Current mission:
 
-`V1-SALES-004 - Invoice Draft Create / Update Flow`
+`V1-SALES-009 - Sales / Invoice Lifecycle Regression Baseline`
 
 Current next mission:
 
-V1-SALES-004 complete from execution side and ready for Architect / Owner review.
+V1-SALES-009 complete from execution side and ready for Architect / Owner review.
 
 Classification:
 
-`ECS`
+`INF`
 
 Allowed scope:
 
-Sales / Invoice draft create/update UI flow only.
+Issued invoice cancellation and stock reversal implementation only.
 
 Forbidden scope:
 
-No invoice issuing, no invoice cancellation UI, no invoice stock deduction, no `sale_deduction`, no Product CRUD behavior change, no Product quantity migration, no Product record mutation by invoice flow, no Inventory mutation, no Auth redesign, no Route Guard weakening, no destructive migration, no legacy Product deletion, no legacy `localStorage.products` mutation, no automatic import on app startup, no permission matrix, no advanced roles, no hardcoded credentials, no real credentials committed, and no Firebase uid/provider user id to `accountId` assumption.
+No returns implementation, no partial returns, no invoice hard delete, no Product CRUD behavior change, no Product quantity migration, no Product record mutation, no Auth redesign, no Route Guard weakening, no destructive migration, no localStorage migration, no hardcoded credentials, no real credentials committed, and no Firebase uid/provider user id to `accountId` assumption.
 
 ## Next State
 
-Await Architect / Owner review for V1-SALES-004. Recommended next mission is an owner-approved invoice issue / stock deduction planning or implementation gate. Invoice issuing and invoice stock deduction remain blocked until a later approved mission explicitly integrates the accepted Inventory availability gate and stock movement ledger.
+Await Architect / Owner review for V1-SALES-009. Returns remain blocked until a later owner-approved mission explicitly defines return policy and runtime verification gates.

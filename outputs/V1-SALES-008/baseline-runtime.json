@@ -1,0 +1,70 @@
+{
+  "mission": "V1-SALES-008",
+  "mode": "baseline",
+  "classification": "ECS",
+  "scenario": "baseline issued invoice cancellation capability evidence",
+  "url": "http://127.0.0.1:62006/",
+  "verificationTool": "Chrome DevTools Protocol direct WebSocket client",
+  "profileSource": "accepted V1-SALES-006 after-runtime profile copy",
+  "env": {
+    "envFileExists": true,
+    "requiredFirebaseKeysPresent": true,
+    "envTracked": false,
+    "trackedSourceChanges": false
+  },
+  "server": {
+    "port": 62006,
+    "started": true,
+    "reusedExisting": false
+  },
+  "gates": {
+    "routeGuardRemainsActive": true,
+    "authSessionExists": true,
+    "accountIdExists": true,
+    "accountIdNotProviderUserId": true,
+    "invoiceRouteWorks": true,
+    "issuedInvoiceAuditViewWorks": true,
+    "saleDeductionTraceVisible": true,
+    "invoicesInspectedReadOnly": true,
+    "stockMovementsInspectedReadOnly": true,
+    "productsUnchanged": true,
+    "legacyProductsUnchanged": true,
+    "cancellationUiAbsent": true,
+    "noNewReversalMovement": true,
+    "cancellationMissingOrNotReversalSafe": true,
+    "referencedSaleDeductionExists": true,
+    "referencedSaleDeductionType": true,
+    "referencedSaleDeductionNegative": true,
+    "referencedSaleDeductionAccountScoped": true,
+    "referencedSaleDeductionProductScoped": true,
+    "consoleErrorsZero": true,
+    "pageExceptionsZero": true,
+    "envUntracked": true,
+    "sourceUnchanged": true
+  },
+  "consoleErrors": 0,
+  "pageExceptions": 0,
+  "result": "PASS",
+  "route": {
+    "invoiceRouteAccess": "protected",
+    "routeGuardActive": true
+  },
+  "summary": {
+    "accountIdSanitized": "abonib...0af0acc578",
+    "invoiceScopedKey": "invoices:{abonib...0af0acc578}",
+    "stockMovementScopedKey": "stockMovements:{abonib...0af0acc578}",
+    "productScopedKey": "products:{abonib...0af0acc578}",
+    "issuedInvoiceIdSanitized": "2a0710...798285c719",
+    "saleDeductionMovementIdSanitized": "ea286b...ab20ab10d8",
+    "invoiceCountBefore": 2,
+    "invoiceCountAfter": 2,
+    "stockMovementCountBefore": 2,
+    "stockMovementCountAfter": 2,
+    "productHashBefore": "0bd0a280d711517a63546972227c90696d4cbb3ddf2c1936562a9b1c54d26c1c",
+    "productHashAfter": "0bd0a280d711517a63546972227c90696d4cbb3ddf2c1936562a9b1c54d26c1c",
+    "legacyProductHashBefore": null,
+    "legacyProductHashAfter": null,
+    "reversalMovementCountBefore": 0,
+    "reversalMovementCountAfter": 0
+  }
+}

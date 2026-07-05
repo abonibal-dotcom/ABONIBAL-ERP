@@ -75,7 +75,8 @@ export class Container {
         const invoiceService = new InvoiceService(
             invoiceRepository,
             invoiceValidator,
-            getAuthStateService()
+            getAuthStateService(),
+            inventoryService
         );
 
         this.register("invoiceService", invoiceService);

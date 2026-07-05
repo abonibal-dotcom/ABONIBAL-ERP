@@ -1,5 +1,85 @@
 # Changelog
 
+## V1-SALES-009 - Sales / Invoice Lifecycle Regression Baseline
+
+- Verified the accepted Sales / Invoice lifecycle end to end after V1-SALES-008.
+- Confirmed no source fix was needed.
+- Verified protected invoice route, login/session boundary, explicit `accountId`, Route Guard, Products route, Inventory route, and Invoice route.
+- Verified invalid draft submission does not write invoices.
+- Verified valid draft create writes one invoice to `invoices:{accountId}`.
+- Verified draft update preserves invoice id/accountId and does not create stock movements.
+- Verified insufficient-stock issue remains blocked, leaves invoice as `draft`, creates no `sale_deduction`, and keeps movement count unchanged.
+- Verified successful issue sets status `issued`, sets `issuedAt`, creates one negative `sale_deduction`, links invoice line `stockMovementId`, and decreases availability from 3 to 1.
+- Verified duplicate issue creates no duplicate `sale_deduction`.
+- Verified issued audit view shows invoice status, number, total, issuedAt, Product snapshot, line values, and stock movement reference after reload.
+- Verified issued cancellation sets status `cancelled`, sets cancellation metadata, preserves original `sale_deduction`, creates one positive `sale_return`, references the original stock movement, and restores availability from 1 to 3.
+- Verified duplicate cancellation creates no duplicate `sale_return`.
+- Verified reload persistence for draft, issued, cancelled, `sale_deduction`, `sale_return`, audit traceability, and ledger availability.
+- Verified Product scoped hash unchanged, legacy `localStorage.products` unchanged/absent, `Product.quantity` unchanged, clean console, zero page exceptions, and `.env` untracked.
+- Confirmed no returns implementation, no partial returns, no invoice hard delete, no Product CRUD behavior change, no Product mutation, no Auth change, no Route Guard weakening, no localStorage migration, no Firebase UID/accountId fallback, and no default account fallback.
+- Final status: `V1-SALES-009 Ready for Architect / Owner Review`.
+
+## V1-SALES-008 - Invoice Cancellation / Stock Reversal Implementation
+
+- Added safe issued-invoice cancellation with full stock reversal.
+- Added optional invoice line `reversalStockMovementId`.
+- Updated `InvoiceService.markCancelled()` so only issued invoices can be cancelled.
+- Validated original `sale_deduction` movement integrity before cancellation.
+- Created additive positive `sale_return` movements with `referenceType: "invoice_return"`.
+- Linked reversal movements to the original `stockMovementId`, invoice, and invoice line through metadata.
+- Marked invoices `cancelled` only after reversal creation.
+- Added minimal Cancel action for issued invoices only and displayed reversal references in the audit view.
+- Verified draft cancellation blocked, missing invoice cancellation blocked, duplicate cancellation safe, original `sale_deduction` preserved, `sale_return` created, availability restored from 3 to 5, reload persistence, Product hash unchanged, clean console, zero page exceptions, and `.env` untracked.
+- Confirmed no returns implementation, no Product CRUD behavior change, no Product mutation, no `Product.quantity` update, no Auth change, no Route Guard weakening, no localStorage migration, no Firebase UID/accountId fallback, and no default account fallback.
+- Final status: `V1-SALES-008 Ready for Architect / Owner Review`.
+
+## V1-SALES-007 - Invoice Cancellation / Stock Reversal Design Plan
+
+- Designed the V1 issued-invoice cancellation policy without source changes.
+- Recommended audit-preserving `issued -> cancelled` cancellation with
+  `cancelledAt`, `cancelledBy`, and `cancelReason`.
+- Recommended additive positive `sale_return` movements with
+  `referenceType: "invoice_return"` for invoice stock reversal.
+- Recommended reversal traceability through metadata linking each reversal to
+  the original `sale_deduction`, invoice, and invoice line.
+- Recommended an idempotent localStorage-safe sequence that appends and verifies
+  reversals before marking the invoice cancelled.
+- Verified read-only runtime evidence: issued invoice visible, existing
+  `sale_deduction` traceable, no cancellation UI exposed, no reversal movement
+  created, invoice/movement counts unchanged, Product hash unchanged, clean
+  console, zero page exceptions, and `.env` untracked.
+- Confirmed no source files, Product behavior, Inventory behavior, Auth
+  behavior, Route Guard behavior, localStorage migration, credentials, Firebase
+  UID/accountId fallback, or default account fallback changes were introduced.
+- Final status: `V1-SALES-007 Ready for Architect / Owner Review`.
+
+## V1-SALES-006 - Issued Invoice Read / Stock Deduction Audit View
+
+- Added read-only issued invoice audit visibility to the existing Invoice page.
+- Displayed invoice created timestamp and issued timestamp.
+- Displayed invoice line Product snapshot, quantity, unit price, and line total.
+- Displayed invoice line `stockMovementId` / deduction reference.
+- Verified issued invoice remains visible after reload.
+- Verified referenced stock movement exists, is type `sale_deduction`, has negative `quantityDelta`, matches the invoice line Product id, references the invoice id, and belongs to the same accountId.
+- Verified duplicate issue attempts do not create duplicate `sale_deduction` movements.
+- Verified Product records remain unchanged and `Product.quantity` is not updated or made authoritative.
+- Verified no invoice cancellation behavior, no reversal movement, no Product CRUD behavior change, no Auth change, no Route Guard weakening, no localStorage migration, clean console, zero page exceptions, and `.env` untracked.
+- Final status: `V1-SALES-006 Ready for Architect / Owner Review`.
+
+## V1-SALES-005 - Invoice Issue / Stock Deduction Flow
+
+- Added the minimal Invoice issue flow on top of the accepted draft UI and invoice persistence baseline.
+- Updated `InvoiceService.markIssued()` to use the accepted Inventory availability gate before issuing.
+- Blocked insufficient-stock issue attempts without changing invoice status or writing `sale_deduction` movements.
+- Created `sale_deduction` stock movements for successful invoice issue.
+- Stored created movement ids on invoice lines as `stockMovementId`.
+- Verified successful issue changes invoice status to `issued`, sets `issuedAt`, preserves invoice id/accountId, and survives reload.
+- Verified availability decreases through the stock ledger from 5 to 3 after issue and remains 3 after reload.
+- Verified duplicate issue attempts do not create duplicate stock movements.
+- Verified Product records remain unchanged and `Product.quantity` is not updated or made authoritative.
+- Verified no invoice cancellation behavior, no Product CRUD behavior change, no Auth change, no Route Guard weakening, no localStorage migration, clean console, zero page exceptions, and `.env` untracked.
+- Final status: `V1-SALES-005 Ready for Architect / Owner Review`.
+
 ## V1-SALES-004 - Invoice Draft Create / Update Flow
 
 - Added the first minimal authenticated Invoice draft UI flow.

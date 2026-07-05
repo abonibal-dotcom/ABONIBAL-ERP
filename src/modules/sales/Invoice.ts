@@ -41,6 +41,7 @@ export interface InvoiceLine {
     lineSubtotal: number;
     lineTotal: number;
     stockMovementId?: string | null;
+    reversalStockMovementId?: string | null;
 
 }
 
@@ -79,4 +80,3 @@ export interface InvoiceDraftUpdateInput {
     notes?: string;
 
 }
-

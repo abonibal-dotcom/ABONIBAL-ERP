@@ -1,0 +1,13 @@
+{
+  "url": "http://127.0.0.1:62006/",
+  "title": "Invoices",
+  "invoicePageVisible": true,
+  "issuedInvoiceVisible": true,
+  "auditRowCount": 2,
+  "stockMovementIdVisible": true,
+  "cancellationUiExists": false,
+  "visibleInvoiceStatuses": [
+    "draft",
+    "issued"
+  ]
+}
