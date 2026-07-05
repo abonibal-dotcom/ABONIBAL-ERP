@@ -1,0 +1,29 @@
+{
+  "url": "http://127.0.0.1:62006/",
+  "title": "Invoices",
+  "productsRouteWorks": true,
+  "inventoryRouteWorks": true,
+  "invoicePageVisible": true,
+  "issuedInvoiceVisible": true,
+  "cancelledInvoiceVisible": false,
+  "auditRowCount": 2,
+  "productOptionCount": 2,
+  "invoiceNumberVisible": true,
+  "invoiceTotalVisible": true,
+  "issuedAtVisible": true,
+  "productSnapshotVisible": true,
+  "lineQuantityVisible": true,
+  "lineUnitPriceVisible": true,
+  "lineTotalVisible": true,
+  "stockMovementIdVisible": true,
+  "reversalStockMovementIdVisible": false,
+  "cancellationUiExists": true,
+  "draftCancelActionExists": false,
+  "issuedCancelActionExists": true,
+  "cancelledCancelActionExists": false,
+  "returnActionExists": false,
+  "visibleInvoiceStatuses": [
+    "draft",
+    "issued"
+  ]
+}

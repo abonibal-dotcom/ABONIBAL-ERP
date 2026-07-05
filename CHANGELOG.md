@@ -1,5 +1,24 @@
 # Changelog
 
+## V1-SALES-009 - Sales / Invoice Lifecycle Regression Baseline
+
+- Verified the accepted Sales / Invoice lifecycle end to end after V1-SALES-008.
+- Confirmed no source fix was needed.
+- Verified protected invoice route, login/session boundary, explicit `accountId`, Route Guard, Products route, Inventory route, and Invoice route.
+- Verified invalid draft submission does not write invoices.
+- Verified valid draft create writes one invoice to `invoices:{accountId}`.
+- Verified draft update preserves invoice id/accountId and does not create stock movements.
+- Verified insufficient-stock issue remains blocked, leaves invoice as `draft`, creates no `sale_deduction`, and keeps movement count unchanged.
+- Verified successful issue sets status `issued`, sets `issuedAt`, creates one negative `sale_deduction`, links invoice line `stockMovementId`, and decreases availability from 3 to 1.
+- Verified duplicate issue creates no duplicate `sale_deduction`.
+- Verified issued audit view shows invoice status, number, total, issuedAt, Product snapshot, line values, and stock movement reference after reload.
+- Verified issued cancellation sets status `cancelled`, sets cancellation metadata, preserves original `sale_deduction`, creates one positive `sale_return`, references the original stock movement, and restores availability from 1 to 3.
+- Verified duplicate cancellation creates no duplicate `sale_return`.
+- Verified reload persistence for draft, issued, cancelled, `sale_deduction`, `sale_return`, audit traceability, and ledger availability.
+- Verified Product scoped hash unchanged, legacy `localStorage.products` unchanged/absent, `Product.quantity` unchanged, clean console, zero page exceptions, and `.env` untracked.
+- Confirmed no returns implementation, no partial returns, no invoice hard delete, no Product CRUD behavior change, no Product mutation, no Auth change, no Route Guard weakening, no localStorage migration, no Firebase UID/accountId fallback, and no default account fallback.
+- Final status: `V1-SALES-009 Ready for Architect / Owner Review`.
+
 ## V1-SALES-008 - Invoice Cancellation / Stock Reversal Implementation
 
 - Added safe issued-invoice cancellation with full stock reversal.

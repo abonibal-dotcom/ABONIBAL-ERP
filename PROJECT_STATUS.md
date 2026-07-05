@@ -98,6 +98,8 @@ V1-SALES-007 Invoice Cancellation / Stock Reversal Design Plan is complete from 
 
 V1-SALES-008 Invoice Cancellation / Stock Reversal Implementation is complete from execution side and ready for Architect / Owner review.
 
+V1-SALES-009 Sales / Invoice Lifecycle Regression Baseline is complete from execution side and ready for Architect / Owner review.
+
 Completed stabilization work:
 
 - `PATCH-000-ECS-001 - Route Registry Stabilization`
@@ -260,6 +262,9 @@ Completed stabilization work:
 - V1-SALES-008 added optional invoice line `reversalStockMovementId`, positive `sale_return` movement creation with `referenceType: "invoice_return"`, and reversal metadata linking the reversal to the original `sale_deduction`, invoice, and invoice line.
 - V1-SALES-008 verifies draft cancellation is blocked, missing invoice cancellation fails safely, issued invoice cancellation succeeds, invoice status becomes `cancelled`, original `sale_deduction` remains stored, one `sale_return` is created, duplicate cancellation creates no duplicate movement, available quantity increases from 3 to 5, reload preserves the audit trail, Product scoped hash remains unchanged, clean console, zero page exceptions, and `.env` untracked.
 - V1-SALES-008 did not implement returns, partial returns, invoice hard delete, Product CRUD changes, Product mutation, `Product.quantity` updates, Auth changes, Route Guard weakening, localStorage migration, Firebase uid/provider user id as `accountId`, or default account fallback.
+- V1-SALES-009 verified the accepted Sales / Invoice lifecycle end to end without requiring a source fix.
+- V1-SALES-009 verifies protected invoice route, draft create/update, failed issue blocking, successful issue, `sale_deduction`, issued audit visibility, duplicate issue safety, issued cancellation, `sale_return`, duplicate cancellation safety, reload persistence, Product storage safety, Inventory ledger correctness, clean console, zero page exceptions, and `.env` untracked.
+- V1-SALES-009 did not implement returns, partial returns, invoice hard delete, Product CRUD changes, Product mutation, `Product.quantity` updates, Auth changes, Route Guard weakening, localStorage migration, Firebase uid/provider user id as `accountId`, or default account fallback.
 - Expenses are missing.
 - Safes and cash movement are missing.
 - Basic ledger is missing.
@@ -271,11 +276,11 @@ Completed stabilization work:
 
 Current mission:
 
-`V1-SALES-008 - Invoice Cancellation / Stock Reversal Implementation`
+`V1-SALES-009 - Sales / Invoice Lifecycle Regression Baseline`
 
 Current next mission:
 
-V1-SALES-008 complete from execution side and ready for Architect / Owner review.
+V1-SALES-009 complete from execution side and ready for Architect / Owner review.
 
 Classification:
 
@@ -291,4 +296,4 @@ No returns implementation, no partial returns, no invoice hard delete, no Produc
 
 ## Next State
 
-Await Architect / Owner review for V1-SALES-008. Returns remain blocked until a later owner-approved mission explicitly defines return policy and runtime verification gates.
+Await Architect / Owner review for V1-SALES-009. Returns remain blocked until a later owner-approved mission explicitly defines return policy and runtime verification gates.

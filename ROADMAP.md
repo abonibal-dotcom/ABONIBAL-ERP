@@ -408,7 +408,34 @@ Accepted implementation result:
 
 Recommended next Sales / Invoice step:
 
-Architect / Owner review of V1-SALES-008 before any return, accounting, or next
+`V1-SALES-009 - Sales / Invoice Lifecycle Regression Baseline`.
+
+V1-SALES-009 verified the accepted Sales / Invoice lifecycle end to end after
+V1-SALES-008.
+
+Accepted verification result:
+
+- No source fix was needed.
+- Protected Invoice route, Products route, Inventory route, AuthSession, and
+  Route Guard remained valid.
+- Draft create/update passed and invalid draft submission did not write.
+- Insufficient-stock issue was blocked without creating `sale_deduction`.
+- Successful issue created one negative `sale_deduction`, linked
+  `stockMovementId`, and reduced available stock from 3 to 1.
+- Duplicate issue did not create duplicate movement records.
+- Issued audit view remained visible after reload.
+- Issued cancellation created one positive `sale_return`, preserved the original
+  `sale_deduction`, and restored available stock from 1 to 3.
+- Duplicate cancellation did not create duplicate reversal movement records.
+- Reload preserved draft, issued, cancelled, deduction, reversal, and audit
+  traceability.
+- Product scoped storage hash stayed unchanged and `Product.quantity` stayed
+  non-authoritative.
+- Returns remain deferred.
+
+Recommended next Sales / Invoice step:
+
+Architect / Owner review of V1-SALES-009 before any return, accounting, or next
 Sales workflow mission.
 
 ## Verification Expectation
