@@ -1,5 +1,22 @@
 # Changelog
 
+## V1-SALES-004 - Invoice Draft Create / Update Flow
+
+- Added the first minimal authenticated Invoice draft UI flow.
+- Added protected `invoices` route and `Invoices` Sidebar entry.
+- Added `src/modules/sales/pages/InvoiceDraftPage.ts`.
+- Added active Product selection through `ProductService.getAll()`.
+- Verified soft-deleted Products are not selectable.
+- Added draft create using `InvoiceService.createDraft()`.
+- Added draft update using `InvoiceService.updateDraft()`.
+- Verified invalid draft submissions do not write invoices.
+- Verified valid draft create writes one draft invoice to `invoices:{accountId}`.
+- Verified draft update preserves invoice id, preserves accountId, remains `draft`, and persists updated totals.
+- Verified Product snapshot fields are stored on invoice lines.
+- Verified reload preserves the draft invoice.
+- Verified no invoice issue behavior, no cancellation UI, no stock deduction, no `sale_deduction`, no Product mutation, no Inventory mutation, clean console, zero page exceptions, and `.env` untracked.
+- Final status: `V1-SALES-004 Ready for Architect / Owner Review`.
+
 ## V1-SALES-003 - Account-Scoped Invoice Persistence Baseline
 
 - Added the first minimal Sales / Invoice persistence baseline under `src/modules/sales/`.

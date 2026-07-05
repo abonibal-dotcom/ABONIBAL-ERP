@@ -1,0 +1,97 @@
+{
+  "mission": "V1-SALES-004",
+  "mode": "baseline",
+  "url": "http://127.0.0.1:62004/",
+  "verificationTool": "Chrome DevTools Protocol direct WebSocket client",
+  "env": {
+    "envFileExists": true,
+    "requiredFirebaseKeysPresent": true,
+    "authTestEmailPresent": true,
+    "authTestPasswordPresent": true,
+    "envTracked": false
+  },
+  "gates": {
+    "unauthenticatedProtectedRouteBlocked": true,
+    "invoiceRouteUnavailable": true,
+    "invoiceDraftUiAbsent": true,
+    "loginSucceeds": true,
+    "authSessionExists": true,
+    "accountIdExists": true,
+    "routeGuardRemainsActive": true,
+    "productsRouteWorks": true,
+    "inventoryRouteWorks": true,
+    "invoiceServiceCanRead": true,
+    "invoiceScopedKeyInspected": true,
+    "productHashRecorded": true,
+    "stockMovementRecorded": true,
+    "legacyProductHashRecordedIfPresent": true,
+    "consoleErrorsZero": true,
+    "pageExceptionsZero": true,
+    "envUntracked": true
+  },
+  "consoleErrors": 0,
+  "pageExceptions": 0,
+  "result": "PASS",
+  "routeSummary": {
+    "productsProtected": true,
+    "unauthenticatedProductsBlocked": true
+  },
+  "baselineSummary": {
+    "accountIdSanitized": "abonib...0af0acc578",
+    "authSessionExists": true,
+    "productsProtected": true,
+    "inventoryProtected": true,
+    "invoiceRouteExists": false,
+    "salesRouteExists": false,
+    "invoiceServiceCanRead": true,
+    "invoiceCountBefore": 0,
+    "invoiceScopedKeySanitized": "invoices:abonib...0af0acc578",
+    "invoiceScopedKeyPresent": false,
+    "productScopedHash": null,
+    "productScopedHashRecorded": true,
+    "stockMovementCount": 0,
+    "stockMovementHash": null,
+    "stockMovementCountRecorded": true,
+    "legacyProductHash": null,
+    "globalInvoicesKeyPresent": false
+  },
+  "dom": {
+    "url": "http://127.0.0.1:62004/",
+    "title": "Inventory",
+    "loginVisible": false,
+    "invoiceDraftUiVisible": false,
+    "sidebarVisibleItems": [
+      {
+        "page": "dashboard",
+        "text": "🏠 الرئيسية"
+      },
+      {
+        "page": "login",
+        "text": "Login"
+      },
+      {
+        "page": "products",
+        "text": "📦 المنتجات"
+      },
+      {
+        "page": "inventory",
+        "text": "Inventory"
+      }
+    ],
+    "products": {
+      "productsPageVisible": true,
+      "productRows": 1
+    },
+    "inventory": {
+      "inventoryPageVisible": true,
+      "inventoryFormVisible": true
+    }
+  },
+  "storage": {
+    "keyCount": 0,
+    "hasGlobalInvoicesKey": false,
+    "invoiceKeys": [],
+    "productKeys": [],
+    "stockMovementKeys": []
+  }
+}

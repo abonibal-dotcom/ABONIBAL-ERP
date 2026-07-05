@@ -328,6 +328,20 @@ Recommended next Sales / Invoice mission:
 
 `V1-SALES-004 - Invoice Draft Create / Update Flow`
 
+V1-SALES-004 implemented the first minimal authenticated Invoice draft create/update flow.
+
+Accepted implementation result:
+
+- Protected `invoices` route exists.
+- Minimal Invoice draft UI exists.
+- Draft create and update use the accepted `InvoiceService` and `invoices:{accountId}` boundary.
+- Active Products can be selected and soft-deleted Products are excluded.
+- Invoice lines store Product snapshot data.
+- Draft totals are computed and persisted.
+- Reload preserves the draft invoice.
+- No invoice issue behavior, cancellation UI, stock deduction, or `sale_deduction` movement exists yet.
+- Product and Inventory data remain unmutated by invoice draft create/update.
+
 Invoice stock deduction remains blocked until a later owner-approved mission explicitly integrates invoice issue behavior with the accepted Inventory availability gate and stock movement ledger.
 
 ## Verification Expectation

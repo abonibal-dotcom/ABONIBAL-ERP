@@ -1,0 +1,32 @@
+{
+  "url": "http://127.0.0.1:62004/",
+  "title": "Inventory",
+  "loginVisible": false,
+  "invoiceDraftUiVisible": false,
+  "sidebarVisibleItems": [
+    {
+      "page": "dashboard",
+      "text": "🏠 الرئيسية"
+    },
+    {
+      "page": "login",
+      "text": "Login"
+    },
+    {
+      "page": "products",
+      "text": "📦 المنتجات"
+    },
+    {
+      "page": "inventory",
+      "text": "Inventory"
+    }
+  ],
+  "products": {
+    "productsPageVisible": true,
+    "productRows": 1
+  },
+  "inventory": {
+    "inventoryPageVisible": true,
+    "inventoryFormVisible": true
+  }
+}

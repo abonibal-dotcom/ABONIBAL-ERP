@@ -1,0 +1,170 @@
+{
+  "mission": "V1-SALES-004",
+  "mode": "after",
+  "url": "http://127.0.0.1:62004/",
+  "verificationTool": "Chrome DevTools Protocol direct WebSocket client",
+  "env": {
+    "envFileExists": true,
+    "requiredFirebaseKeysPresent": true,
+    "authTestEmailPresent": true,
+    "authTestPasswordPresent": true,
+    "envTracked": false
+  },
+  "gates": {
+    "invoiceRouteProtected": true,
+    "loginSucceeds": true,
+    "authSessionExists": true,
+    "accountIdExists": true,
+    "accountIdNotFirebaseUid": true,
+    "accountIdNotProviderUserId": true,
+    "roleAllowed": true,
+    "invoiceRouteAccessible": true,
+    "routeGuardRemainsActive": true,
+    "draftUiRenders": true,
+    "activeProductSelectorWorks": true,
+    "softDeletedProductNotSelectable": true,
+    "invalidDraftDoesNotWriteInvoice": true,
+    "validDraftCreateWritesOneInvoice": true,
+    "createdInvoiceDraftStatus": true,
+    "createdInvoiceIncludesAccountId": true,
+    "createdInvoiceIncludesCreatedBy": true,
+    "createdLineIncludesProductId": true,
+    "createdLineIncludesProductSnapshot": true,
+    "totalsComputedAndStored": true,
+    "noStockMovementCreatedAfterCreate": true,
+    "draftUpdatePreservesId": true,
+    "draftUpdatePreservesAccountId": true,
+    "draftUpdateRemainsDraft": true,
+    "draftUpdatePersistsTotals": true,
+    "productRecordsUnchanged": true,
+    "stockMovementsUnchanged": true,
+    "reloadPreservesDraftInvoice": true,
+    "reloadShowsSavedDraft": true,
+    "invoiceCountExpected": true,
+    "noIssueActionAvailable": true,
+    "noCancelActionAvailable": true,
+    "noSaleDeductionMovement": true,
+    "productQuantityNotUpdated": true,
+    "legacyProductUnchanged": true,
+    "noGlobalInvoicesKey": true,
+    "consoleErrorsZero": true,
+    "pageExceptionsZero": true,
+    "envUntracked": true
+  },
+  "consoleErrors": 0,
+  "pageExceptions": 0,
+  "result": "PASS",
+  "routeSummary": {
+    "invoiceRouteProtected": true,
+    "unauthenticatedInvoiceBlocked": true
+  },
+  "afterSummary": {
+    "accountIdSanitized": "abonib...0af0acc578",
+    "providerUserIdSanitized": "G9hYu4...6d626c6aa9",
+    "userIdSanitized": "abonib...6090a2e5d2",
+    "authSessionExists": true,
+    "accountIdNotFirebaseUid": true,
+    "accountIdNotProviderUserId": true,
+    "role": "owner",
+    "roleAllowed": true,
+    "routeGuardRemainsActive": true,
+    "invoiceScopedKeySanitized": "invoices:abonib...0af0acc578",
+    "invoiceCountAfterReload": 1,
+    "reloadInvoicePresent": true,
+    "reloadInvoiceStatus": "draft",
+    "reloadInvoiceTotal": 74,
+    "invoiceStorageRawHashAfter": "3ea43f54a11ffe017058c9ae6e1c42dbedc7305d502b0f641a0fc73592d2457d",
+    "globalInvoicesKeyPresent": false,
+    "productScopedKeySanitized": "products:abonib...0af0acc578",
+    "productScopedHashAfter": "99aa23cc59689ee940ac6f42d94567c24947dc815b569e978df8a29f447153d0",
+    "productQuantityAfter": 999,
+    "stockMovementScopedKeySanitized": "stockMovements:abonib...0af0acc578",
+    "stockMovementCountAfter": 0,
+    "stockMovementHashAfter": null,
+    "saleDeductionMovementCount": 0,
+    "legacyProductHashAfter": null,
+    "invoiceCountBeforeCreate": 0,
+    "invoiceCountAfterInvalid": 0,
+    "invoiceCountAfterValidCreate": 1,
+    "createdInvoiceId": "f972245a-2bbc-4d4e-93c6-282cc5ddf5f2",
+    "createdInvoiceNumber": "INV-20260705-0001",
+    "createdInvoiceStatus": "draft",
+    "createdInvoiceLineProductSnapshotResult": true,
+    "draftUpdateResult": true,
+    "totalsResult": {
+      "createdSubtotal": 50,
+      "createdDiscount": 1.5,
+      "createdTax": 0.5,
+      "createdTotal": 49,
+      "updatedSubtotal": 75,
+      "updatedDiscount": 1.5,
+      "updatedTax": 0.5,
+      "updatedTotal": 74
+    }
+  },
+  "dom": {
+    "url": "http://127.0.0.1:62004/",
+    "title": "Invoices",
+    "loginVisible": false,
+    "invoiceDraftUiVisible": true,
+    "sidebarVisibleItems": [
+      {
+        "page": "dashboard",
+        "text": "🏠 الرئيسية"
+      },
+      {
+        "page": "login",
+        "text": "Login"
+      },
+      {
+        "page": "products",
+        "text": "📦 المنتجات"
+      },
+      {
+        "page": "inventory",
+        "text": "Inventory"
+      },
+      {
+        "page": "invoices",
+        "text": "Invoices"
+      }
+    ],
+    "invoiceBeforeCreate": {
+      "url": "http://127.0.0.1:62004/",
+      "title": "Invoices",
+      "invoiceDraftPageVisible": true,
+      "invoiceFormVisible": true,
+      "activeProductSelectable": true,
+      "softDeletedProductSelectable": false,
+      "draftRows": 0,
+      "savedDraftVisible": false,
+      "issueActionAvailable": false,
+      "cancelActionAvailable": false,
+      "editingInvoiceId": ""
+    },
+    "invoiceAfterReload": {
+      "url": "http://127.0.0.1:62004/",
+      "title": "Invoices",
+      "invoiceDraftPageVisible": true,
+      "invoiceFormVisible": true,
+      "activeProductSelectable": true,
+      "softDeletedProductSelectable": false,
+      "draftRows": 1,
+      "savedDraftVisible": true,
+      "issueActionAvailable": false,
+      "cancelActionAvailable": false,
+      "editingInvoiceId": ""
+    }
+  },
+  "storage": {
+    "keyCount": 2,
+    "hasGlobalInvoicesKey": false,
+    "invoiceKeys": [
+      "invoices:abonib...0af0acc578"
+    ],
+    "productKeys": [
+      "products:abonib...0af0acc578"
+    ],
+    "stockMovementKeys": []
+  }
+}

@@ -88,6 +88,8 @@ V1-SALES-002 Account-Scoped Invoice Persistence Design Plan is complete from exe
 
 V1-SALES-003 Account-Scoped Invoice Persistence Baseline is complete from execution side and ready for Architect / Owner review.
 
+V1-SALES-004 Invoice Draft Create / Update Flow is complete from execution side and ready for Architect / Owner review.
+
 Completed stabilization work:
 
 - `PATCH-000-ECS-001 - Route Registry Stabilization`
@@ -219,7 +221,7 @@ Completed stabilization work:
 - Inventory now has a minimal stock movement ledger persistence module, a minimal authenticated manual movement flow, and a read-only movement history/current stock view.
 - Clients are missing.
 - Suppliers are missing.
-- Sales and invoices are missing.
+- Sales and invoices are partial.
 - V1-SALES-001 confirmed no invoice module, route, UI, service, repository, persistence key, or storage boundary exists yet.
 - V1-SALES-002 designed the future invoice persistence boundary as `invoices:{accountId}`.
 - V1-SALES-002 rejected global invoice storage, Firebase UID/provider user id storage, and default account fallback.
@@ -229,6 +231,10 @@ Completed stabilization work:
 - V1-SALES-003 implemented `invoices:{accountId}`, invoice model/types, invoice lifecycle status, invoice line Product snapshots, repository, validator, service methods, and Container registration.
 - V1-SALES-003 verified createDraft, updateDraft, markIssued, markCancelled, reload persistence, scoped storage, no global invoice key, no Product mutation, no Inventory mutation, no stock deduction, clean console, and zero page exceptions.
 - V1-SALES-003 did not add invoice UI, add invoice routes, implement invoice stock deduction, create `sale_deduction` movements, mutate Product records, update `Product.quantity`, mutate Inventory, change Auth, weaken Route Guard, migrate localStorage, use Firebase uid/provider user id as `accountId`, or add default account fallback.
+- V1-SALES-004 added the first minimal authenticated Invoice draft UI flow.
+- V1-SALES-004 added a protected `invoices` route and `Invoices` Sidebar entry.
+- V1-SALES-004 verifies invalid draft submissions do not write, valid draft create writes exactly one invoice to `invoices:{accountId}`, draft update preserves id/accountId/status, Product snapshot fields are persisted, totals are correct, and reload preserves the draft.
+- V1-SALES-004 did not add invoice issue behavior, cancellation UI, stock deduction, `sale_deduction` movements, Product mutation, Inventory mutation, Auth changes, Route Guard weakening, localStorage migration, Firebase uid/provider user id as `accountId`, or default account fallback.
 - Expenses are missing.
 - Safes and cash movement are missing.
 - Basic ledger is missing.
@@ -240,11 +246,11 @@ Completed stabilization work:
 
 Current mission:
 
-`V1-SALES-003 - Account-Scoped Invoice Persistence Baseline`
+`V1-SALES-004 - Invoice Draft Create / Update Flow`
 
 Current next mission:
 
-V1-SALES-003 complete from execution side and ready for Architect / Owner review.
+V1-SALES-004 complete from execution side and ready for Architect / Owner review.
 
 Classification:
 
@@ -252,12 +258,12 @@ Classification:
 
 Allowed scope:
 
-Sales / Invoice account-scoped persistence baseline only.
+Sales / Invoice draft create/update UI flow only.
 
 Forbidden scope:
 
-No invoice UI, no invoice route, no invoice create/edit/delete screen, no invoice stock deduction, no `sale_deduction`, no Product CRUD behavior change, no Product quantity migration, no Product record mutation, no Inventory mutation, no Auth redesign, no Route Guard weakening, no destructive migration, no legacy Product deletion, no legacy `localStorage.products` mutation, no automatic import on app startup, no permission matrix, no advanced roles, no hardcoded credentials, no real credentials committed, and no Firebase uid/provider user id to `accountId` assumption.
+No invoice issuing, no invoice cancellation UI, no invoice stock deduction, no `sale_deduction`, no Product CRUD behavior change, no Product quantity migration, no Product record mutation by invoice flow, no Inventory mutation, no Auth redesign, no Route Guard weakening, no destructive migration, no legacy Product deletion, no legacy `localStorage.products` mutation, no automatic import on app startup, no permission matrix, no advanced roles, no hardcoded credentials, no real credentials committed, and no Firebase uid/provider user id to `accountId` assumption.
 
 ## Next State
 
-Await Architect / Owner review for V1-SALES-003. Recommended next mission is `V1-SALES-004 - Invoice Draft Create / Update Flow`. Invoice UI and invoice stock deduction remain blocked until V1-SALES-003 is reviewed and accepted.
+Await Architect / Owner review for V1-SALES-004. Recommended next mission is an owner-approved invoice issue / stock deduction planning or implementation gate. Invoice issuing and invoice stock deduction remain blocked until a later approved mission explicitly integrates the accepted Inventory availability gate and stock movement ledger.
