@@ -1,5 +1,21 @@
 # Changelog
 
+## V1-SALES-010 - Invoice Returns / Partial Returns Design Plan
+
+- Designed the V1 invoice returns and partial returns policy without source changes.
+- Confirmed current source has no return model, return service, return UI, partial return tracking, or duplicate return protection.
+- Confirmed current source has accepted invoice cancellation, `sale_return`, invoice line `stockMovementId`, and issued invoice audit visibility.
+- Recommended account-scoped return storage at `invoiceReturns:{accountId}`.
+- Recommended an `InvoiceReturn` record with return lines, reason, notes, audit ownership, and future reserved void metadata.
+- Recommended each return line preserve invoice line id, Product snapshot, return quantity, original `sale_deduction` id, and return `sale_return` id.
+- Recommended customer returns restore stock only through positive `sale_return` movements with `referenceType: "invoice_return"`.
+- Recommended future invoice lifecycle additions `partially_returned` and `returned`.
+- Recommended preventing returns for draft and cancelled invoices, blocking invoice cancellation after posted returns, and rejecting over-return or duplicate return submissions.
+- Recommended `V1-SALES-011 - Account-Scoped Invoice Returns Persistence Baseline` as the next mission.
+- Confirmed return UI must remain deferred until persistence, validation, duplicate protection, and stock movement integration are verified.
+- Confirmed no source files changed, no Product mutation, no invoice mutation, no Inventory mutation, no localStorage migration, no Auth change, no Route Guard weakening, and `.env` remains untracked.
+- Final status: `V1-SALES-010 Ready for Architect / Owner Review`.
+
 ## V1-SALES-009 - Sales / Invoice Lifecycle Regression Baseline
 
 - Verified the accepted Sales / Invoice lifecycle end to end after V1-SALES-008.
