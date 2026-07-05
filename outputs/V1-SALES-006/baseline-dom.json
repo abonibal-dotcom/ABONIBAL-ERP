@@ -1,0 +1,68 @@
+{
+  "url": "http://127.0.0.1:62006/",
+  "title": "Invoices",
+  "loginVisible": false,
+  "invoiceDraftUiVisible": true,
+  "sidebarVisibleItems": [
+    {
+      "page": "dashboard",
+      "text": "🏠 الرئيسية"
+    },
+    {
+      "page": "login",
+      "text": "Login"
+    },
+    {
+      "page": "products",
+      "text": "📦 المنتجات"
+    },
+    {
+      "page": "inventory",
+      "text": "Inventory"
+    },
+    {
+      "page": "invoices",
+      "text": "Invoices"
+    }
+  ],
+  "invoiceBeforeCreate": {
+    "url": "http://127.0.0.1:62006/",
+    "title": "Invoices",
+    "invoiceDraftPageVisible": true,
+    "invoiceFormVisible": true,
+    "activeProductSelectable": true,
+    "softDeletedProductSelectable": false,
+    "draftRows": 0,
+    "savedDraftVisible": false,
+    "issueActionAvailable": false,
+    "cancelActionAvailable": false,
+    "editingInvoiceId": ""
+  },
+  "invoiceAfterReload": {
+    "url": "http://127.0.0.1:62006/",
+    "title": "Invoices",
+    "invoiceDraftPageVisible": true,
+    "invoiceFormVisible": true,
+    "activeProductSelectable": true,
+    "softDeletedProductSelectable": false,
+    "draftRows": 1,
+    "issuedRows": 1,
+    "issuedInvoiceRowVisible": true,
+    "issuedInvoiceStatusDisplayed": true,
+    "issuedInvoiceNumberDisplayed": true,
+    "issuedInvoiceTotalDisplayed": true,
+    "issuedInvoiceIssuedAtDisplayed": false,
+    "invoiceLineAuditRows": 0,
+    "invoiceLineProductSnapshotDisplayed": false,
+    "invoiceLineQuantityDisplayed": false,
+    "invoiceLineUnitPriceDisplayed": false,
+    "invoiceLineTotalDisplayed": false,
+    "stockMovementIdVisible": false,
+    "stockMovementIdText": "",
+    "stockMovementIdData": "",
+    "issuedInvoiceEditActionAvailable": false,
+    "failedInvoiceIssueActionAvailable": true,
+    "issuedInvoiceIssueActionAvailable": false,
+    "cancelActionAvailable": false
+  }
+}

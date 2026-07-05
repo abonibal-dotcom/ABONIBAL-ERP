@@ -237,6 +237,8 @@ export class InvoiceDraftPage extends Page {
 
                                 <th>Invoice</th>
                                 <th>Customer</th>
+                                <th>Created</th>
+                                <th>Issued</th>
                                 <th>Total</th>
                                 <th>Status</th>
                                 <th>Actions</th>
@@ -382,7 +384,7 @@ export class InvoiceDraftPage extends Page {
         if (invoices.length === 0) {
             this.draftsBody.innerHTML = `
                 <tr>
-                    <td colspan="5">No invoices.</td>
+                    <td colspan="7">No invoices.</td>
                 </tr>
             `;
             return;
@@ -402,12 +404,86 @@ export class InvoiceDraftPage extends Page {
                 data-invoice-id="${this.escapeHtml(invoice.id)}"
                 data-invoice-status="${this.escapeHtml(invoice.status)}"
                 data-invoice-total="${this.escapeHtml(invoice.total)}"
+                data-issued-at="${this.escapeHtml(invoice.issuedAt ?? "")}"
             >
                 <td>${this.escapeHtml(invoice.invoiceNumber)}</td>
                 <td>${this.escapeHtml(this.customerDisplayName(invoice))}</td>
+                <td>${this.escapeHtml(this.formatDateTime(invoice.createdAt))}</td>
+                <td>${this.escapeHtml(this.formatOptionalDateTime(invoice.issuedAt))}</td>
                 <td>${this.formatCurrency(invoice.total)}</td>
                 <td>${this.escapeHtml(invoice.status)}</td>
                 <td>${this.renderInvoiceActions(invoice)}</td>
+            </tr>
+            <tr
+                class="invoice-line-audit-container"
+                data-invoice-id="${this.escapeHtml(invoice.id)}"
+            >
+                <td colspan="7">
+                    ${this.renderInvoiceLines(invoice)}
+                </td>
+            </tr>
+        `;
+
+    }
+
+    private renderInvoiceLines(invoice: Invoice): string {
+
+        return `
+            <table
+                class="invoice-line-audit-table"
+                aria-label="Invoice lines ${this.escapeHtml(invoice.invoiceNumber)}"
+            >
+                <thead>
+                    <tr>
+                        <th>Product snapshot</th>
+                        <th>Quantity</th>
+                        <th>Unit price</th>
+                        <th>Line total</th>
+                        <th>Stock movement</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${invoice.lines
+                        .map(line => this.renderInvoiceLine(invoice, line))
+                        .join("")}
+                </tbody>
+            </table>
+        `;
+
+    }
+
+    private renderInvoiceLine(
+        invoice: Invoice,
+        line: Invoice["lines"][number]
+    ): string {
+
+        const stockMovementId = line.stockMovementId?.trim() ?? "";
+        const stockMovementDisplay = invoice.status === "issued"
+            ? stockMovementId || "Missing movement"
+            : "Not issued";
+
+        return `
+            <tr
+                class="invoice-line-audit-row"
+                data-invoice-id="${this.escapeHtml(invoice.id)}"
+                data-product-id="${this.escapeHtml(line.productId)}"
+                data-stock-movement-id="${this.escapeHtml(stockMovementId)}"
+            >
+                <td class="invoice-line-product-snapshot">
+                    ${this.escapeHtml(line.productNameSnapshot)}
+                </td>
+                <td class="invoice-line-quantity">
+                    ${this.escapeHtml(line.quantity)}
+                </td>
+                <td class="invoice-line-unit-price">
+                    ${this.formatCurrency(line.unitPrice)}
+                </td>
+                <td class="invoice-line-total">
+                    ${this.formatCurrency(line.lineTotal)}
+                </td>
+                <td class="invoice-line-stock-movement-id">
+                    ${this.escapeHtml(stockMovementDisplay)}
+                </td>
             </tr>
         `;
 
@@ -416,7 +492,7 @@ export class InvoiceDraftPage extends Page {
     private renderInvoiceActions(invoice: Invoice): string {
 
         if (invoice.status !== "draft") {
-            return "Issued";
+            return `<span class="invoice-action-readonly">${this.escapeHtml(invoice.status)}</span>`;
         }
 
         return `
@@ -753,6 +829,24 @@ export class InvoiceDraftPage extends Page {
         }
 
         return value.toFixed(2);
+
+    }
+
+    private formatOptionalDateTime(value: string | undefined): string {
+
+        return value ? this.formatDateTime(value) : "-";
+
+    }
+
+    private formatDateTime(value: string): string {
+
+        const date = new Date(value);
+
+        if (Number.isNaN(date.getTime())) {
+            return value;
+        }
+
+        return date.toISOString();
 
     }
 

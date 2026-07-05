@@ -354,6 +354,18 @@ Accepted implementation result:
 - Product records remain unchanged and `Product.quantity` is not authoritative.
 - No invoice cancellation, return, or hard delete behavior exists yet.
 
+V1-SALES-006 implemented minimal issued invoice read / stock deduction audit visibility.
+
+Accepted implementation result:
+
+- Issued invoice remains visible after reload.
+- Issued invoice status, number, total, and issuedAt are displayed.
+- Invoice line Product snapshot, quantity, unit price, line total, and `stockMovementId` are displayed.
+- The referenced `sale_deduction` movement can be verified against the invoice line, Product id, accountId, and negative quantityDelta.
+- Duplicate issue attempts do not duplicate stock movements.
+- Product records remain unchanged and `Product.quantity` is not authoritative.
+- No invoice cancellation, return, reversal, or hard delete behavior exists yet.
+
 Recommended next Sales / Invoice mission:
 
 Owner-approved invoice cancellation / reversal planning or the next Sales dependency gate.

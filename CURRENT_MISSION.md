@@ -2,39 +2,40 @@
 
 ## Mission
 
-`V1-SALES-005 - Invoice Issue / Stock Deduction Flow`
+`V1-SALES-006 - Issued Invoice Read / Stock Deduction Audit View`
 
 ## Classification
 
 `ECS`
 
-This is the minimal Invoice issue and stock deduction flow on top of the accepted draft UI, invoice persistence, and Inventory availability gate.
+This is the minimal read-only issued invoice audit visibility layer after the accepted invoice issue and stock deduction flow.
 
-This is not invoice cancellation, returns, hard delete, Product CRUD, Product quantity migration, Auth work, Route Guard weakening, or localStorage migration.
+This is not invoice cancellation, returns, hard delete, Product CRUD, Inventory manual adjustment work, Auth work, Route Guard weakening, or localStorage migration.
 
 ## Objective
 
-Implement and verify minimal invoice issue behavior that blocks unavailable stock, creates `sale_deduction` stock movements for successful issues, and records the resulting movement ids on invoice lines.
+Implement and verify a minimal read-only view that makes issued invoices and their stock deduction relationship visible and auditable.
 
 The mission proves:
 
 - Protected invoice route remains active.
 - Login succeeds and authenticated invoice access works.
-- Draft issue with insufficient stock is blocked safely.
-- Failed issue does not create `sale_deduction`.
-- Successful issue changes invoice status to `issued`.
-- Successful issue creates one `sale_deduction` movement per invoice line.
-- `sale_deduction.quantityDelta` is negative.
-- Movement `referenceType` is `invoice` and `referenceId` is the invoice id.
-- Invoice line `stockMovementId` references the created movement.
-- Available stock decreases through the ledger after issue and after reload.
-- Duplicate issue attempts do not duplicate stock movements.
+- Issued invoice is visible after reload.
+- Issued invoice status, number, total, and issuedAt are displayed.
+- Invoice line Product snapshot is displayed.
+- Invoice line quantity, unit price, and line total are displayed.
+- Invoice line `stockMovementId` is visible or traceable.
+- The referenced movement exists and is a `sale_deduction`.
+- The referenced movement has negative `quantityDelta`.
+- The referenced movement belongs to the same accountId and Product id.
+- Available stock remains reduced after reload.
+- Duplicate issue attempts do not create duplicate movements.
 - Product records and `Product.quantity` remain unchanged.
-- No invoice cancellation behavior is added.
+- No invoice cancellation or reversal behavior is added.
 
 ## Accepted Baseline
 
-- Baseline tag: `v1-sales-004-invoice-draft-create-update-flow`.
+- Baseline tag: `v1-sales-005-invoice-issue-stock-deduction-flow`.
 - Firebase Auth.
 - Explicit `accountId`.
 - Route Guard.
@@ -43,20 +44,20 @@ The mission proves:
 - Inventory availability gate PASS through V1-INV-007.
 - Invoice persistence baseline PASS through V1-SALES-003.
 - Invoice draft create/update flow PASS through V1-SALES-004.
+- Invoice issue / stock deduction flow PASS through V1-SALES-005.
 
 ## Current Status
 
-`V1-SALES-005 Ready for Architect / Owner Review`
+`V1-SALES-006 Ready for Architect / Owner Review`
 
 ## Implementation Result
 
-- Updated `InvoiceService.markIssued()` to call the accepted Inventory availability gate before issuing.
-- Blocked issue when requested invoice quantities exceed available ledger stock.
-- Created `sale_deduction` stock movements only after availability passes.
-- Stored created movement ids on invoice lines as `stockMovementId`.
-- Marked invoices as `issued` only after movement creation succeeds.
-- Added a minimal `Issue` action for draft invoices on the existing Invoice draft page.
-- Prevented issued invoices from being edited through the draft update UI.
+- Added read-only invoice line audit visibility to the existing Invoice page.
+- Displayed invoice created timestamp and issued timestamp.
+- Displayed invoice line Product snapshot, quantity, unit price, and line total.
+- Displayed line `stockMovementId` / deduction reference.
+- Preserved issued invoice edit blocking.
+- Preserved no cancellation UI/action.
 
 ## Verification Completed
 
@@ -75,8 +76,9 @@ The mission proves:
 - No invoice cancellation implemented.
 - No invoice return implemented.
 - No invoice hard delete implemented.
+- No reversal movement created.
 - No Product CRUD behavior changed.
-- No Product records mutated by invoice issue.
+- No Product records mutated by invoice read/audit display.
 - `Product.quantity` not updated.
 - Inventory manual adjustment behavior not changed.
 - Auth behavior not changed.
@@ -90,19 +92,19 @@ The mission proves:
 ## Evidence
 
 ```text
-PATCHES/V1-SALES-005/verification.md
-PATCHES/V1-SALES-005/closure-report.md
-outputs/V1-SALES-005/baseline-runtime.json
-outputs/V1-SALES-005/baseline-dom.json
-outputs/V1-SALES-005/baseline-console.log
-outputs/V1-SALES-005/baseline-storage-snapshot-sanitized.json
-outputs/V1-SALES-005/baseline-screenshot.png
-outputs/V1-SALES-005/after-runtime.json
-outputs/V1-SALES-005/after-dom.json
-outputs/V1-SALES-005/after-console.log
-outputs/V1-SALES-005/after-storage-snapshot-sanitized.json
-outputs/V1-SALES-005/after-screenshot.png
-outputs/V1-SALES-005/invoice-issue-summary.json
+PATCHES/V1-SALES-006/verification.md
+PATCHES/V1-SALES-006/closure-report.md
+outputs/V1-SALES-006/baseline-runtime.json
+outputs/V1-SALES-006/baseline-dom.json
+outputs/V1-SALES-006/baseline-console.log
+outputs/V1-SALES-006/baseline-storage-snapshot-sanitized.json
+outputs/V1-SALES-006/baseline-screenshot.png
+outputs/V1-SALES-006/after-runtime.json
+outputs/V1-SALES-006/after-dom.json
+outputs/V1-SALES-006/after-console.log
+outputs/V1-SALES-006/after-storage-snapshot-sanitized.json
+outputs/V1-SALES-006/after-screenshot.png
+outputs/V1-SALES-006/issued-invoice-audit-summary.json
 ```
 
 ## Next
@@ -111,4 +113,4 @@ Recommended next mission:
 
 Owner-approved invoice cancellation / reversal planning or the next Sales dependency gate.
 
-Do not start the next mission until V1-SALES-005 is reviewed and accepted.
+Do not start the next mission until V1-SALES-006 is reviewed and accepted.

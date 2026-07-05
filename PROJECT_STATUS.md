@@ -92,6 +92,8 @@ V1-SALES-004 Invoice Draft Create / Update Flow is complete from execution side 
 
 V1-SALES-005 Invoice Issue / Stock Deduction Flow is complete from execution side and ready for Architect / Owner review.
 
+V1-SALES-006 Issued Invoice Read / Stock Deduction Audit View is complete from execution side and ready for Architect / Owner review.
+
 Completed stabilization work:
 
 - `PATCH-000-ECS-001 - Route Registry Stabilization`
@@ -240,6 +242,10 @@ Completed stabilization work:
 - V1-SALES-005 added the minimal Invoice issue / stock deduction flow.
 - V1-SALES-005 verifies insufficient-stock issue is blocked without writing movements, successful issue creates `sale_deduction` movements, invoice lines store `stockMovementId`, availability decreases through the stock ledger, duplicate issue attempts do not duplicate movements, and reload preserves the issued invoice and movement.
 - V1-SALES-005 did not add cancellation, returns, hard delete, Product CRUD behavior changes, Product mutation, `Product.quantity` updates, Auth changes, Route Guard weakening, localStorage migration, Firebase uid/provider user id as `accountId`, or default account fallback.
+- V1-SALES-006 added read-only issued invoice and stock deduction audit visibility.
+- V1-SALES-006 verifies issued invoice status, number, total, issuedAt, line Product snapshot, quantity, unit price, line total, and `stockMovementId` are visible after reload.
+- V1-SALES-006 verifies the referenced movement exists as `sale_deduction`, has negative quantityDelta, matches the invoice line Product/account boundary, and available stock remains reduced after reload.
+- V1-SALES-006 did not add cancellation, returns, reversal movements, hard delete, Product CRUD behavior changes, Product mutation, `Product.quantity` updates, Auth changes, Route Guard weakening, localStorage migration, Firebase uid/provider user id as `accountId`, or default account fallback.
 - Expenses are missing.
 - Safes and cash movement are missing.
 - Basic ledger is missing.
@@ -251,11 +257,11 @@ Completed stabilization work:
 
 Current mission:
 
-`V1-SALES-005 - Invoice Issue / Stock Deduction Flow`
+`V1-SALES-006 - Issued Invoice Read / Stock Deduction Audit View`
 
 Current next mission:
 
-V1-SALES-005 complete from execution side and ready for Architect / Owner review.
+V1-SALES-006 complete from execution side and ready for Architect / Owner review.
 
 Classification:
 
@@ -263,12 +269,12 @@ Classification:
 
 Allowed scope:
 
-Sales / Invoice issue and stock deduction flow only.
+Sales / issued invoice read and stock deduction audit visibility only.
 
 Forbidden scope:
 
-No invoice cancellation UI, no invoice return flow, no invoice hard delete, no Product CRUD behavior change, no Product quantity migration, no Product record mutation by invoice flow, no Inventory manual adjustment behavior change, no Auth redesign, no Route Guard weakening, no destructive migration, no legacy Product deletion, no legacy `localStorage.products` mutation, no automatic import on app startup, no permission matrix, no advanced roles, no hardcoded credentials, no real credentials committed, and no Firebase uid/provider user id to `accountId` assumption.
+No invoice cancellation UI, no invoice return flow, no reversal movement, no invoice hard delete, no Product CRUD behavior change, no Product quantity migration, no Product record mutation by invoice flow, no Inventory manual adjustment behavior change, no Auth redesign, no Route Guard weakening, no destructive migration, no legacy Product deletion, no legacy `localStorage.products` mutation, no automatic import on app startup, no permission matrix, no advanced roles, no hardcoded credentials, no real credentials committed, and no Firebase uid/provider user id to `accountId` assumption.
 
 ## Next State
 
-Await Architect / Owner review for V1-SALES-005. Recommended next mission is an owner-approved invoice cancellation / reversal planning gate or the next Sales dependency gate. Invoice cancellation and reversal remain blocked until a later approved mission explicitly defines the reversal behavior against the accepted stock movement ledger.
+Await Architect / Owner review for V1-SALES-006. Recommended next mission is an owner-approved invoice cancellation / reversal planning gate or the next Sales dependency gate. Invoice cancellation and reversal remain blocked until a later approved mission explicitly defines the reversal behavior against the accepted stock movement ledger.

@@ -1,5 +1,18 @@
 # Changelog
 
+## V1-SALES-006 - Issued Invoice Read / Stock Deduction Audit View
+
+- Added read-only issued invoice audit visibility to the existing Invoice page.
+- Displayed invoice created timestamp and issued timestamp.
+- Displayed invoice line Product snapshot, quantity, unit price, and line total.
+- Displayed invoice line `stockMovementId` / deduction reference.
+- Verified issued invoice remains visible after reload.
+- Verified referenced stock movement exists, is type `sale_deduction`, has negative `quantityDelta`, matches the invoice line Product id, references the invoice id, and belongs to the same accountId.
+- Verified duplicate issue attempts do not create duplicate `sale_deduction` movements.
+- Verified Product records remain unchanged and `Product.quantity` is not updated or made authoritative.
+- Verified no invoice cancellation behavior, no reversal movement, no Product CRUD behavior change, no Auth change, no Route Guard weakening, no localStorage migration, clean console, zero page exceptions, and `.env` untracked.
+- Final status: `V1-SALES-006 Ready for Architect / Owner Review`.
+
 ## V1-SALES-005 - Invoice Issue / Stock Deduction Flow
 
 - Added the minimal Invoice issue flow on top of the accepted draft UI and invoice persistence baseline.
