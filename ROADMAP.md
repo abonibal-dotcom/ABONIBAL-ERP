@@ -366,9 +366,24 @@ Accepted implementation result:
 - Product records remain unchanged and `Product.quantity` is not authoritative.
 - No invoice cancellation, return, reversal, or hard delete behavior exists yet.
 
+V1-SALES-007 designed the V1 invoice cancellation and stock reversal policy.
+
+Accepted design recommendation:
+
+- Issued invoice cancellation should be audit-preserving.
+- V1 cancellation transition should be `issued -> cancelled`.
+- Cancellation should set `cancelledAt`, `cancelledBy`, and `cancelReason`.
+- Original invoice id, invoice number, accountId, issued data, totals, and Product snapshot lines must remain preserved.
+- Original `sale_deduction` movements must not be deleted or used as mutable stock correction.
+- Cancellation should append positive `sale_return` movements with `referenceType: "invoice_return"`.
+- Reversal movements should link to the original `sale_deduction`, invoice, and invoice line through metadata and optional future invoice-line reversal ids.
+- Duplicate cancellation must be prevented by checking existing reversal movements by original deduction id.
+- Product records remain unchanged and `Product.quantity` remains non-authoritative.
+- Returns remain deferred until cancellation and stock reversal implementation is accepted.
+
 Recommended next Sales / Invoice mission:
 
-Owner-approved invoice cancellation / reversal planning or the next Sales dependency gate.
+`V1-SALES-008 - Invoice Cancellation / Stock Reversal Implementation`.
 
 ## Verification Expectation
 

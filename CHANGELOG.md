@@ -1,5 +1,25 @@
 # Changelog
 
+## V1-SALES-007 - Invoice Cancellation / Stock Reversal Design Plan
+
+- Designed the V1 issued-invoice cancellation policy without source changes.
+- Recommended audit-preserving `issued -> cancelled` cancellation with
+  `cancelledAt`, `cancelledBy`, and `cancelReason`.
+- Recommended additive positive `sale_return` movements with
+  `referenceType: "invoice_return"` for invoice stock reversal.
+- Recommended reversal traceability through metadata linking each reversal to
+  the original `sale_deduction`, invoice, and invoice line.
+- Recommended an idempotent localStorage-safe sequence that appends and verifies
+  reversals before marking the invoice cancelled.
+- Verified read-only runtime evidence: issued invoice visible, existing
+  `sale_deduction` traceable, no cancellation UI exposed, no reversal movement
+  created, invoice/movement counts unchanged, Product hash unchanged, clean
+  console, zero page exceptions, and `.env` untracked.
+- Confirmed no source files, Product behavior, Inventory behavior, Auth
+  behavior, Route Guard behavior, localStorage migration, credentials, Firebase
+  UID/accountId fallback, or default account fallback changes were introduced.
+- Final status: `V1-SALES-007 Ready for Architect / Owner Review`.
+
 ## V1-SALES-006 - Issued Invoice Read / Stock Deduction Audit View
 
 - Added read-only issued invoice audit visibility to the existing Invoice page.
