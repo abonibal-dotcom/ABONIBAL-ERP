@@ -1,5 +1,38 @@
 # Changelog
 
+## V1-SALES-011 - Account-Scoped Invoice Returns Persistence Baseline
+
+- Added the first minimal account-scoped invoice return persistence baseline.
+- Added `InvoiceReturn` and `InvoiceReturnLine` model contracts.
+- Added `InvoiceReturnStatus` with baseline status `recorded`.
+- Added `invoiceReturnStorageKeyForAccount(accountId)` using
+  `invoiceReturns:{accountId}`.
+- Added `InvoiceReturnRepository` with account-scoped reads and append.
+- Added `InvoiceReturnValidator`.
+- Added `InvoiceReturnService` with `getAll`, `getById`,
+  `getByInvoiceId`, `createReturnRecord`, `validateReturnRequest`,
+  `getReturnedQuantity`, and `getRemainingReturnableQuantity`.
+- Registered invoice return repository, validator, and service in `Container`.
+- Verified return records include `accountId`, `createdBy`, issued invoice
+  reference, invoice line reference, Product snapshot data, original
+  `sale_deduction` id, and empty `returnStockMovementId`.
+- Verified partial return within remaining quantity is accepted.
+- Verified over-return, duplicate excessive return, duplicate line, draft
+  invoice return, cancelled invoice return, missing invoice, missing invoice
+  line, zero quantity, and negative quantity are rejected.
+- Verified reload preserves return records.
+- Verified `invoices:{accountId}` hash unchanged.
+- Verified `stockMovements:{accountId}` count/hash unchanged and no
+  `sale_return` movement created.
+- Verified Product scoped hash unchanged, legacy Product key unchanged/absent,
+  clean console, zero page exceptions, and `.env` untracked.
+- Confirmed no return UI, no return route, no stock restoration, no invoice
+  status changes to `partially_returned` or `returned`, no Product CRUD
+  behavior changes, no Auth changes, no Route Guard weakening, no localStorage
+  migration, no Firebase UID/accountId fallback, and no default account
+  fallback.
+- Final status: `V1-SALES-011 Ready for Architect / Owner Review`.
+
 ## V1-SALES-010 - Invoice Returns / Partial Returns Design Plan
 
 - Designed the V1 invoice returns and partial returns policy without source changes.
