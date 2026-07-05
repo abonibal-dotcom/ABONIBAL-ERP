@@ -435,8 +435,33 @@ Accepted verification result:
 
 Recommended next Sales / Invoice step:
 
-Architect / Owner review of V1-SALES-009 before any return, accounting, or next
-Sales workflow mission.
+`V1-SALES-010 - Invoice Returns / Partial Returns Design Plan`.
+
+V1-SALES-010 designed the V1 invoice returns and partial returns policy.
+
+Accepted design recommendation:
+
+- Returns are allowed only for issued invoices and future
+  `partially_returned` invoices with remaining returnable quantity.
+- Draft invoices cannot be returned.
+- Cancelled invoices cannot be returned.
+- Invoices with posted returns should not be cancellable in V1.
+- Account-scoped return records should use `invoiceReturns:{accountId}`.
+- Return lines should preserve invoice line id, Product snapshot, return
+  quantity, original `sale_deduction`, and return `sale_return`.
+- Stock is restored only through positive `sale_return` movements with
+  `referenceType: "invoice_return"`.
+- `Product.quantity` remains non-authoritative.
+- Over-return and duplicate submit protection must be implemented before UI.
+- Return UI remains deferred.
+
+Recommended next Sales / Invoice step:
+
+`V1-SALES-011 - Account-Scoped Invoice Returns Persistence Baseline`.
+
+Return UI should proceed only after the return persistence baseline, validation
+rules, duplicate protection, and stock movement integration are implemented and
+verified.
 
 ## Verification Expectation
 

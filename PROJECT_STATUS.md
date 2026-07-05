@@ -100,6 +100,8 @@ V1-SALES-008 Invoice Cancellation / Stock Reversal Implementation is complete fr
 
 V1-SALES-009 Sales / Invoice Lifecycle Regression Baseline is complete from execution side and ready for Architect / Owner review.
 
+V1-SALES-010 Invoice Returns / Partial Returns Design Plan is complete from execution side and ready for Architect / Owner review.
+
 Completed stabilization work:
 
 - `PATCH-000-ECS-001 - Route Registry Stabilization`
@@ -265,6 +267,11 @@ Completed stabilization work:
 - V1-SALES-009 verified the accepted Sales / Invoice lifecycle end to end without requiring a source fix.
 - V1-SALES-009 verifies protected invoice route, draft create/update, failed issue blocking, successful issue, `sale_deduction`, issued audit visibility, duplicate issue safety, issued cancellation, `sale_return`, duplicate cancellation safety, reload persistence, Product storage safety, Inventory ledger correctness, clean console, zero page exceptions, and `.env` untracked.
 - V1-SALES-009 did not implement returns, partial returns, invoice hard delete, Product CRUD changes, Product mutation, `Product.quantity` updates, Auth changes, Route Guard weakening, localStorage migration, Firebase uid/provider user id as `accountId`, or default account fallback.
+- V1-SALES-010 designed the V1 invoice returns and partial returns policy without changing source files.
+- V1-SALES-010 recommends account-scoped return storage at `invoiceReturns:{accountId}`.
+- V1-SALES-010 recommends customer returns create positive `sale_return` movements with `referenceType: "invoice_return"` while preserving Product records and `Product.quantity`.
+- V1-SALES-010 recommends future invoice lifecycle additions `partially_returned` and `returned`, with cancelled invoices not returnable and invoices with posted returns not cancellable in V1.
+- V1-SALES-010 recommends `V1-SALES-011 - Account-Scoped Invoice Returns Persistence Baseline` as the next mission and keeps return UI deferred.
 - Expenses are missing.
 - Safes and cash movement are missing.
 - Basic ledger is missing.
@@ -276,11 +283,11 @@ Completed stabilization work:
 
 Current mission:
 
-`V1-SALES-009 - Sales / Invoice Lifecycle Regression Baseline`
+`V1-SALES-010 - Invoice Returns / Partial Returns Design Plan`
 
 Current next mission:
 
-V1-SALES-009 complete from execution side and ready for Architect / Owner review.
+V1-SALES-010 complete from execution side and ready for Architect / Owner review.
 
 Classification:
 
@@ -292,8 +299,8 @@ Issued invoice cancellation and stock reversal implementation only.
 
 Forbidden scope:
 
-No returns implementation, no partial returns, no invoice hard delete, no Product CRUD behavior change, no Product quantity migration, no Product record mutation, no Auth redesign, no Route Guard weakening, no destructive migration, no localStorage migration, no hardcoded credentials, no real credentials committed, and no Firebase uid/provider user id to `accountId` assumption.
+No returns implementation, no partial returns implementation, no return UI, no invoice hard delete, no Product CRUD behavior change, no Product quantity migration, no Product record mutation, no Auth redesign, no Route Guard weakening, no destructive migration, no localStorage migration, no hardcoded credentials, no real credentials committed, and no Firebase uid/provider user id to `accountId` assumption.
 
 ## Next State
 
-Await Architect / Owner review for V1-SALES-009. Returns remain blocked until a later owner-approved mission explicitly defines return policy and runtime verification gates.
+Await Architect / Owner review for V1-SALES-010. Return persistence may proceed next only after approval. Return UI remains blocked until persistence and runtime rules are implemented and verified.
