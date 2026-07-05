@@ -102,6 +102,8 @@ V1-SALES-009 Sales / Invoice Lifecycle Regression Baseline is complete from exec
 
 V1-SALES-010 Invoice Returns / Partial Returns Design Plan is complete from execution side and ready for Architect / Owner review.
 
+V1-SALES-011 Account-Scoped Invoice Returns Persistence Baseline is complete from execution side and ready for Architect / Owner review.
+
 Completed stabilization work:
 
 - `PATCH-000-ECS-001 - Route Registry Stabilization`
@@ -272,6 +274,10 @@ Completed stabilization work:
 - V1-SALES-010 recommends customer returns create positive `sale_return` movements with `referenceType: "invoice_return"` while preserving Product records and `Product.quantity`.
 - V1-SALES-010 recommends future invoice lifecycle additions `partially_returned` and `returned`, with cancelled invoices not returnable and invoices with posted returns not cancellable in V1.
 - V1-SALES-010 recommends `V1-SALES-011 - Account-Scoped Invoice Returns Persistence Baseline` as the next mission and keeps return UI deferred.
+- V1-SALES-011 added the minimal account-scoped Invoice Returns persistence baseline under `src/modules/sales/`.
+- V1-SALES-011 implemented `invoiceReturns:{accountId}`, return model/types, repository, validator, service methods, returnable quantity computation, duplicate/over-return rejection, and Container registration.
+- V1-SALES-011 verified return records persist account-scoped, reference issued invoices and invoice lines, preserve Product snapshot data, survive reload, reject draft/cancelled/missing/over-return attempts, keep invoices and stock movements unchanged, create no `sale_return` movements, keep Product storage unchanged, clean console, zero page exceptions, and `.env` untracked.
+- V1-SALES-011 did not add return UI, return routes, stock restoration, invoice status changes to `partially_returned` or `returned`, invoice issue/cancellation behavior changes, Product CRUD changes, Product mutation, `Product.quantity` updates, Auth changes, Route Guard weakening, localStorage migration, Firebase uid/provider user id as `accountId`, or default account fallback.
 - Expenses are missing.
 - Safes and cash movement are missing.
 - Basic ledger is missing.
@@ -283,24 +289,33 @@ Completed stabilization work:
 
 Current mission:
 
-`V1-SALES-010 - Invoice Returns / Partial Returns Design Plan`
+`V1-SALES-011 - Account-Scoped Invoice Returns Persistence Baseline`
 
 Current next mission:
 
-V1-SALES-010 complete from execution side and ready for Architect / Owner review.
+V1-SALES-011 complete from execution side and ready for Architect / Owner review.
 
 Classification:
 
-`INF`
+`ECS`
 
-Allowed scope:
+Allowed scope completed:
 
-Issued invoice cancellation and stock reversal implementation only.
+Invoice return model/types, account-scoped storage key, repository, validator,
+service, returnable quantity computation, Container registration, runtime
+evidence, and documentation.
 
-Forbidden scope:
+Forbidden scope preserved:
 
-No returns implementation, no partial returns implementation, no return UI, no invoice hard delete, no Product CRUD behavior change, no Product quantity migration, no Product record mutation, no Auth redesign, no Route Guard weakening, no destructive migration, no localStorage migration, no hardcoded credentials, no real credentials committed, and no Firebase uid/provider user id to `accountId` assumption.
+No return UI, no return route, no stock restoration, no `sale_return` movement
+for returns, no invoice mutation, no stock movement mutation, no Product CRUD
+behavior change, no Product quantity migration, no Product record mutation, no
+Auth redesign, no Route Guard weakening, no destructive migration, no
+localStorage migration, no hardcoded credentials, no real credentials committed,
+and no Firebase uid/provider user id to `accountId` assumption.
 
 ## Next State
 
-Await Architect / Owner review for V1-SALES-010. Return persistence may proceed next only after approval. Return UI remains blocked until persistence and runtime rules are implemented and verified.
+Await Architect / Owner review for V1-SALES-011. Return UI and stock
+restoration remain blocked until a separately approved mission implements the
+next return lifecycle step.

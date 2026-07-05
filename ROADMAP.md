@@ -463,6 +463,35 @@ Return UI should proceed only after the return persistence baseline, validation
 rules, duplicate protection, and stock movement integration are implemented and
 verified.
 
+V1-SALES-011 implemented the account-scoped invoice return persistence
+baseline.
+
+Accepted implementation result:
+
+- Return records are stored in `invoiceReturns:{accountId}`.
+- Return records include accountId and ownership metadata.
+- Return records reference issued invoices.
+- Return lines reference original invoice lines and preserve Product snapshot
+  data.
+- Return lines preserve the original `sale_deduction` id while keeping
+  `returnStockMovementId` empty for this baseline.
+- Returnable quantity is computed from persisted return records.
+- Partial return within the remaining quantity is accepted.
+- Over-return and duplicate excessive returns are rejected.
+- Draft, cancelled, missing invoice, missing line, zero quantity, and negative
+  quantity return attempts fail safely.
+- `invoices:{accountId}` and `stockMovements:{accountId}` are not mutated.
+- No `sale_return` movements are created by this baseline.
+- Product records and `Product.quantity` remain unchanged.
+- No return UI or return route exists yet.
+
+Recommended next Sales / Invoice step:
+
+Architect / Owner review should choose whether the next approved mission is
+return stock restoration execution, return UI planning, or a return lifecycle
+regression baseline. Return UI and stock restoration remain blocked until
+explicitly approved.
+
 ## Verification Expectation
 
 Each future ECS must include:

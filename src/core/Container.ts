@@ -13,6 +13,9 @@ import { InventoryService } from "../modules/inventory/services/InventoryService
 import { InvoiceRepository } from "../modules/sales/repositories/InvoiceRepository";
 import { InvoiceValidator } from "../modules/sales/validators/InvoiceValidator";
 import { InvoiceService } from "../modules/sales/services/InvoiceService";
+import { InvoiceReturnRepository } from "../modules/sales/repositories/InvoiceReturnRepository";
+import { InvoiceReturnValidator } from "../modules/sales/validators/InvoiceReturnValidator";
+import { InvoiceReturnService } from "../modules/sales/services/InvoiceReturnService";
 import { getAuthStateService } from "../modules/auth/AuthRuntime";
 
 export class Container {
@@ -80,6 +83,23 @@ export class Container {
         );
 
         this.register("invoiceService", invoiceService);
+
+        const invoiceReturnRepository = new InvoiceReturnRepository(driver);
+
+        this.register("invoiceReturnRepository", invoiceReturnRepository);
+
+        const invoiceReturnValidator = new InvoiceReturnValidator();
+
+        this.register("invoiceReturnValidator", invoiceReturnValidator);
+
+        const invoiceReturnService = new InvoiceReturnService(
+            invoiceReturnRepository,
+            invoiceReturnValidator,
+            invoiceRepository,
+            getAuthStateService()
+        );
+
+        this.register("invoiceReturnService", invoiceReturnService);
 
     }
 
