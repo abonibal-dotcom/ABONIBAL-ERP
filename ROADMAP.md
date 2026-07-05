@@ -252,9 +252,62 @@ Recommended next Inventory mission:
 
 `V1-INV-005 - Manual Opening Balance / Adjustment Flow`
 
-Invoice stock deduction remains blocked until the Inventory ledger runtime path and future owner-approved stock movement workflows are reviewed and accepted.
+V1-INV-005 implemented the minimal authenticated manual Inventory movement flow for opening balance and manual adjustment, using `stockMovements:{accountId}` through the accepted ledger service.
 
-The next Product, Inventory, or Invoice mission may proceed only after V1-INV-004 is reviewed and accepted by the Architect / Owner.
+Recommended next Inventory mission:
+
+`V1-INV-006 - Inventory Movement History / Current Stock View`
+
+V1-INV-006 implemented the minimal read-only Inventory movement history and current stock view on top of `stockMovements:{accountId}`.
+
+Recommended next Inventory mission:
+
+`V1-INV-007 - Inventory Stock Availability / Invoice Dependency Gate`
+
+V1-INV-007 implemented the minimal read-only Inventory stock availability gate for future invoice dependency checks. The gate uses the ledger as the stock source of truth and rejects unavailable, invalid, missing, and soft-deleted Product requests safely.
+
+Invoice implementation and invoice stock deduction remain blocked until a future owner-approved Sales / Invoice foundation mission explicitly depends on the accepted availability gate.
+
+The next Product, Inventory, or Invoice mission may proceed only after V1-INV-007 is reviewed and accepted by the Architect / Owner.
+
+## Sales / Invoice Foundation Gate
+
+V1-SALES-001 assessed the current Sales / Invoice foundation after the accepted Inventory stock availability gate.
+
+Current finding:
+
+- No Sales / Invoice module exists.
+- No invoice route or UI exists.
+- No invoice service, repository, persistence key, or storage boundary exists.
+- No invoice or sales storage keys were observed during read-only runtime verification.
+- Products are ready to serve as invoice line references.
+- Inventory stock availability is ready to serve as the future invoice confirmation dependency.
+
+Recommended next Sales / Invoice mission:
+
+`V1-SALES-002 - Account-Scoped Invoice Persistence Design Plan`
+
+Invoice UI and invoice stock deduction remain blocked until account-scoped invoice persistence, invoice lifecycle, invoice numbering, Product snapshot policy, and stock deduction dependency are planned and approved.
+
+V1-SALES-002 completed the account-scoped invoice persistence design plan.
+
+Accepted design direction:
+
+- Future invoice storage boundary: `invoices:{accountId}`.
+- Global `invoices` storage is rejected.
+- Firebase UID/provider user id scoped invoice storage is rejected.
+- Default account fallback is rejected.
+- Future V1 invoice lifecycle states: `draft`, `issued`, `cancelled`.
+- Future invoice numbering policy: account-scoped date prefix plus local sequence with collision checks.
+- Future invoice lines must reference stable Product ids and store Product snapshot fields.
+- Future invoice issue flow must call the accepted Inventory availability gate before stock deduction.
+- Future stock deduction must create `sale_deduction` movements and must not edit `Product.quantity`.
+
+Recommended next Sales / Invoice mission:
+
+`V1-SALES-003 - Account-Scoped Invoice Persistence Baseline`
+
+Invoice UI and invoice stock deduction remain blocked until the account-scoped invoice persistence baseline is approved and verified.
 
 ## Verification Expectation
 

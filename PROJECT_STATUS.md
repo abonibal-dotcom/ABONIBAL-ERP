@@ -76,6 +76,16 @@ V1-INV-003 Stock Movement Ledger Persistence Baseline is complete from execution
 
 V1-INV-004 Stock Movement Ledger Runtime Verification is complete from execution side and ready for Architect / Owner review.
 
+V1-INV-005 Manual Opening Balance / Adjustment Flow is complete from execution side and ready for Architect / Owner review.
+
+V1-INV-006 Inventory Movement History / Current Stock View is complete from execution side and ready for Architect / Owner review.
+
+V1-INV-007 Inventory Stock Availability / Invoice Dependency Gate is complete from execution side and ready for Architect / Owner review.
+
+V1-SALES-001 Sales / Invoice Foundation Baseline is complete from execution side and ready for Architect / Owner review.
+
+V1-SALES-002 Account-Scoped Invoice Persistence Design Plan is complete from execution side and ready for Architect / Owner review.
+
 Completed stabilization work:
 
 - `PATCH-000-ECS-001 - Route Registry Stabilization`
@@ -194,12 +204,25 @@ Completed stabilization work:
 - V1-INV-004 verified the Stock Movement Ledger runtime behavior without requiring a source fix.
 - V1-INV-004 verified valid appends, invalid rejection, malformed record tolerance, multi-product current quantity computation, other-account movement isolation, non-destructive void behavior, reload persistence, Product storage safety, clean console, and zero page exceptions.
 - V1-INV-004 did not change source files, add Inventory UI, add Inventory routes, add invoice implementation, alter Product CRUD, mutate Product records, change Auth, weaken Route Guard, use Firebase uid/provider user id as accountId, or add default account fallback.
+- V1-INV-005 added the minimal authenticated Inventory route and manual movement UI for opening balance and manual adjustment.
+- V1-INV-005 writes manual movements only to `stockMovements:{accountId}` through the accepted `InventoryService`.
+- V1-INV-005 verifies invalid manual movement submissions do not write, valid opening balance and manual adjustment each write one movement, current quantity updates and survives reload, soft-deleted Products are not selectable, Product storage hashes remain unchanged, and `Product.quantity` is not updated.
+- V1-INV-005 did not add invoice implementation, invoice stock deduction, Product CRUD changes, Product files, Product quantity migration, Auth behavior changes, Route Guard weakening, Firebase uid/provider user id as accountId, or default account fallback.
+- V1-INV-006 added the minimal read-only Inventory current stock section and movement history section.
+- V1-INV-006 displays valid movements from `stockMovements:{accountId}`, shows voided movements as voided, uses productId fallback for missing Product references, and keeps current quantity computed from non-voided ledger movements.
+- V1-INV-006 verifies current quantity display matches service computation, movement history row count matches valid ledger count, reload preserves both views, Product storage hashes remain unchanged, and `Product.quantity` is not authoritative.
+- V1-INV-006 did not add invoice implementation, invoice stock deduction, Product CRUD changes, Product files, Product quantity migration, Auth behavior changes, Route Guard weakening, Firebase uid/provider user id as accountId, or default account fallback.
 - Product dialog lifecycle was stabilized.
 - Malformed product localStorage read failures were contained.
-- Inventory now has a minimal stock movement ledger persistence module.
+- Inventory now has a minimal stock movement ledger persistence module, a minimal authenticated manual movement flow, and a read-only movement history/current stock view.
 - Clients are missing.
 - Suppliers are missing.
 - Sales and invoices are missing.
+- V1-SALES-001 confirmed no invoice module, route, UI, service, repository, persistence key, or storage boundary exists yet.
+- V1-SALES-002 designed the future invoice persistence boundary as `invoices:{accountId}`.
+- V1-SALES-002 rejected global invoice storage, Firebase UID/provider user id storage, and default account fallback.
+- V1-SALES-002 documented the future invoice header/line contracts, draft/issued/cancelled lifecycle, account-scoped numbering policy, Product snapshot dependency, and Inventory stock availability/deduction dependency.
+- V1-SALES-002 did not change source files, add invoice UI, add invoice routes, implement invoice persistence, create stock movements, mutate Products, mutate Inventory, change Auth, weaken Route Guard, or migrate localStorage.
 - Expenses are missing.
 - Safes and cash movement are missing.
 - Basic ledger is missing.
@@ -211,24 +234,24 @@ Completed stabilization work:
 
 Current mission:
 
-`V1-INV-004 - Stock Movement Ledger Runtime Verification`
+`V1-SALES-002 - Account-Scoped Invoice Persistence Design Plan`
 
 Current next mission:
 
-V1-INV-004 complete from execution side and ready for Architect / Owner review.
+V1-SALES-002 complete from execution side and ready for Architect / Owner review.
 
 Classification:
 
-`ECS`
+`INF`
 
 Allowed scope:
 
-Stock Movement Ledger runtime verification and hardening only.
+Sales / Invoice persistence design documentation only.
 
 Forbidden scope:
 
-No Inventory UI, no Inventory route, no invoices, no invoice stock deduction, no Product CRUD behavior change, no Product quantity migration, no Product record mutation, no Auth redesign, no Route Guard weakening, no destructive migration, no legacy Product deletion, no legacy `localStorage.products` mutation, no automatic import on app startup, no permission matrix, no advanced roles, no hardcoded credentials, no real credentials committed, and no Firebase uid to `accountId` assumption.
+No source changes, no invoice implementation, no invoice UI, no invoice route, no invoice create/edit/delete behavior, no invoice stock deduction, no Product CRUD behavior change, no Product quantity migration, no Product record mutation, no Inventory mutation, no Auth redesign, no Route Guard weakening, no destructive migration, no legacy Product deletion, no legacy `localStorage.products` mutation, no automatic import on app startup, no permission matrix, no advanced roles, no hardcoded credentials, no real credentials committed, and no Firebase uid to `accountId` assumption.
 
 ## Next State
 
-Await Architect / Owner review for V1-INV-004. The next mission remains blocked until this mission is reviewed and accepted.
+Await Architect / Owner review for V1-SALES-002. Recommended next mission is `V1-SALES-003 - Account-Scoped Invoice Persistence Baseline`. Invoice UI and invoice stock deduction remain blocked until the persistence baseline is approved and verified.

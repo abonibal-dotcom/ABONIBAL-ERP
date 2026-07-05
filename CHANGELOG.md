@@ -1,5 +1,73 @@
 # Changelog
 
+## V1-SALES-002 - Account-Scoped Invoice Persistence Design Plan
+
+- Designed the future account-scoped invoice storage boundary as `invoices:{accountId}`.
+- Rejected global invoice storage, Firebase UID/provider user id storage, and default account fallback.
+- Documented the recommended invoice header and line contracts for the future persistence baseline.
+- Documented the V1-now lifecycle states: `draft`, `issued`, and `cancelled`.
+- Documented invoice numbering policy using account-scoped date prefix plus local sequence with collision checks.
+- Documented Product dependency: stable Product id references and snapshot fields, with no Product mutation.
+- Documented Inventory dependency: future issue flow must use the stock availability gate and later create `sale_deduction` movements instead of editing `Product.quantity`.
+- Recommended `V1-SALES-003 - Account-Scoped Invoice Persistence Baseline` as the next Sales / Invoice mission.
+- Confirmed this mission is documentation/design only, with no source changes, no invoice UI, no invoice route, no invoice stock deduction, no Product data mutation, and no Inventory mutation.
+- Final status: `V1-SALES-002 Ready for Architect / Owner Review`.
+
+## V1-SALES-001 - Sales / Invoice Foundation Baseline
+
+- Assessed the current Sales / Invoice foundation from the accepted `v1-inv-007-stock-availability-invoice-gate` tag.
+- Confirmed no Sales / Invoice module, route, UI, service, repository, persistence key, or storage boundary exists yet.
+- Confirmed no invoice or sales storage keys were present during read-only runtime verification.
+- Confirmed Products are the accepted future invoice line reference dependency, with stable Product ids and soft-delete behavior.
+- Confirmed Inventory stock availability is the accepted future invoice confirmation dependency.
+- Recommended `invoices:{accountId}` as the safest V1 invoice storage boundary.
+- Recommended draft / issued / cancelled as V1-now invoice lifecycle states.
+- Recommended `V1-SALES-002 - Account-Scoped Invoice Persistence Design Plan` as the next Sales / Invoice mission.
+- Verified TypeScript, build, read-only runtime, clean console, zero page exceptions, no Product data mutation, no stock movement mutation, no source changes, and `.env` untracked.
+- Final status: `V1-SALES-001 Ready for Architect / Owner Review`.
+
+## V1-INV-007 - Inventory Stock Availability / Invoice Dependency Gate
+
+- Added a read-only Inventory availability gate on top of the accepted `stockMovements:{accountId}` ledger.
+- Added `InventoryService.getAvailableQuantity()`, `InventoryService.checkAvailability()`, and `InventoryService.checkAvailabilityBatch()`.
+- Availability checks use ledger current quantity and the active Product boundary to reject missing or soft-deleted Products safely.
+- Verified in-stock requests return `canFulfill = true`.
+- Verified over-stock requests return `canFulfill = false` with correct shortage quantity.
+- Verified missing productId, missing Product, non-numeric quantity, zero quantity, negative quantity, and soft-deleted Product requests fail safely.
+- Verified batch availability aggregates repeated Product requests before fulfillment checks.
+- Verified availability checks do not create stock movements, mutate Product records, update `Product.quantity`, or touch legacy `localStorage.products`.
+- Confirmed no invoice implementation, invoice UI, invoice stock deduction, sale deduction movement creation, Product CRUD behavior change, Auth behavior change, Route Guard weakening, Firebase UID/accountId fallback, providerUserId/accountId fallback, or default account fallback was introduced.
+- Final status: `V1-INV-007 Ready for Architect / Owner Review`.
+
+## V1-INV-006 - Inventory Movement History / Current Stock View
+
+- Added a read-only current stock section to the Inventory page.
+- Added a read-only movement history section to the Inventory page.
+- Movement history reads valid movement records from `InventoryService.getAll()` / `stockMovements:{accountId}`.
+- Movement history displays Product name when available and productId fallback for missing Product references.
+- Movement history displays movement type, quantityDelta, reason, createdAt, and status.
+- Voided movements remain visible as `Voided` and are excluded from current quantity.
+- Verified current stock display matches ledger computation.
+- Verified movement history row count matches valid ledger movement count.
+- Verified reload preserves current stock display and movement history display.
+- Verified Product scoped/legacy storage hashes remain unchanged and `Product.quantity` is not authoritative.
+- Confirmed no invoice implementation, invoice stock deduction, Product CRUD behavior change, Product file change, Auth behavior change, Route Guard weakening, Firebase UID/accountId fallback, providerUserId/accountId fallback, or default account fallback was introduced.
+- Final status: `V1-INV-006 Ready for Architect / Owner Review`.
+
+## V1-INV-005 - Manual Opening Balance / Adjustment Flow
+
+- Added a protected `inventory` route and minimal authenticated Inventory page.
+- Added manual movement UI for `opening_balance` and `manual_adjustment` only.
+- Product selector reads active Products through `ProductService.getAll()`.
+- Current quantity display is computed from the accepted Stock Movement Ledger.
+- Valid opening balance and manual adjustment submissions write to `stockMovements:{accountId}` through `InventoryService`.
+- Invalid opening balance and manual adjustment submissions do not write movement records.
+- Verified soft-deleted Products are not selectable.
+- Verified reload preserves movement records and displayed current quantity.
+- Verified Product scoped/legacy storage hashes remain unchanged and `Product.quantity` is not updated.
+- Confirmed no invoice implementation, invoice stock deduction, Product CRUD behavior change, Product file change, Auth behavior change, Route Guard weakening, Firebase UID/accountId fallback, providerUserId/accountId fallback, or default account fallback was introduced.
+- Final status: `V1-INV-005 Ready for Architect / Owner Review`.
+
 ## V1-INV-004 - Stock Movement Ledger Runtime Verification
 
 - Verified the accepted account-scoped Stock Movement Ledger runtime behavior after V1-INV-003.

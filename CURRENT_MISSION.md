@@ -2,61 +2,60 @@
 
 ## Mission
 
-`V1-INV-004 - Stock Movement Ledger Runtime Verification`
+`V1-SALES-002 - Account-Scoped Invoice Persistence Design Plan`
 
 ## Classification
 
-`ECS`
+`INF`
 
-This is an Inventory ledger runtime hardening and verification mission.
+This is a Sales / Invoice design planning mission.
 
-This is not Inventory UI, invoice implementation, Product CRUD, Product quantity migration, route work, Auth redesign, or Product behavior work.
+This is not invoice implementation, invoice UI, invoice create/edit/delete, invoice stock deduction, Product work, Inventory implementation, Auth work, routing work, or localStorage migration.
 
 ## Objective
 
-Verify and harden the accepted account-scoped Stock Movement Ledger behavior after V1-INV-003.
+Define the implementation-ready account-scoped invoice persistence plan before invoice code begins.
 
-V1-INV-004 proves the ledger is stable enough to remain the dependency path for future Inventory UI and invoice stock deduction planning.
+The plan documents:
+
+- Target invoice storage boundary.
+- Invoice header and line contract.
+- Draft / issued / cancelled lifecycle policy.
+- Invoice numbering policy.
+- Product snapshot dependency.
+- Inventory availability and future stock deduction dependency.
+- Risks and the next approved implementation candidate.
 
 ## Accepted Baseline
 
-- Baseline tag: `v1-inv-003-stock-movement-ledger-persistence-baseline`.
+- Baseline tag: `v1-sales-001-invoice-foundation-baseline`.
 - Firebase Auth.
 - Explicit `accountId`.
 - Route Guard.
 - Account-scoped Products.
-- Product CRUD/search regression PASS through ECS-011.
+- Product regression PASS through ECS-011.
 - Stock Movement Ledger persistence PASS through V1-INV-003.
+- Manual Inventory flow PASS through V1-INV-005.
+- Inventory current stock/history PASS through V1-INV-006.
+- Stock availability gate PASS through V1-INV-007.
+- V1-SALES-001 confirmed no invoice module, route, UI, service, repository, persistence key, or storage boundary exists yet.
 
 ## Current Status
 
-`V1-INV-004 Ready for Architect / Owner Review`
+`V1-SALES-002 Ready for Architect / Owner Review`
 
-## Runtime Verification Result
+## Design Result
 
-- Source fix needed: no.
-- Login succeeds.
-- AuthSession exists.
-- AuthSession.accountId exists.
-- accountId is not Firebase UID.
-- accountId is not providerUserId.
-- Route Guard remains active.
-- Scoped key used: `stockMovements:{accountId}`.
-- No global stock movement key is used.
-- No other account movement key affects current account quantities.
-- Opening balance append PASS.
-- Manual adjustment append PASS.
-- Correction append PASS.
-- Invalid append attempts rejected.
-- Invalid attempts did not write records.
-- Malformed existing record did not crash quantity computation.
-- Multi-product current quantity isolation PASS.
-- Missing Product reference handled safely.
-- Void behavior PASS.
-- Re-void behavior safe.
-- Non-existing void behavior safe.
-- Reload persistence PASS.
-- Product storage hashes unchanged.
+- Recommended invoice storage boundary: `invoices:{accountId}`.
+- Global `invoices` storage is rejected.
+- Firebase UID/provider user id scoped invoice storage is rejected.
+- Default account fallback is rejected.
+- No invoice legacy migration is recommended because no legacy invoice storage exists in the accepted baseline.
+- Recommended V1 lifecycle states: `draft`, `issued`, `cancelled`.
+- Recommended numbering policy: `INV-{YYYYMMDD}-{accountLocalSequence}` with uniqueness check inside `invoices:{accountId}`.
+- Future invoice lines should reference stable Product ids and store Product snapshot fields.
+- Future issuing flow must call the accepted Inventory availability gate before any stock deduction.
+- Future stock deduction must create `sale_deduction` movements and must not update `Product.quantity`.
 
 ## Verification Completed
 
@@ -65,28 +64,23 @@ V1-INV-004 proves the ledger is stable enough to remain the dependency path for 
 - Source inspection: PASS.
 - TypeScript: PASS.
 - Build: PASS.
-- Runtime verification: PASS.
-- Console errors: 0.
-- Page exceptions: 0.
+- Runtime verification: not required for this INF design mission.
 
 ## Scope Confirmation
 
-- No source fix was needed.
-- No `src/` files changed in V1-INV-004.
-- Product records were not mutated.
-- `Product.quantity` was not updated.
-- `Product.quantity` was not treated as authoritative.
-- No Product files changed.
-- No Product CRUD behavior changed.
-- No Product quantity migration.
-- No Inventory UI added.
-- No Inventory route added.
+- No source files changed.
+- No Product source files changed.
+- No Inventory source files changed.
 - No invoice implementation added.
-- No invoice stock deduction.
-- No Product legacy data mutation.
-- No `localStorage.products` mutation.
-- No Route Guard weakening.
+- No invoice UI added.
+- No invoice route added.
+- No invoice stock deduction added.
+- No `sale_deduction` movements created.
+- No Product data mutation.
+- No Inventory movement mutation.
+- No localStorage migration.
 - No Auth behavior change.
+- No Route Guard weakening.
 - No Firebase UID or provider user id as `accountId`.
 - No default account fallback.
 - No credentials committed.
@@ -95,20 +89,17 @@ V1-INV-004 proves the ledger is stable enough to remain the dependency path for 
 ## Evidence
 
 ```text
-PATCHES/V1-INV-004/verification.md
-PATCHES/V1-INV-004/closure-report.md
-outputs/V1-INV-004/runtime.json
-outputs/V1-INV-004/dom.json
-outputs/V1-INV-004/console.log
-outputs/V1-INV-004/storage-snapshot-sanitized.json
-outputs/V1-INV-004/screenshot.png
-outputs/V1-INV-004/ledger-runtime-summary.json
+PATCHES/V1-SALES-002/account-scoped-invoice-persistence-design-plan.md
+PATCHES/V1-SALES-002/invoice-lifecycle-plan.md
+PATCHES/V1-SALES-002/invoice-numbering-plan.md
+PATCHES/V1-SALES-002/invoice-stock-integration-plan.md
+PATCHES/V1-SALES-002/closure-report.md
 ```
 
-## Next Mission
+## Next
 
 Recommended next mission:
 
-`V1-INV-005 - Manual Opening Balance / Adjustment Flow`
+`V1-SALES-003 - Account-Scoped Invoice Persistence Baseline`
 
-Do not start the next mission until V1-INV-004 is reviewed and accepted.
+Invoice UI and invoice stock deduction remain blocked until the account-scoped invoice persistence baseline is approved and verified.

@@ -1,4 +1,5 @@
 import type { AuthStateService } from "../../auth/AuthStateService";
+import type { ProductService } from "../../products/services/ProductService";
 import type {
     StockMovement,
     StockMovementInput
@@ -11,16 +12,19 @@ export class InventoryService {
     private readonly repository: StockMovementRepository;
     private readonly validator: StockMovementValidator;
     private readonly authStateService: AuthStateService;
+    private readonly productService: ProductService;
 
     public constructor(
         repository: StockMovementRepository,
         validator: StockMovementValidator,
-        authStateService: AuthStateService
+        authStateService: AuthStateService,
+        productService: ProductService
     ) {
 
         this.repository = repository;
         this.validator = validator;
         this.authStateService = authStateService;
+        this.productService = productService;
 
     }
 
@@ -121,6 +125,138 @@ export class InventoryService {
         }
 
         return quantities;
+
+    }
+
+    public getAvailableQuantity(productId: string): number {
+
+        const normalizedProductId = productId.trim();
+
+        if (
+            !this.currentAccountContext()
+            || !normalizedProductId
+            || !this.productService.find(normalizedProductId)
+        ) {
+            return 0;
+        }
+
+        return this.getCurrentQuantity(normalizedProductId);
+
+    }
+
+    public checkAvailability(
+        productId: string,
+        requestedQuantity: number
+    ): StockAvailabilityResult {
+
+        const accountContext = this.currentAccountContext();
+        const normalizedProductId = productId.trim();
+
+        if (!accountContext) {
+            return failedStockAvailabilityResult(
+                normalizedProductId,
+                requestedQuantity,
+                "unauthenticated",
+                "Authenticated account is required."
+            );
+        }
+
+        if (!normalizedProductId) {
+            return failedStockAvailabilityResult(
+                normalizedProductId,
+                requestedQuantity,
+                "invalid_product",
+                "Product id is required."
+            );
+        }
+
+        if (!isValidRequestedQuantity(requestedQuantity)) {
+            return failedStockAvailabilityResult(
+                normalizedProductId,
+                requestedQuantity,
+                "invalid_requested_quantity",
+                "Requested quantity must be a positive number."
+            );
+        }
+
+        if (!this.productService.find(normalizedProductId)) {
+            return failedStockAvailabilityResult(
+                normalizedProductId,
+                requestedQuantity,
+                "invalid_product",
+                "Product is not available for stock fulfillment."
+            );
+        }
+
+        const availableQuantity = this.getCurrentQuantity(normalizedProductId);
+        const shortageQuantity = Math.max(
+            0,
+            requestedQuantity - availableQuantity
+        );
+
+        return {
+            productId: normalizedProductId,
+            requestedQuantity,
+            availableQuantity,
+            canFulfill: shortageQuantity === 0,
+            shortageQuantity,
+            status: shortageQuantity === 0
+                ? "fulfilled"
+                : "insufficient_stock",
+            errors: []
+        };
+
+    }
+
+    public checkAvailabilityBatch(
+        items: StockAvailabilityInput[]
+    ): StockAvailabilityBatchResult {
+
+        const aggregatedRequests = new Map<string, number>();
+        const invalidResults: StockAvailabilityResult[] = [];
+
+        for (const item of items) {
+
+            const normalizedProductId = item.productId.trim();
+
+            if (
+                !normalizedProductId
+                || !isValidRequestedQuantity(item.requestedQuantity)
+            ) {
+                invalidResults.push(
+                    this.checkAvailability(
+                        normalizedProductId,
+                        item.requestedQuantity
+                    )
+                );
+                continue;
+            }
+
+            aggregatedRequests.set(
+                normalizedProductId,
+                (aggregatedRequests.get(normalizedProductId) ?? 0)
+                    + item.requestedQuantity
+            );
+
+        }
+
+        const results = [
+            ...invalidResults,
+            ...Array.from(aggregatedRequests.entries()).map(
+                ([itemProductId, itemRequestedQuantity]) =>
+                    this.checkAvailability(
+                        itemProductId,
+                        itemRequestedQuantity
+                    )
+            )
+        ];
+
+        return {
+            canFulfill:
+                results.length > 0
+                && results.every(result => result.canFulfill),
+            results
+        };
 
     }
 
@@ -225,10 +361,72 @@ export interface StockMovementResult {
 
 }
 
+export interface StockAvailabilityInput {
+
+    productId: string;
+    requestedQuantity: number;
+
+}
+
+export interface StockAvailabilityResult {
+
+    productId: string;
+    requestedQuantity: number;
+    availableQuantity: number;
+    canFulfill: boolean;
+    shortageQuantity: number;
+    status: StockAvailabilityStatus;
+    errors: string[];
+
+}
+
+export interface StockAvailabilityBatchResult {
+
+    canFulfill: boolean;
+    results: StockAvailabilityResult[];
+
+}
+
+export type StockAvailabilityStatus =
+    | "fulfilled"
+    | "insufficient_stock"
+    | "invalid_product"
+    | "invalid_requested_quantity"
+    | "unauthenticated";
+
 interface InventoryAccountContext {
 
     accountId: string;
     userId: string;
+
+}
+
+function failedStockAvailabilityResult(
+    productId: string,
+    requestedQuantity: number,
+    status: StockAvailabilityStatus,
+    error: string
+): StockAvailabilityResult {
+
+    const shortageQuantity = isValidRequestedQuantity(requestedQuantity)
+        ? requestedQuantity
+        : 0;
+
+    return {
+        productId,
+        requestedQuantity,
+        availableQuantity: 0,
+        canFulfill: false,
+        shortageQuantity,
+        status,
+        errors: [error]
+    };
+
+}
+
+function isValidRequestedQuantity(value: number): boolean {
+
+    return Number.isFinite(value) && value > 0;
 
 }
 
