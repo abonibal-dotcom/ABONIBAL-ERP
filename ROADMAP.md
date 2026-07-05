@@ -513,7 +513,35 @@ Accepted implementation result:
 
 Recommended next Sales / Invoice step:
 
-`V1-SALES-013 - Invoice Return Lifecycle Regression Baseline`.
+`V1-SALES-013 - Invoice Returns UI Flow`.
+
+V1-SALES-013 implemented the first minimal protected Invoice Returns UI flow on
+the existing Invoice page.
+
+Accepted implementation result:
+
+- Issued returnable invoice lines display remaining returnable quantity.
+- Invalid and excessive return quantities are rejected before storage writes.
+- Valid returns create account-scoped return records through
+  `InvoiceReturnService.createReturnRecord()`.
+- Valid returns execute stock restoration through
+  `InvoiceReturnService.executeReturn()`.
+- Return audit output displays return number, execution status, return quantity,
+  and `returnStockMovementId`.
+- One valid UI return creates one positive `sale_return` movement with
+  `referenceType: "invoice_return"`.
+- Available stock increases through ledger summation and remains correct after
+  reload.
+- Invoice records and Product records remain unchanged by the UI flow.
+- No return route, Product mutation, Product quantity update, invoice hard
+  delete, invoice cancellation behavior change, Auth change, Route Guard
+  weakening, localStorage migration, Firebase uid/accountId fallback, or default
+  account fallback was introduced.
+
+Recommended next Sales / Invoice step:
+
+Architect / Owner review of V1-SALES-013. After acceptance, the next candidate
+is `V1-SALES-014 - Invoice Return Lifecycle Regression Baseline`.
 
 ## Verification Expectation
 

@@ -1,5 +1,32 @@
 # Changelog
 
+## V1-SALES-013 - Invoice Returns UI Flow
+
+- Added the first minimal protected Invoice Returns UI flow to the existing
+  Invoice page.
+- Displayed remaining returnable quantity for issued invoice lines.
+- Added return quantity input and return action for issued returnable lines.
+- Rejected invalid return quantity and excessive return quantity before storage
+  writes.
+- Created account-scoped return records through
+  `InvoiceReturnService.createReturnRecord()`.
+- Executed valid returns through `InvoiceReturnService.executeReturn()`.
+- Created one positive `sale_return` movement with
+  `referenceType: "invoice_return"`.
+- Displayed return audit result with return number, status, return quantity, and
+  `returnStockMovementId`.
+- Verified available quantity increases from `3` to `4` for a return quantity
+  of `1` and remains `4` after reload.
+- Verified `invoices:{accountId}` hash unchanged, `products:{accountId}` hash
+  unchanged, legacy Product key unchanged/absent, clean console, zero page
+  exceptions, and `.env` untracked.
+- Confirmed no return route, no Product CRUD behavior change, no Product
+  mutation, no `Product.quantity` update, no invoice hard delete, no invoice
+  cancellation behavior change, no Auth change, no Route Guard weakening, no
+  localStorage migration, no Firebase UID/accountId fallback, and no default
+  account fallback.
+- Final status: `V1-SALES-013 Ready for Architect / Owner Review`.
+
 ## V1-SALES-012 - Invoice Return Stock Restoration Execution
 
 - Added service-level invoice return execution for existing persisted return records.

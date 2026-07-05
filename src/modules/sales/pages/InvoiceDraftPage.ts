@@ -7,11 +7,13 @@ import type {
     InvoiceDraftInput,
     InvoiceDraftLineInput
 } from "../Invoice";
+import type { InvoiceReturnService } from "../services/InvoiceReturnService";
 import type { InvoiceService } from "../services/InvoiceService";
 
 export class InvoiceDraftPage extends Page {
 
     private readonly invoiceService: InvoiceService;
+    private readonly invoiceReturnService: InvoiceReturnService;
     private readonly productService: ProductService;
 
     private form: HTMLFormElement | null = null;
@@ -79,10 +81,20 @@ export class InvoiceDraftPage extends Page {
         const cancelButton = target.closest<HTMLButtonElement>(
             "[data-action=\"cancel-invoice\"]"
         );
+        const returnButton = target.closest<HTMLButtonElement>(
+            "[data-action=\"create-invoice-return\"]"
+        );
 
         const invoiceId = editButton?.dataset.invoiceId;
         const issueInvoiceId = issueButton?.dataset.invoiceId;
         const cancelInvoiceId = cancelButton?.dataset.invoiceId;
+        const returnInvoiceId = returnButton?.dataset.invoiceId;
+        const returnInvoiceLineId = returnButton?.dataset.invoiceLineId;
+
+        if (returnInvoiceId && returnInvoiceLineId) {
+            this.createReturnFromUi(returnInvoiceId, returnInvoiceLineId);
+            return;
+        }
 
         if (invoiceId) {
             this.openDraftForEdit(invoiceId);
@@ -105,6 +117,8 @@ export class InvoiceDraftPage extends Page {
         super();
 
         this.invoiceService = Container.get<InvoiceService>("invoiceService");
+        this.invoiceReturnService =
+            Container.get<InvoiceReturnService>("invoiceReturnService");
         this.productService = Container.get<ProductService>("productService");
 
     }
@@ -450,6 +464,9 @@ export class InvoiceDraftPage extends Page {
                         <th>Line total</th>
                         <th>Stock movement</th>
                         <th>Reversal movement</th>
+                        <th>Remaining returnable</th>
+                        <th>Return</th>
+                        <th>Return audit</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -476,14 +493,18 @@ export class InvoiceDraftPage extends Page {
         const reversalDisplay = invoice.status === "cancelled"
             ? reversalStockMovementId || "Missing reversal"
             : "-";
+        const remainingReturnable =
+            this.remainingReturnableQuantity(invoice, line);
 
         return `
             <tr
-                class="invoice-line-audit-row"
+                class="invoice-line-audit-row invoice-return-line-row"
                 data-invoice-id="${this.escapeHtml(invoice.id)}"
+                data-invoice-line-id="${this.escapeHtml(line.id)}"
                 data-product-id="${this.escapeHtml(line.productId)}"
                 data-stock-movement-id="${this.escapeHtml(stockMovementId)}"
                 data-reversal-stock-movement-id="${this.escapeHtml(reversalStockMovementId)}"
+                data-remaining-returnable="${this.escapeHtml(remainingReturnable)}"
             >
                 <td class="invoice-line-product-snapshot">
                     ${this.escapeHtml(line.productNameSnapshot)}
@@ -503,8 +524,94 @@ export class InvoiceDraftPage extends Page {
                 <td class="invoice-line-reversal-stock-movement-id">
                     ${this.escapeHtml(reversalDisplay)}
                 </td>
+                <td class="invoice-return-remaining">
+                    ${this.escapeHtml(remainingReturnable)}
+                </td>
+                <td class="invoice-return-action">
+                    ${this.renderReturnControls(invoice, line, remainingReturnable)}
+                </td>
+                <td class="invoice-return-audit">
+                    ${this.renderReturnAudit(invoice, line)}
+                </td>
             </tr>
         `;
+
+    }
+
+    private renderReturnControls(
+        invoice: Invoice,
+        line: Invoice["lines"][number],
+        remainingReturnable: number
+    ): string {
+
+        if (invoice.status !== "issued") {
+            return "-";
+        }
+
+        if (!line.stockMovementId?.trim()) {
+            return "Missing deduction";
+        }
+
+        if (remainingReturnable <= 0) {
+            return "Fully returned";
+        }
+
+        const defaultQuantity = Math.min(1, remainingReturnable);
+
+        return `
+            <input
+                class="invoice-return-quantity-input"
+                data-invoice-id="${this.escapeHtml(invoice.id)}"
+                data-invoice-line-id="${this.escapeHtml(line.id)}"
+                type="number"
+                min="0.01"
+                max="${this.escapeHtml(remainingReturnable)}"
+                step="0.01"
+                value="${this.escapeHtml(defaultQuantity)}"
+            >
+            <button
+                type="button"
+                data-action="create-invoice-return"
+                data-invoice-id="${this.escapeHtml(invoice.id)}"
+                data-invoice-line-id="${this.escapeHtml(line.id)}"
+            >
+                Return
+            </button>
+        `;
+
+    }
+
+    private renderReturnAudit(
+        invoice: Invoice,
+        line: Invoice["lines"][number]
+    ): string {
+
+        const returnSummaries: string[] = [];
+
+        for (const invoiceReturn of this.invoiceReturnService.getByInvoiceId(invoice.id)) {
+            const returnLine = invoiceReturn.lines.find(
+                currentLine => currentLine.invoiceLineId === line.id
+            );
+
+            if (!returnLine) {
+                continue;
+            }
+
+            returnSummaries.push(`
+                <div class="invoice-return-audit-entry">
+                    ${this.escapeHtml(invoiceReturn.returnNumber)}
+                    ${this.escapeHtml(invoiceReturn.status)}
+                    qty ${this.escapeHtml(returnLine.returnQuantity)}
+                    movement ${this.escapeHtml(
+                        returnLine.returnStockMovementId ?? "Pending movement"
+                    )}
+                </div>
+            `);
+        }
+
+        return returnSummaries.length > 0
+            ? returnSummaries.join("")
+            : "No returns";
 
     }
 
@@ -738,6 +845,81 @@ export class InvoiceDraftPage extends Page {
 
     }
 
+    private createReturnFromUi(invoiceId: string, invoiceLineId: string): void {
+
+        const invoice = this.invoiceService.getById(invoiceId);
+        const line = invoice?.lines.find(
+            currentLine => currentLine.id === invoiceLineId
+        );
+
+        if (!invoice || !line) {
+            this.setMessage("Invoice line was not found.");
+            return;
+        }
+
+        if (invoice.status !== "issued") {
+            this.setMessage("Only issued invoices can be returned.");
+            return;
+        }
+
+        const returnQuantity = this.readReturnQuantity(invoiceLineId);
+
+        if (!Number.isFinite(returnQuantity) || returnQuantity <= 0) {
+            this.setMessage("Return quantity must be positive.");
+            return;
+        }
+
+        const remainingReturnable =
+            this.invoiceReturnService.getRemainingReturnableQuantity(
+                invoice.id,
+                line.id
+            );
+
+        if (returnQuantity > remainingReturnable) {
+            this.setMessage(
+                "Return quantity exceeds remaining returnable quantity."
+            );
+            return;
+        }
+
+        const createResult = this.invoiceReturnService.createReturnRecord({
+            invoiceId: invoice.id,
+            reason: "Invoice return from invoice UI",
+            lines: [
+                {
+                    invoiceLineId: line.id,
+                    returnQuantity
+                }
+            ]
+        });
+
+        if (!createResult.success || !createResult.invoiceReturn) {
+            this.setMessage(createResult.errors.join(" "));
+            this.renderDrafts();
+            return;
+        }
+
+        const executeResult = this.invoiceReturnService.executeReturn(
+            createResult.invoiceReturn.id
+        );
+
+        if (!executeResult.success || !executeResult.invoiceReturn) {
+            this.setMessage(executeResult.errors.join(" "));
+            this.renderDrafts();
+            return;
+        }
+
+        const executedLine = executeResult.invoiceReturn.lines.find(
+            currentLine => currentLine.invoiceLineId === line.id
+        );
+
+        this.renderDrafts();
+        this.setMessage(
+            `Invoice return executed. Return ${executeResult.invoiceReturn.returnNumber}. Movement ${executedLine?.returnStockMovementId ?? ""}.`
+        );
+
+    }
+
     private resetForm(): void {
 
         this.form?.reset();
@@ -778,6 +960,41 @@ export class InvoiceDraftPage extends Page {
         return this.selectableProducts()
             .find(product => product.id === productId)
             ?? null;
+
+    }
+
+    private remainingReturnableQuantity(
+        invoice: Invoice,
+        line: Invoice["lines"][number]
+    ): number {
+
+        if (invoice.status !== "issued") {
+            return 0;
+        }
+
+        return this.invoiceReturnService.getRemainingReturnableQuantity(
+            invoice.id,
+            line.id
+        );
+
+    }
+
+    private readReturnQuantity(invoiceLineId: string): number {
+
+        const inputs = Array.from(
+            this.draftsBody?.querySelectorAll<HTMLInputElement>(
+                ".invoice-return-quantity-input"
+            )
+            ?? []
+        );
+        const input = inputs.find(
+            currentInput => currentInput.dataset.invoiceLineId === invoiceLineId
+        );
+        const value = input?.value.trim() ?? "";
+
+        return value
+            ? Number(value)
+            : Number.NaN;
 
     }
 
