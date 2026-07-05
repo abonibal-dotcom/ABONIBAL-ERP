@@ -2,60 +2,61 @@
 
 ## Mission
 
-`V1-SALES-002 - Account-Scoped Invoice Persistence Design Plan`
+`V1-SALES-003 - Account-Scoped Invoice Persistence Baseline`
 
 ## Classification
 
-`INF`
+`ECS`
 
-This is a Sales / Invoice design planning mission.
+This is the first Sales / Invoice persistence implementation mission.
 
-This is not invoice implementation, invoice UI, invoice create/edit/delete, invoice stock deduction, Product work, Inventory implementation, Auth work, routing work, or localStorage migration.
+This is not invoice UI implementation, invoice route implementation, invoice stock deduction, Product CRUD, Inventory mutation, Auth work, Route Guard work, or localStorage migration.
 
 ## Objective
 
-Define the implementation-ready account-scoped invoice persistence plan before invoice code begins.
+Implement the minimal account-scoped Invoice persistence baseline using:
 
-The plan documents:
+```text
+invoices:{accountId}
+```
 
-- Target invoice storage boundary.
-- Invoice header and line contract.
-- Draft / issued / cancelled lifecycle policy.
-- Invoice numbering policy.
-- Product snapshot dependency.
-- Inventory availability and future stock deduction dependency.
-- Risks and the next approved implementation candidate.
+The mission proves:
+
+- Invoices are stored account-scoped.
+- Invoice records include `accountId`.
+- Invoice records support `draft`, `issued`, and `cancelled` lifecycle states at model/service level.
+- Invoice lines can store Product snapshot data.
+- Invoice persistence does not mutate Products.
+- Invoice persistence does not mutate Inventory.
+- No stock deduction is performed.
+- No invoice UI is added.
 
 ## Accepted Baseline
 
-- Baseline tag: `v1-sales-001-invoice-foundation-baseline`.
+- Baseline tag: `v1-sales-002-account-scoped-invoice-persistence-design-plan`.
 - Firebase Auth.
 - Explicit `accountId`.
 - Route Guard.
 - Account-scoped Products.
 - Product regression PASS through ECS-011.
-- Stock Movement Ledger persistence PASS through V1-INV-003.
-- Manual Inventory flow PASS through V1-INV-005.
-- Inventory current stock/history PASS through V1-INV-006.
-- Stock availability gate PASS through V1-INV-007.
-- V1-SALES-001 confirmed no invoice module, route, UI, service, repository, persistence key, or storage boundary exists yet.
+- Stock Movement Ledger and availability gate PASS through V1-INV-007.
+- V1-SALES-001 confirmed no invoice implementation existed.
+- V1-SALES-002 accepted the invoice persistence design.
 
 ## Current Status
 
-`V1-SALES-002 Ready for Architect / Owner Review`
+`V1-SALES-003 Ready for Architect / Owner Review`
 
-## Design Result
+## Implementation Result
 
-- Recommended invoice storage boundary: `invoices:{accountId}`.
-- Global `invoices` storage is rejected.
-- Firebase UID/provider user id scoped invoice storage is rejected.
-- Default account fallback is rejected.
-- No invoice legacy migration is recommended because no legacy invoice storage exists in the accepted baseline.
-- Recommended V1 lifecycle states: `draft`, `issued`, `cancelled`.
-- Recommended numbering policy: `INV-{YYYYMMDD}-{accountLocalSequence}` with uniqueness check inside `invoices:{accountId}`.
-- Future invoice lines should reference stable Product ids and store Product snapshot fields.
-- Future issuing flow must call the accepted Inventory availability gate before any stock deduction.
-- Future stock deduction must create `sale_deduction` movements and must not update `Product.quantity`.
+- Added `src/modules/sales/` invoice model, status, persistence key, repository, validator, and service.
+- Registered invoice repository, validator, and service in `Container`.
+- Storage key: `invoices:{accountId}`.
+- Service methods: `getAll`, `getById`, `createDraft`, `updateDraft`, `markIssued`, and `markCancelled`.
+- `createDraft` stores account id, createdBy, invoice number, draft status, line snapshots, and totals.
+- `updateDraft` updates draft metadata without changing account id.
+- `markIssued` sets issued status and issue metadata without stock movements.
+- `markCancelled` sets cancellation status and metadata without hard delete.
 
 ## Verification Completed
 
@@ -64,23 +65,25 @@ The plan documents:
 - Source inspection: PASS.
 - TypeScript: PASS.
 - Build: PASS.
-- Runtime verification: not required for this INF design mission.
+- Runtime verification: PASS.
+- Console errors: 0.
+- Page exceptions: 0.
 
 ## Scope Confirmation
 
-- No source files changed.
-- No Product source files changed.
-- No Inventory source files changed.
-- No invoice implementation added.
 - No invoice UI added.
 - No invoice route added.
+- No invoice create/edit/delete screen added.
 - No invoice stock deduction added.
 - No `sale_deduction` movements created.
-- No Product data mutation.
-- No Inventory movement mutation.
+- No `stockMovements:{accountId}` mutation.
+- No Product records mutated.
+- `Product.quantity` not updated.
+- No Product CRUD behavior changed.
+- No Inventory behavior changed.
+- No Auth behavior changed.
+- Route Guard not weakened.
 - No localStorage migration.
-- No Auth behavior change.
-- No Route Guard weakening.
 - No Firebase UID or provider user id as `accountId`.
 - No default account fallback.
 - No credentials committed.
@@ -89,17 +92,20 @@ The plan documents:
 ## Evidence
 
 ```text
-PATCHES/V1-SALES-002/account-scoped-invoice-persistence-design-plan.md
-PATCHES/V1-SALES-002/invoice-lifecycle-plan.md
-PATCHES/V1-SALES-002/invoice-numbering-plan.md
-PATCHES/V1-SALES-002/invoice-stock-integration-plan.md
-PATCHES/V1-SALES-002/closure-report.md
+PATCHES/V1-SALES-003/verification.md
+PATCHES/V1-SALES-003/closure-report.md
+outputs/V1-SALES-003/runtime.json
+outputs/V1-SALES-003/dom.json
+outputs/V1-SALES-003/console.log
+outputs/V1-SALES-003/storage-snapshot-sanitized.json
+outputs/V1-SALES-003/screenshot.png
+outputs/V1-SALES-003/invoice-persistence-summary.json
 ```
 
 ## Next
 
 Recommended next mission:
 
-`V1-SALES-003 - Account-Scoped Invoice Persistence Baseline`
+`V1-SALES-004 - Invoice Draft Create / Update Flow`
 
-Invoice UI and invoice stock deduction remain blocked until the account-scoped invoice persistence baseline is approved and verified.
+Do not start invoice UI or invoice stock deduction until V1-SALES-003 is reviewed and accepted.

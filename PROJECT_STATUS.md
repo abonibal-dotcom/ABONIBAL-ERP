@@ -86,6 +86,8 @@ V1-SALES-001 Sales / Invoice Foundation Baseline is complete from execution side
 
 V1-SALES-002 Account-Scoped Invoice Persistence Design Plan is complete from execution side and ready for Architect / Owner review.
 
+V1-SALES-003 Account-Scoped Invoice Persistence Baseline is complete from execution side and ready for Architect / Owner review.
+
 Completed stabilization work:
 
 - `PATCH-000-ECS-001 - Route Registry Stabilization`
@@ -223,6 +225,10 @@ Completed stabilization work:
 - V1-SALES-002 rejected global invoice storage, Firebase UID/provider user id storage, and default account fallback.
 - V1-SALES-002 documented the future invoice header/line contracts, draft/issued/cancelled lifecycle, account-scoped numbering policy, Product snapshot dependency, and Inventory stock availability/deduction dependency.
 - V1-SALES-002 did not change source files, add invoice UI, add invoice routes, implement invoice persistence, create stock movements, mutate Products, mutate Inventory, change Auth, weaken Route Guard, or migrate localStorage.
+- V1-SALES-003 added the minimal account-scoped Invoice persistence baseline under `src/modules/sales/`.
+- V1-SALES-003 implemented `invoices:{accountId}`, invoice model/types, invoice lifecycle status, invoice line Product snapshots, repository, validator, service methods, and Container registration.
+- V1-SALES-003 verified createDraft, updateDraft, markIssued, markCancelled, reload persistence, scoped storage, no global invoice key, no Product mutation, no Inventory mutation, no stock deduction, clean console, and zero page exceptions.
+- V1-SALES-003 did not add invoice UI, add invoice routes, implement invoice stock deduction, create `sale_deduction` movements, mutate Product records, update `Product.quantity`, mutate Inventory, change Auth, weaken Route Guard, migrate localStorage, use Firebase uid/provider user id as `accountId`, or add default account fallback.
 - Expenses are missing.
 - Safes and cash movement are missing.
 - Basic ledger is missing.
@@ -234,24 +240,24 @@ Completed stabilization work:
 
 Current mission:
 
-`V1-SALES-002 - Account-Scoped Invoice Persistence Design Plan`
+`V1-SALES-003 - Account-Scoped Invoice Persistence Baseline`
 
 Current next mission:
 
-V1-SALES-002 complete from execution side and ready for Architect / Owner review.
+V1-SALES-003 complete from execution side and ready for Architect / Owner review.
 
 Classification:
 
-`INF`
+`ECS`
 
 Allowed scope:
 
-Sales / Invoice persistence design documentation only.
+Sales / Invoice account-scoped persistence baseline only.
 
 Forbidden scope:
 
-No source changes, no invoice implementation, no invoice UI, no invoice route, no invoice create/edit/delete behavior, no invoice stock deduction, no Product CRUD behavior change, no Product quantity migration, no Product record mutation, no Inventory mutation, no Auth redesign, no Route Guard weakening, no destructive migration, no legacy Product deletion, no legacy `localStorage.products` mutation, no automatic import on app startup, no permission matrix, no advanced roles, no hardcoded credentials, no real credentials committed, and no Firebase uid to `accountId` assumption.
+No invoice UI, no invoice route, no invoice create/edit/delete screen, no invoice stock deduction, no `sale_deduction`, no Product CRUD behavior change, no Product quantity migration, no Product record mutation, no Inventory mutation, no Auth redesign, no Route Guard weakening, no destructive migration, no legacy Product deletion, no legacy `localStorage.products` mutation, no automatic import on app startup, no permission matrix, no advanced roles, no hardcoded credentials, no real credentials committed, and no Firebase uid/provider user id to `accountId` assumption.
 
 ## Next State
 
-Await Architect / Owner review for V1-SALES-002. Recommended next mission is `V1-SALES-003 - Account-Scoped Invoice Persistence Baseline`. Invoice UI and invoice stock deduction remain blocked until the persistence baseline is approved and verified.
+Await Architect / Owner review for V1-SALES-003. Recommended next mission is `V1-SALES-004 - Invoice Draft Create / Update Flow`. Invoice UI and invoice stock deduction remain blocked until V1-SALES-003 is reviewed and accepted.

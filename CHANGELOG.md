@@ -1,5 +1,19 @@
 # Changelog
 
+## V1-SALES-003 - Account-Scoped Invoice Persistence Baseline
+
+- Added the first minimal Sales / Invoice persistence baseline under `src/modules/sales/`.
+- Added invoice model/types with `draft`, `issued`, and `cancelled` lifecycle status support.
+- Added invoice line model with Product snapshot fields and nullable `stockMovementId`.
+- Added `invoiceStorageKeyForAccount(accountId)` using `invoices:{accountId}`.
+- Added account-scoped Invoice repository methods for read, append, find, and update.
+- Added Invoice service methods: `getAll`, `getById`, `createDraft`, `updateDraft`, `markIssued`, and `markCancelled`.
+- Registered Invoice repository, validator, and service in `Container`.
+- Verified unauthenticated invoice writes fail safely.
+- Verified runtime createDraft, updateDraft, markIssued, markCancelled, and reload persistence.
+- Verified no global `invoices` key, no invoice UI, no invoice route, no stock deduction, no `sale_deduction`, no Product mutation, no Inventory mutation, clean console, zero page exceptions, and `.env` untracked.
+- Final status: `V1-SALES-003 Ready for Architect / Owner Review`.
+
 ## V1-SALES-002 - Account-Scoped Invoice Persistence Design Plan
 
 - Designed the future account-scoped invoice storage boundary as `invoices:{accountId}`.

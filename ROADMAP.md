@@ -309,6 +309,27 @@ Recommended next Sales / Invoice mission:
 
 Invoice UI and invoice stock deduction remain blocked until the account-scoped invoice persistence baseline is approved and verified.
 
+V1-SALES-003 implemented the minimal account-scoped Invoice persistence baseline.
+
+Accepted implementation result:
+
+- Invoice module exists under `src/modules/sales/`.
+- Invoice storage boundary: `invoices:{accountId}`.
+- Invoice records include `accountId`, ownership metadata, lifecycle fields, totals, and lines.
+- Invoice lines store Product snapshot fields.
+- Repository/service methods are account-scoped.
+- `createDraft`, `updateDraft`, `markIssued`, and `markCancelled` are available at service level.
+- `markIssued` does not create stock movements in this baseline.
+- No invoice UI or invoice route exists yet.
+- No invoice stock deduction exists yet.
+- Product and Inventory data remain unmutated by invoice persistence.
+
+Recommended next Sales / Invoice mission:
+
+`V1-SALES-004 - Invoice Draft Create / Update Flow`
+
+Invoice stock deduction remains blocked until a later owner-approved mission explicitly integrates invoice issue behavior with the accepted Inventory availability gate and stock movement ledger.
+
 ## Verification Expectation
 
 Each future ECS must include:
