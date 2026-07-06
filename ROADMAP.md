@@ -541,7 +541,39 @@ Accepted implementation result:
 Recommended next Sales / Invoice step:
 
 Architect / Owner review of V1-SALES-013. After acceptance, the next candidate
-is `V1-SALES-014 - Invoice Return Lifecycle Regression Baseline`.
+is `V1-SALES-014 - Sales Lifecycle Regression Including Returns`.
+
+V1-SALES-014 verified the complete accepted Sales lifecycle including returns.
+
+Accepted verification result:
+
+- No source fix was needed.
+- Protected Invoice route, AuthSession, explicit `accountId`, Route Guard,
+  Products route, Inventory route, and Invoice route remained valid.
+- Draft create/update, failed issue blocking, successful issue,
+  `sale_deduction`, issued audit visibility, duplicate issue safety,
+  cancellation, cancellation `sale_return`, and duplicate cancellation safety
+  passed.
+- Return UI rendered for issued invoices and stayed hidden for draft/cancelled
+  invoices.
+- Invalid return quantity, over-return, and duplicate excessive return were
+  rejected.
+- Valid partial return created one account-scoped return record, executed stock
+  restoration, created one positive `sale_return`, and stored
+  `returnStockMovementId`.
+- Reload preserved draft, issued, cancelled, invoice return record,
+  `sale_deduction`, cancellation `sale_return`, return `sale_return`, and audit
+  traceability.
+- Product records remained unchanged and `Product.quantity` remained
+  non-authoritative.
+- No Product CRUD behavior change, invoice hard delete, Auth change, Route Guard
+  weakening, localStorage migration, Firebase uid/accountId fallback, or default
+  account fallback was introduced.
+
+Recommended next Sales / Invoice step:
+
+Architect / Owner review of V1-SALES-014 before approving the next Sales
+mission.
 
 ## Verification Expectation
 

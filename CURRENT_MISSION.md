@@ -2,34 +2,40 @@
 
 ## Mission
 
-`V1-SALES-013 - Invoice Returns UI Flow`
+`V1-SALES-014 - Sales Lifecycle Regression Including Returns`
 
 ## Classification
 
 `ECS`
 
-This is the first minimal protected Invoice Returns UI flow.
+This is a full Sales lifecycle regression mission including invoice returns.
 
-This is not Product CRUD, invoice hard delete, invoice cancellation work, manual
-Inventory adjustment work, Auth work, Route Guard weakening, or localStorage
-migration.
+This is not new feature implementation, Product CRUD, Inventory manual
+adjustment work, invoice hard delete, Auth work, Route Guard weakening, or
+localStorage migration.
 
 ## Objective
 
-Implement and verify a minimal UI flow that lets an authenticated user:
+Verify and stabilize the complete accepted Sales lifecycle including returns:
 
-- view issued invoice returnable lines;
-- see remaining returnable quantity per line;
-- enter a return quantity;
-- reject invalid and excessive return quantities;
-- create an account-scoped invoice return record;
-- execute stock restoration through the accepted return execution service;
-- display the return audit result.
+- protected invoice route;
+- draft create and update;
+- invoice issue and `sale_deduction`;
+- issued audit view;
+- issued invoice cancellation and cancellation `sale_return`;
+- invoice return persistence;
+- invoice return execution;
+- invoice return UI;
+- partial return;
+- over-return rejection;
+- duplicate return safety;
+- reload persistence;
+- Product safety;
+- Inventory ledger correctness.
 
 ## Accepted Baseline
 
-- Baseline tag:
-  `v1-sales-012-invoice-return-stock-restoration-execution`.
+- Baseline tag: `v1-sales-013-invoice-returns-ui-flow`.
 - Firebase Auth.
 - Explicit `accountId`.
 - Route Guard.
@@ -37,24 +43,18 @@ Implement and verify a minimal UI flow that lets an authenticated user:
 - Product regression PASS through ECS-011.
 - Inventory ledger and availability gate PASS through V1-INV-007.
 - Sales / Invoice lifecycle PASS through V1-SALES-009.
-- Return persistence baseline PASS through V1-SALES-011.
-- Return stock restoration execution PASS through V1-SALES-012.
+- Return persistence PASS through V1-SALES-011.
+- Return execution PASS through V1-SALES-012.
+- Return UI PASS through V1-SALES-013.
 
 ## Current Status
 
-`V1-SALES-013 Ready for Architect / Owner Review`
+`V1-SALES-014 Ready for Architect / Owner Review`
 
 ## Implementation Result
 
-- Added return controls to issued invoice lines on the existing protected
-  Invoice page.
-- Displayed remaining returnable quantity per line.
-- Rejected invalid and excessive return quantities before storage writes.
-- Created account-scoped return records through
-  `InvoiceReturnService.createReturnRecord()`.
-- Executed valid returns through `InvoiceReturnService.executeReturn()`.
-- Displayed return audit result with return number, execution status, return
-  quantity, and `returnStockMovementId`.
+No source fix was needed. V1-SALES-014 added regression evidence and
+documentation only.
 
 ## Verification Result
 
@@ -63,23 +63,21 @@ Implement and verify a minimal UI flow that lets an authenticated user:
 - Runtime: PASS.
 - Console errors: 0.
 - Page exceptions: 0.
-- Runtime evidence saved under `outputs/V1-SALES-013/`.
+- Runtime evidence saved under `outputs/V1-SALES-014/`.
 
 ## Scope Confirmation
 
-- No return route.
+- No source files changed.
 - No Product CRUD behavior change.
 - No Product record mutation.
 - `Product.quantity` unchanged.
-- No direct invoice mutation by the UI flow.
-- `invoices:{accountId}` hash unchanged.
-- `products:{accountId}` hash unchanged.
-- `localStorage.products` unchanged/absent.
 - No invoice hard delete.
-- No invoice cancellation behavior change.
-- No manual Inventory adjustment behavior change.
+- No invoice deletion.
+- No return deletion.
+- No stock movement deletion.
 - No Auth behavior change.
 - Route Guard remains active.
+- No localStorage migration.
 - No Firebase UID or provider user id used as `accountId`.
 - No default account fallback.
 - `.env` remains untracked.
@@ -87,25 +85,25 @@ Implement and verify a minimal UI flow that lets an authenticated user:
 ## Evidence / Documents
 
 ```text
-outputs/V1-SALES-013/baseline-runtime.json
-outputs/V1-SALES-013/baseline-dom.json
-outputs/V1-SALES-013/baseline-console.log
-outputs/V1-SALES-013/baseline-storage-snapshot-sanitized.json
-outputs/V1-SALES-013/baseline-screenshot.png
-outputs/V1-SALES-013/after-runtime.json
-outputs/V1-SALES-013/after-dom.json
-outputs/V1-SALES-013/after-console.log
-outputs/V1-SALES-013/after-storage-snapshot-sanitized.json
-outputs/V1-SALES-013/after-screenshot.png
-outputs/V1-SALES-013/invoice-return-ui-summary.json
-PATCHES/V1-SALES-013/verification.md
-PATCHES/V1-SALES-013/closure-report.md
+outputs/V1-SALES-014/baseline-runtime.json
+outputs/V1-SALES-014/baseline-dom.json
+outputs/V1-SALES-014/baseline-console.log
+outputs/V1-SALES-014/baseline-storage-snapshot-sanitized.json
+outputs/V1-SALES-014/baseline-screenshot.png
+outputs/V1-SALES-014/after-runtime.json
+outputs/V1-SALES-014/after-dom.json
+outputs/V1-SALES-014/after-console.log
+outputs/V1-SALES-014/after-storage-snapshot-sanitized.json
+outputs/V1-SALES-014/after-screenshot.png
+outputs/V1-SALES-014/sales-lifecycle-returns-regression-summary.json
+PATCHES/V1-SALES-014/verification.md
+PATCHES/V1-SALES-014/closure-report.md
 ```
 
 ## Next
 
 Recommended next step:
 
-Architect / Owner review of V1-SALES-013.
+Architect / Owner review of V1-SALES-014.
 
-Do not start V1-SALES-014 until V1-SALES-013 is reviewed and accepted.
+Do not start the next mission until V1-SALES-014 is reviewed and accepted.
