@@ -2,58 +2,63 @@
 
 ## Mission
 
-`V1-SALES-014 - Sales Lifecycle Regression Including Returns`
+`V1-REL-001 - Full V1 Production Regression / Release Candidate`
 
 ## Classification
 
 `ECS`
 
-This is a full Sales lifecycle regression mission including invoice returns.
+This is a full V1 production regression and release-candidate verification
+mission.
 
-This is not new feature implementation, Product CRUD, Inventory manual
-adjustment work, invoice hard delete, Auth work, Route Guard weakening, or
+This is not new feature implementation, UI redesign, refactor, deployment, or
 localStorage migration.
 
 ## Objective
 
-Verify and stabilize the complete accepted Sales lifecycle including returns:
+Verify the full accepted ABONIBAL ERP V1 application as a Release Candidate:
 
-- protected invoice route;
-- draft create and update;
-- invoice issue and `sale_deduction`;
-- issued audit view;
-- issued invoice cancellation and cancellation `sale_return`;
-- invoice return persistence;
-- invoice return execution;
-- invoice return UI;
-- partial return;
-- over-return rejection;
-- duplicate return safety;
-- reload persistence;
-- Product safety;
+- Auth / Login / Logout.
+- Route Guard.
+- Dashboard and navigation.
+- Account-scoped Products.
+- Product CRUD / Search / Soft Delete.
+- Inventory Ledger.
+- Manual Inventory Movements.
+- Current Stock View.
+- Stock Availability Gate.
+- Invoice Draft Create / Update.
+- Invoice Issue / Stock Deduction.
+- Issued Invoice Audit.
+- Invoice Cancellation / Stock Reversal.
+- Invoice Returns Persistence.
+- Invoice Returns Execution.
+- Invoice Returns UI.
+- Reload persistence.
+- Storage boundaries.
+- Product safety.
 - Inventory ledger correctness.
 
 ## Accepted Baseline
 
-- Baseline tag: `v1-sales-013-invoice-returns-ui-flow`.
+- Baseline tag: `v1-sales-014-sales-lifecycle-regression-including-returns`.
 - Firebase Auth.
 - Explicit `accountId`.
 - Route Guard.
-- Account-scoped Products.
-- Product regression PASS through ECS-011.
-- Inventory ledger and availability gate PASS through V1-INV-007.
-- Sales / Invoice lifecycle PASS through V1-SALES-009.
-- Return persistence PASS through V1-SALES-011.
-- Return execution PASS through V1-SALES-012.
-- Return UI PASS through V1-SALES-013.
+- Account-scoped Products through ECS-011.
+- Inventory ledger and availability gate through V1-INV-007.
+- Sales / Invoice lifecycle through V1-SALES-014.
+- Return persistence, execution, and UI through V1-SALES-014.
 
 ## Current Status
 
-`V1-SALES-014 Ready for Architect / Owner Review`
+`V1-REL-001 Ready for Architect / Owner Review`
 
 ## Implementation Result
 
-No source fix was needed. V1-SALES-014 added regression evidence and
+No application source fix was needed.
+
+V1-REL-001 added release-candidate runtime verification evidence and
 documentation only.
 
 ## Verification Result
@@ -63,21 +68,21 @@ documentation only.
 - Runtime: PASS.
 - Console errors: 0.
 - Page exceptions: 0.
-- Runtime evidence saved under `outputs/V1-SALES-014/`.
+- Screenshots captured: 8.
+- Runtime evidence saved under `outputs/V1-REL-001/`.
 
 ## Scope Confirmation
 
 - No source files changed.
-- No Product CRUD behavior change.
-- No Product record mutation.
-- `Product.quantity` unchanged.
-- No invoice hard delete.
-- No invoice deletion.
-- No return deletion.
-- No stock movement deletion.
-- No Auth behavior change.
-- Route Guard remains active.
+- No new feature implemented.
+- No UI redesign.
+- No deployment performed.
+- No Firebase configuration change.
 - No localStorage migration.
+- No hard delete of Products, invoices, returns, or stock movements.
+- `Product.quantity` remained non-authoritative.
+- Route Guard remained active.
+- No Auth weakening.
 - No Firebase UID or provider user id used as `accountId`.
 - No default account fallback.
 - `.env` remains untracked.
@@ -85,25 +90,26 @@ documentation only.
 ## Evidence / Documents
 
 ```text
-outputs/V1-SALES-014/baseline-runtime.json
-outputs/V1-SALES-014/baseline-dom.json
-outputs/V1-SALES-014/baseline-console.log
-outputs/V1-SALES-014/baseline-storage-snapshot-sanitized.json
-outputs/V1-SALES-014/baseline-screenshot.png
-outputs/V1-SALES-014/after-runtime.json
-outputs/V1-SALES-014/after-dom.json
-outputs/V1-SALES-014/after-console.log
-outputs/V1-SALES-014/after-storage-snapshot-sanitized.json
-outputs/V1-SALES-014/after-screenshot.png
-outputs/V1-SALES-014/sales-lifecycle-returns-regression-summary.json
-PATCHES/V1-SALES-014/verification.md
-PATCHES/V1-SALES-014/closure-report.md
+outputs/V1-REL-001/baseline-runtime.json
+outputs/V1-REL-001/baseline-dom.json
+outputs/V1-REL-001/baseline-console.log
+outputs/V1-REL-001/baseline-storage-snapshot-sanitized.json
+outputs/V1-REL-001/baseline-screenshot.png
+outputs/V1-REL-001/after-runtime.json
+outputs/V1-REL-001/after-dom.json
+outputs/V1-REL-001/after-console.log
+outputs/V1-REL-001/after-storage-snapshot-sanitized.json
+outputs/V1-REL-001/after-screenshot.png
+outputs/V1-REL-001/full-v1-release-candidate-summary.json
+outputs/V1-REL-001/screenshots/
+PATCHES/V1-REL-001/verification.md
+PATCHES/V1-REL-001/closure-report.md
 ```
 
 ## Next
 
 Recommended next step:
 
-Architect / Owner review of V1-SALES-014.
+Architect / Owner review of V1-REL-001.
 
-Do not start the next mission until V1-SALES-014 is reviewed and accepted.
+Do not start the next mission until V1-REL-001 is reviewed and accepted.

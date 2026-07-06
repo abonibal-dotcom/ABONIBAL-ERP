@@ -1,0 +1,31 @@
+{
+  "accountId": "abonib...0af0acc578",
+  "invoiceScopedKey": "invoices:{abonib...0af0acc578}",
+  "invoiceReturnsScopedKey": "invoiceReturns:{abonib...0af0acc578}",
+  "stockMovementScopedKey": "stockMovements:{abonib...0af0acc578}",
+  "productScopedKey": "products:{abonib...0af0acc578}",
+  "issuedInvoiceExists": false,
+  "saleDeductionTraceResult": {
+    "exists": false,
+    "typeOk": false,
+    "negativeQuantityDelta": false,
+    "accountOk": true,
+    "productOk": true,
+    "invoiceReferenceOk": true
+  },
+  "invoiceCountBefore": 0,
+  "invoiceCountAfter": 0,
+  "invoiceReturnCountBefore": 0,
+  "invoiceReturnCountAfter": 0,
+  "stockMovementCountBefore": 0,
+  "stockMovementCountAfter": 0,
+  "reversalMovementCountBefore": 0,
+  "reversalMovementCountAfter": 0,
+  "productScopedHashBefore": null,
+  "productScopedHashAfter": null,
+  "legacyProductHashBefore": null,
+  "legacyProductHashAfter": null,
+  "consoleErrorsCount": 0,
+  "pageExceptionsCount": 0,
+  "envUntracked": true
+}
