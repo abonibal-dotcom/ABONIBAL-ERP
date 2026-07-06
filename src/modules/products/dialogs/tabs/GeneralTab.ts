@@ -27,7 +27,7 @@ export class GeneralTab {
 
             label: "الاسم الإنجليزي",
 
-            placeholder: "English Name"
+            placeholder: "الاسم الإنجليزي"
 
         });
 
@@ -35,9 +35,9 @@ export class GeneralTab {
 
             id: "product-sku",
 
-            label: "SKU",
+            label: "رمز SKU",
 
-            placeholder: "SKU"
+            placeholder: "رمز SKU"
 
         });
 
@@ -45,9 +45,9 @@ export class GeneralTab {
 
             id: "product-barcode",
 
-            label: "Barcode",
+            label: "الباركود",
 
-            placeholder: "Barcode"
+            placeholder: "الباركود"
 
         });
 

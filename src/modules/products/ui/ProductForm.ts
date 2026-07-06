@@ -20,15 +20,15 @@ export class ProductForm {
                     <input
                         id="product-english-name"
                         type="text"
-                        placeholder="English Name">
+                        placeholder="الاسم الإنجليزي">
                 </div>
 
                 <div class="form-group">
-                    <label>SKU</label>
+                    <label>رمز SKU</label>
                     <input
                         id="product-sku"
                         type="text"
-                        placeholder="SKU">
+                        placeholder="رمز SKU">
                 </div>
 
                 <div class="form-group">
@@ -36,7 +36,7 @@ export class ProductForm {
                     <input
                         id="product-barcode"
                         type="text"
-                        placeholder="Barcode">
+                        placeholder="الباركود">
                 </div>
 
                 <div class="form-group">

@@ -51,7 +51,7 @@ export class LoginPage extends Page {
 
     public title(): string {
 
-        return "Login";
+        return "تسجيل الدخول";
 
     }
 
@@ -60,7 +60,7 @@ export class LoginPage extends Page {
         return `
             <section id="login-page" data-auth-status="unauthenticated">
 
-                <h1>Login</h1>
+                <h1>تسجيل الدخول</h1>
 
                 <p id="login-message" role="status"></p>
 
@@ -68,7 +68,7 @@ export class LoginPage extends Page {
 
                     <div class="form-group">
 
-                        <label for="login-email">Email</label>
+                        <label for="login-email">البريد الإلكتروني</label>
 
                         <input
                             id="login-email"
@@ -82,7 +82,7 @@ export class LoginPage extends Page {
 
                     <div class="form-group">
 
-                        <label for="login-password">Password</label>
+                        <label for="login-password">كلمة المرور</label>
 
                         <input
                             id="login-password"
@@ -95,7 +95,7 @@ export class LoginPage extends Page {
                     </div>
 
                     <button id="login-submit" type="submit">
-                        Sign in
+                        تسجيل الدخول
                     </button>
 
                 </form>
@@ -105,7 +105,7 @@ export class LoginPage extends Page {
                     <p id="auth-session-summary"></p>
 
                     <button id="logout-button" type="button">
-                        Logout
+                        تسجيل الخروج
                     </button>
 
                 </section>
@@ -184,7 +184,7 @@ export class LoginPage extends Page {
 
             if (this.sessionSummaryElement) {
 
-                this.sessionSummaryElement.textContent = `Signed in as ${state.session.user.displayName} (${state.session.account.name}).`;
+                this.sessionSummaryElement.textContent = `تم تسجيل الدخول باسم ${state.session.user.displayName} (${state.session.account.name}).`;
 
             }
 
@@ -211,7 +211,7 @@ export class LoginPage extends Page {
 
         if (!email || !password) {
 
-            this.setMessage("Enter email and password.");
+            this.setMessage("أدخل البريد الإلكتروني وكلمة المرور.");
 
             return;
 
@@ -255,7 +255,7 @@ export class LoginPage extends Page {
 
             await this.authStateService.signOut();
 
-            this.setMessage("Signed out.");
+            this.setMessage("تم تسجيل الخروج.");
 
         } catch {
 
@@ -301,7 +301,7 @@ function toSafeSignInMessage(error: unknown): string {
 
     if (error instanceof AuthConfigurationUnavailableError) {
 
-        return "Sign in is not configured for this environment.";
+        return "تسجيل الدخول غير مهيأ لهذه البيئة.";
 
     }
 
@@ -311,6 +311,6 @@ function toSafeSignInMessage(error: unknown): string {
 
     }
 
-    return "Sign in failed. Check the credentials or contact the administrator.";
+    return "فشل تسجيل الدخول. تحقق من بيانات الدخول أو تواصل مع المسؤول.";
 
 }
