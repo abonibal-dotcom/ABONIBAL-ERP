@@ -513,7 +513,67 @@ Accepted implementation result:
 
 Recommended next Sales / Invoice step:
 
-`V1-SALES-013 - Invoice Return Lifecycle Regression Baseline`.
+`V1-SALES-013 - Invoice Returns UI Flow`.
+
+V1-SALES-013 implemented the first minimal protected Invoice Returns UI flow on
+the existing Invoice page.
+
+Accepted implementation result:
+
+- Issued returnable invoice lines display remaining returnable quantity.
+- Invalid and excessive return quantities are rejected before storage writes.
+- Valid returns create account-scoped return records through
+  `InvoiceReturnService.createReturnRecord()`.
+- Valid returns execute stock restoration through
+  `InvoiceReturnService.executeReturn()`.
+- Return audit output displays return number, execution status, return quantity,
+  and `returnStockMovementId`.
+- One valid UI return creates one positive `sale_return` movement with
+  `referenceType: "invoice_return"`.
+- Available stock increases through ledger summation and remains correct after
+  reload.
+- Invoice records and Product records remain unchanged by the UI flow.
+- No return route, Product mutation, Product quantity update, invoice hard
+  delete, invoice cancellation behavior change, Auth change, Route Guard
+  weakening, localStorage migration, Firebase uid/accountId fallback, or default
+  account fallback was introduced.
+
+Recommended next Sales / Invoice step:
+
+Architect / Owner review of V1-SALES-013. After acceptance, the next candidate
+is `V1-SALES-014 - Sales Lifecycle Regression Including Returns`.
+
+V1-SALES-014 verified the complete accepted Sales lifecycle including returns.
+
+Accepted verification result:
+
+- No source fix was needed.
+- Protected Invoice route, AuthSession, explicit `accountId`, Route Guard,
+  Products route, Inventory route, and Invoice route remained valid.
+- Draft create/update, failed issue blocking, successful issue,
+  `sale_deduction`, issued audit visibility, duplicate issue safety,
+  cancellation, cancellation `sale_return`, and duplicate cancellation safety
+  passed.
+- Return UI rendered for issued invoices and stayed hidden for draft/cancelled
+  invoices.
+- Invalid return quantity, over-return, and duplicate excessive return were
+  rejected.
+- Valid partial return created one account-scoped return record, executed stock
+  restoration, created one positive `sale_return`, and stored
+  `returnStockMovementId`.
+- Reload preserved draft, issued, cancelled, invoice return record,
+  `sale_deduction`, cancellation `sale_return`, return `sale_return`, and audit
+  traceability.
+- Product records remained unchanged and `Product.quantity` remained
+  non-authoritative.
+- No Product CRUD behavior change, invoice hard delete, Auth change, Route Guard
+  weakening, localStorage migration, Firebase uid/accountId fallback, or default
+  account fallback was introduced.
+
+Recommended next Sales / Invoice step:
+
+Architect / Owner review of V1-SALES-014 before approving the next Sales
+mission.
 
 ## Verification Expectation
 

@@ -106,6 +106,10 @@ V1-SALES-011 Account-Scoped Invoice Returns Persistence Baseline is complete fro
 
 V1-SALES-012 Invoice Return Stock Restoration Execution is complete from execution side and ready for Architect / Owner review.
 
+V1-SALES-013 Invoice Returns UI Flow is complete from execution side and ready for Architect / Owner review.
+
+V1-SALES-014 Sales Lifecycle Regression Including Returns is complete from execution side and ready for Architect / Owner review.
+
 Completed stabilization work:
 
 - `PATCH-000-ECS-001 - Route Registry Stabilization`
@@ -285,6 +289,16 @@ Completed stabilization work:
 - V1-SALES-012 writes created `sale_return` movement ids back to return lines as `returnStockMovementId` and marks return records `executed`.
 - V1-SALES-012 verified available stock increases through ledger summation, reload preserves the return execution audit trail, duplicate execution is safe, over-return is rejected, invoices remain unchanged, Product storage remains unchanged, clean console, zero page exceptions, and `.env` untracked.
 - V1-SALES-012 did not add return UI, add return routes, mutate invoices, change invoice statuses to `partially_returned` or `returned`, alter invoice issue/cancellation behavior, mutate Products, update `Product.quantity`, change Auth, weaken Route Guard, migrate localStorage, use Firebase uid/provider user id as `accountId`, or add default account fallback.
+- V1-SALES-013 added the first minimal protected Invoice Returns UI flow to the existing Invoice page.
+- V1-SALES-013 displays remaining returnable quantity for issued invoice lines and lets the user submit a return quantity.
+- V1-SALES-013 rejects invalid and excessive quantities before storage writes.
+- V1-SALES-013 creates account-scoped return records through `InvoiceReturnService.createReturnRecord()` and executes them through `InvoiceReturnService.executeReturn()`.
+- V1-SALES-013 displays return audit output with return number, status, return quantity, and `returnStockMovementId`.
+- V1-SALES-013 verified one valid UI return creates one executed return record, one positive `sale_return`, restored availability from 3 to 4, reload persistence, unchanged invoice hash, unchanged Product hash, clean console, zero page exceptions, and `.env` untracked.
+- V1-SALES-013 did not add a return route, mutate Products, update `Product.quantity`, alter Product CRUD behavior, hard-delete invoices, change invoice cancellation behavior, change Auth, weaken Route Guard, migrate localStorage, use Firebase uid/provider user id as `accountId`, or add default account fallback.
+- V1-SALES-014 verified the complete accepted Sales lifecycle including returns without requiring a source fix.
+- V1-SALES-014 verifies protected Invoice route, draft create/update, failed issue, successful issue, `sale_deduction`, issued audit view, duplicate issue safety, cancellation, cancellation `sale_return`, duplicate cancellation safety, return UI, return execution, return `sale_return`, over-return rejection, duplicate return safety, reload persistence, Product safety, Inventory ledger correctness, clean console, zero page exceptions, and `.env` untracked.
+- V1-SALES-014 did not change source files, Product CRUD behavior, Product records, `Product.quantity`, invoice hard delete behavior, Auth behavior, Route Guard behavior, localStorage migration, Firebase uid/provider user id as `accountId`, or default account fallback.
 - Expenses are missing.
 - Safes and cash movement are missing.
 - Basic ledger is missing.
@@ -296,11 +310,11 @@ Completed stabilization work:
 
 Current mission:
 
-`V1-SALES-012 - Invoice Return Stock Restoration Execution`
+`V1-SALES-014 - Sales Lifecycle Regression Including Returns`
 
 Current next mission:
 
-V1-SALES-012 complete from execution side and ready for Architect / Owner review.
+V1-SALES-014 complete from execution side and ready for Architect / Owner review.
 
 Classification:
 
@@ -308,20 +322,18 @@ Classification:
 
 Allowed scope completed:
 
-Invoice return execution method, return status update, account-scoped return
-update support, `sale_return` stock restoration, `returnStockMovementId`
-linking, runtime evidence, and documentation.
+Sales lifecycle regression including invoice returns, runtime evidence, and
+documentation. No source fix was needed.
 
 Forbidden scope preserved:
 
-No return UI, no return route, no invoice mutation, no invoice status change to
-`partially_returned` or `returned`, no Product CRUD behavior change, no Product
-quantity migration, no Product record mutation, no Auth redesign, no Route
-Guard weakening, no destructive migration, no localStorage migration, no
-hardcoded credentials, no real credentials committed, and no Firebase
+No source files changed, no Product CRUD behavior change, no Product quantity
+migration, no Product record mutation, no invoice hard delete, no Auth redesign,
+no Route Guard weakening, no destructive migration, no localStorage migration,
+no hardcoded credentials, no real credentials committed, and no Firebase
 uid/provider user id to `accountId` assumption.
 
 ## Next State
 
-Await Architect / Owner review for V1-SALES-012. Return UI remains blocked
-until a separately approved mission implements the next return lifecycle step.
+Await Architect / Owner review for V1-SALES-014. Do not start the next mission
+until V1-SALES-014 is reviewed and accepted.

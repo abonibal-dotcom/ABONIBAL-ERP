@@ -1,0 +1,17 @@
+{
+  "url": "http://127.0.0.1:62006/",
+  "title": "Invoices",
+  "activeRoute": "/",
+  "invoicePageVisible": true,
+  "returnUiExists": true,
+  "returnRowCount": 2,
+  "returnAuditText": "No returns RET-20260705-0001\n                    executed\n                    qty 1\n                    movement c5aba4f8-537c-4b79-9170-37d9deda7274",
+  "visibleActions": [
+    "New draft",
+    "Save draft",
+    "Edit",
+    "Issue",
+    "Cancel",
+    "Return"
+  ]
+}

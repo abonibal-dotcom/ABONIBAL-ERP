@@ -1,0 +1,8 @@
+{"source":"vite","level":"stdout","text":"\u001b[32m\u001b[1mVITE\u001b[22m v8.0.16\u001b[39m  \u001b[2mready in \u001b[0m\u001b[1m988\u001b[22m\u001b[2m\u001b[0m ms\u001b[22m"}
+{"source":"vite","level":"stdout","text":"\u001b[32m➜\u001b[39m  \u001b[1mLocal\u001b[22m:   \u001b[36mhttp://127.0.0.1:\u001b[1m62006\u001b[22m/\u001b[39m"}
+{"type":"debug","args":["[vite] connecting..."]}
+{"type":"debug","args":["[vite] connected."]}
+{"type":"log","args":["ABONIBAL ERP Started"]}
+{"type":"debug","args":["[vite] connecting..."]}
+{"type":"debug","args":["[vite] connected."]}
+{"type":"log","args":["ABONIBAL ERP Started"]}
