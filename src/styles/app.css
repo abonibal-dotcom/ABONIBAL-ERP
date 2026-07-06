@@ -610,3 +610,236 @@ body:has(#app > form) #app::before {
         font-size: 13px;
     }
 }
+
+/* =========================
+   V1-UI-003 Mobile RTL Tables Polish
+   Scope: CSS-only responsive table improvements
+========================= */
+
+@media (max-width: 720px) {
+    #workspace table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        overflow: visible;
+    }
+
+    #workspace table thead {
+        display: none;
+    }
+
+    #workspace table tbody {
+        display: grid;
+        gap: 12px;
+    }
+
+    #workspace table tr {
+        display: grid;
+        gap: 0;
+        padding: 10px;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        background: #ffffff;
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+    }
+
+    #workspace table td {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        min-height: 38px;
+        padding: 9px 4px;
+        border: 0;
+        border-bottom: 1px solid #eef2f7;
+        text-align: left;
+        color: var(--text);
+        word-break: break-word;
+    }
+
+    #workspace table td:last-child {
+        border-bottom: 0;
+    }
+
+    #workspace table td::before {
+        flex: 0 0 auto;
+        color: #475569;
+        font-weight: 900;
+        text-align: right;
+        content: "بيان";
+    }
+
+    #workspace table td[colspan] {
+        justify-content: center;
+        text-align: center;
+        color: var(--muted);
+    }
+
+    #workspace table td[colspan]::before {
+        content: "";
+        display: none;
+    }
+
+    #workspace table button {
+        width: 100%;
+        margin: 4px 0;
+    }
+
+    #workspace table input,
+    #workspace table select,
+    #workspace table textarea {
+        min-width: 0;
+    }
+
+    #workspace .invoice-line-audit-container > td {
+        display: block;
+        padding: 0;
+    }
+
+    #workspace .invoice-line-audit-container > td::before {
+        display: none;
+    }
+
+    #workspace .invoice-line-audit-table {
+        margin: 8px 0 0;
+    }
+}
+
+/* Products table labels */
+@media (max-width: 720px) {
+    #products-table td:nth-child(1)::before {
+        content: "الصورة";
+    }
+
+    #products-table td:nth-child(2)::before {
+        content: "الاسم";
+    }
+
+    #products-table td:nth-child(3)::before {
+        content: "الباركود";
+    }
+
+    #products-table td:nth-child(4)::before {
+        content: "الكمية";
+    }
+
+    #products-table td:nth-child(5)::before {
+        content: "السعر";
+    }
+
+    #products-table td:nth-child(6)::before {
+        content: "الإجراءات";
+    }
+}
+
+/* Inventory current stock labels */
+@media (max-width: 720px) {
+    #inventory-products-table td:nth-child(1)::before {
+        content: "المنتج";
+    }
+
+    #inventory-products-table td:nth-child(2)::before {
+        content: "الباركود";
+    }
+
+    #inventory-products-table td:nth-child(3)::before {
+        content: "الكمية الحالية";
+    }
+}
+
+/* Inventory movement history labels */
+@media (max-width: 720px) {
+    #inventory-movement-history-table td:nth-child(1)::before {
+        content: "المنتج";
+    }
+
+    #inventory-movement-history-table td:nth-child(2)::before {
+        content: "النوع";
+    }
+
+    #inventory-movement-history-table td:nth-child(3)::before {
+        content: "الكمية";
+    }
+
+    #inventory-movement-history-table td:nth-child(4)::before {
+        content: "السبب";
+    }
+
+    #inventory-movement-history-table td:nth-child(5)::before {
+        content: "تاريخ الإنشاء";
+    }
+
+    #inventory-movement-history-table td:nth-child(6)::before {
+        content: "الحالة";
+    }
+}
+
+/* Invoice list labels */
+@media (max-width: 720px) {
+    #invoice-draft-list > table > tbody > tr.invoice-draft-row > td:nth-child(1)::before {
+        content: "الفاتورة";
+    }
+
+    #invoice-draft-list > table > tbody > tr.invoice-draft-row > td:nth-child(2)::before {
+        content: "العميل";
+    }
+
+    #invoice-draft-list > table > tbody > tr.invoice-draft-row > td:nth-child(3)::before {
+        content: "تاريخ الإنشاء";
+    }
+
+    #invoice-draft-list > table > tbody > tr.invoice-draft-row > td:nth-child(4)::before {
+        content: "تاريخ الإصدار";
+    }
+
+    #invoice-draft-list > table > tbody > tr.invoice-draft-row > td:nth-child(5)::before {
+        content: "الإجمالي";
+    }
+
+    #invoice-draft-list > table > tbody > tr.invoice-draft-row > td:nth-child(6)::before {
+        content: "الحالة";
+    }
+
+    #invoice-draft-list > table > tbody > tr.invoice-draft-row > td:nth-child(7)::before {
+        content: "الإجراءات";
+    }
+}
+
+/* Invoice line audit labels */
+@media (max-width: 720px) {
+    .invoice-line-audit-table td:nth-child(1)::before {
+        content: "نسخة المنتج";
+    }
+
+    .invoice-line-audit-table td:nth-child(2)::before {
+        content: "الكمية";
+    }
+
+    .invoice-line-audit-table td:nth-child(3)::before {
+        content: "سعر الوحدة";
+    }
+
+    .invoice-line-audit-table td:nth-child(4)::before {
+        content: "إجمالي السطر";
+    }
+
+    .invoice-line-audit-table td:nth-child(5)::before {
+        content: "حركة المخزون";
+    }
+
+    .invoice-line-audit-table td:nth-child(6)::before {
+        content: "حركة العكس";
+    }
+
+    .invoice-line-audit-table td:nth-child(7)::before {
+        content: "قابل للإرجاع";
+    }
+
+    .invoice-line-audit-table td:nth-child(8)::before {
+        content: "الإرجاع";
+    }
+
+    .invoice-line-audit-table td:nth-child(9)::before {
+        content: "سجل الإرجاع";
+    }
+}
