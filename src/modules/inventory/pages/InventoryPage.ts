@@ -55,7 +55,7 @@ export class InventoryPage extends Page {
 
     public title(): string {
 
-        return "Inventory";
+        return "المخزون";
 
     }
 
@@ -66,7 +66,7 @@ export class InventoryPage extends Page {
 
                 <div class="page-header">
 
-                    <h1>Inventory</h1>
+                    <h1>المخزون</h1>
 
                 </div>
 
@@ -74,7 +74,7 @@ export class InventoryPage extends Page {
 
                     <div class="form-group">
 
-                        <label for="inventory-product-select">Product</label>
+                        <label for="inventory-product-select">المنتج</label>
 
                         <select id="inventory-product-select" required></select>
 
@@ -82,18 +82,18 @@ export class InventoryPage extends Page {
 
                     <div class="form-group">
 
-                        <label for="inventory-movement-type">Movement type</label>
+                        <label for="inventory-movement-type">نوع الحركة</label>
 
                         <select id="inventory-movement-type" required>
-                            <option value="opening_balance">Opening balance</option>
-                            <option value="manual_adjustment">Manual adjustment</option>
+                            <option value="opening_balance">رصيد افتتاحي</option>
+                            <option value="manual_adjustment">تعديل يدوي</option>
                         </select>
 
                     </div>
 
                     <div class="form-group">
 
-                        <label for="inventory-quantity">Quantity delta</label>
+                        <label for="inventory-quantity">فرق الكمية</label>
 
                         <input
                             id="inventory-quantity"
@@ -106,14 +106,14 @@ export class InventoryPage extends Page {
 
                     <div class="form-group">
 
-                        <label for="inventory-reason">Reason</label>
+                        <label for="inventory-reason">السبب</label>
 
                         <input id="inventory-reason" type="text" required>
 
                     </div>
 
                     <button id="inventory-submit" type="submit">
-                        Save movement
+                        حفظ الحركة
                     </button>
 
                 </form>
@@ -121,21 +121,21 @@ export class InventoryPage extends Page {
                 <p id="inventory-message" role="status"></p>
 
                 <p id="inventory-current-quantity" data-current-quantity="0">
-                    Current quantity: 0
+                    الكمية الحالية: 0
                 </p>
 
                 <section id="inventory-current-stock-view">
 
-                    <h2>Current stock</h2>
+                    <h2>المخزون الحالي</h2>
 
                     <table id="inventory-products-table">
 
                         <thead>
 
                             <tr>
-                                <th>Product</th>
-                                <th>Barcode</th>
-                                <th>Current quantity</th>
+                                <th>المنتج</th>
+                                <th>الباركود</th>
+                                <th>الكمية الحالية</th>
                             </tr>
 
                         </thead>
@@ -148,19 +148,19 @@ export class InventoryPage extends Page {
 
                 <section id="inventory-movement-history-view">
 
-                    <h2>Movement history</h2>
+                    <h2>سجل الحركات</h2>
 
                     <table id="inventory-movement-history-table">
 
                         <thead>
 
                             <tr>
-                                <th>Product</th>
-                                <th>Type</th>
-                                <th>Quantity</th>
-                                <th>Reason</th>
-                                <th>Created at</th>
-                                <th>Status</th>
+                                <th>المنتج</th>
+                                <th>النوع</th>
+                                <th>الكمية</th>
+                                <th>السبب</th>
+                                <th>تاريخ الإنشاء</th>
+                                <th>الحالة</th>
                             </tr>
 
                         </thead>
@@ -224,22 +224,22 @@ export class InventoryPage extends Page {
         const reason = this.reasonInput?.value.trim() ?? "";
 
         if (!productId) {
-            this.setSubmitStatus("error", "Select a Product.");
+            this.setSubmitStatus("error", "اختر منتجاً.");
             return;
         }
 
         if (!this.isSupportedMovementType(movementType)) {
-            this.setSubmitStatus("error", "Select a supported movement type.");
+            this.setSubmitStatus("error", "اختر نوع حركة مدعوماً.");
             return;
         }
 
         if (!Number.isFinite(quantityDelta) || quantityDelta === 0) {
-            this.setSubmitStatus("error", "Quantity delta must be a non-zero number.");
+            this.setSubmitStatus("error", "فرق الكمية يجب أن يكون رقماً غير صفري.");
             return;
         }
 
         if (!reason) {
-            this.setSubmitStatus("error", "Reason is required.");
+            this.setSubmitStatus("error", "السبب مطلوب.");
             return;
         }
 
@@ -271,7 +271,7 @@ export class InventoryPage extends Page {
             this.reasonInput.value = "";
         }
 
-        this.setSubmitStatus("success", "Movement saved.");
+        this.setSubmitStatus("success", "تم حفظ الحركة.");
         this.renderInventory();
 
     }
@@ -306,7 +306,7 @@ export class InventoryPage extends Page {
         }
 
         this.productSelect.innerHTML = products.length === 0
-            ? `<option value="">No active Products</option>`
+            ? `<option value="">لا توجد منتجات نشطة</option>`
             : products.map(product => `
                 <option
                     value="${this.escapeHtml(product.id)}"
@@ -327,7 +327,7 @@ export class InventoryPage extends Page {
         if (products.length === 0) {
             this.productsBody.innerHTML = `
                 <tr>
-                    <td colspan="3">No active Products.</td>
+                    <td colspan="3">لا توجد منتجات نشطة.</td>
                 </tr>
             `;
             return;
@@ -357,7 +357,7 @@ export class InventoryPage extends Page {
         }
 
         if (!this.selectedProductId) {
-            this.currentQuantityElement.textContent = "Current quantity: 0";
+            this.currentQuantityElement.textContent = "الكمية الحالية: 0";
             this.currentQuantityElement.dataset.currentQuantity = "0";
             return;
         }
@@ -367,7 +367,7 @@ export class InventoryPage extends Page {
         );
 
         this.currentQuantityElement.textContent =
-            `Current quantity: ${this.formatNumber(currentQuantity)}`;
+            `الكمية الحالية: ${this.formatNumber(currentQuantity)}`;
         this.currentQuantityElement.dataset.currentQuantity = String(currentQuantity);
 
     }
@@ -383,7 +383,7 @@ export class InventoryPage extends Page {
         if (movements.length === 0) {
             this.movementHistoryBody.innerHTML = `
                 <tr data-empty-history="true">
-                    <td colspan="6">No stock movements.</td>
+                    <td colspan="6">لا توجد حركات مخزون.</td>
                 </tr>
             `;
             return;
@@ -423,7 +423,7 @@ export class InventoryPage extends Page {
                 <td>${this.formatNumber(movement.quantityDelta)}</td>
                 <td>${this.escapeHtml(movement.reason)}</td>
                 <td>${this.escapeHtml(this.formatDateTime(movement.createdAt))}</td>
-                <td>${isVoided ? "Voided" : "Active"}</td>
+                <td>${isVoided ? "ملغاة" : "نشطة"}</td>
             </tr>
         `;
 
@@ -464,12 +464,15 @@ export class InventoryPage extends Page {
     }
 
     private formatMovementType(value: string): string {
+        if (value === "opening_balance") {
+            return "رصيد افتتاحي";
+        }
 
-        return value
-            .split("_")
-            .map(part => part.charAt(0).toUpperCase() + part.slice(1))
-            .join(" ");
+        if (value === "manual_adjustment") {
+            return "تعديل يدوي";
+        }
 
+        return value;
     }
 
     private formatDateTime(value: string): string {

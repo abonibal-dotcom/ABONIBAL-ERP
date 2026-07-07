@@ -125,7 +125,7 @@ export class InvoiceDraftPage extends Page {
 
     public title(): string {
 
-        return "Invoices";
+        return "الفواتير";
 
     }
 
@@ -136,10 +136,10 @@ export class InvoiceDraftPage extends Page {
 
                 <div class="page-header">
 
-                    <h1>Invoices</h1>
+                    <h1>الفواتير</h1>
 
                     <button id="invoice-new-draft" type="button">
-                        New draft
+                        فاتورة جديدة
                     </button>
 
                 </div>
@@ -150,7 +150,7 @@ export class InvoiceDraftPage extends Page {
 
                     <div class="form-group">
 
-                        <label for="invoice-customer-name">Customer name</label>
+                        <label for="invoice-customer-name">اسم العميل</label>
 
                         <input id="invoice-customer-name" type="text" required>
 
@@ -158,7 +158,7 @@ export class InvoiceDraftPage extends Page {
 
                     <div class="form-group">
 
-                        <label for="invoice-product-select">Product</label>
+                        <label for="invoice-product-select">المنتج</label>
 
                         <select id="invoice-product-select" required></select>
 
@@ -166,7 +166,7 @@ export class InvoiceDraftPage extends Page {
 
                     <div class="form-group">
 
-                        <label for="invoice-quantity">Quantity</label>
+                        <label for="invoice-quantity">الكمية</label>
 
                         <input
                             id="invoice-quantity"
@@ -180,7 +180,7 @@ export class InvoiceDraftPage extends Page {
 
                     <div class="form-group">
 
-                        <label for="invoice-unit-price">Unit price</label>
+                        <label for="invoice-unit-price">سعر الوحدة</label>
 
                         <input
                             id="invoice-unit-price"
@@ -194,7 +194,7 @@ export class InvoiceDraftPage extends Page {
 
                     <div class="form-group">
 
-                        <label for="invoice-discount">Discount</label>
+                        <label for="invoice-discount">الخصم</label>
 
                         <input
                             id="invoice-discount"
@@ -208,7 +208,7 @@ export class InvoiceDraftPage extends Page {
 
                     <div class="form-group">
 
-                        <label for="invoice-tax">Tax</label>
+                        <label for="invoice-tax">الضريبة</label>
 
                         <input
                             id="invoice-tax"
@@ -222,7 +222,7 @@ export class InvoiceDraftPage extends Page {
 
                     <div class="form-group">
 
-                        <label for="invoice-notes">Notes</label>
+                        <label for="invoice-notes">ملاحظات</label>
 
                         <textarea id="invoice-notes"></textarea>
 
@@ -230,25 +230,25 @@ export class InvoiceDraftPage extends Page {
 
                     <section id="invoice-totals-preview">
 
-                        <p>Subtotal: <span id="invoice-subtotal">0</span></p>
-                        <p>Discount: <span id="invoice-total-discount">0</span></p>
-                        <p>Tax: <span id="invoice-total-tax">0</span></p>
-                        <p>Total: <span id="invoice-total">0</span></p>
+                        <p>المجموع الفرعي: <span id="invoice-subtotal">0</span></p>
+                        <p>الخصم: <span id="invoice-total-discount">0</span></p>
+                        <p>الضريبة: <span id="invoice-total-tax">0</span></p>
+                        <p>الإجمالي: <span id="invoice-total">0</span></p>
 
                     </section>
 
                     <button id="invoice-save-draft" type="submit">
-                        Save draft
+                        حفظ المسودة
                     </button>
 
                 </form>
 
                 <section id="invoice-draft-list">
 
-                    <h2>Invoices</h2>
+                    <h2>الفواتير</h2>
 
                     <p>
-                        Invoice count:
+                        عدد الفواتير:
                         <span id="invoice-draft-count">0</span>
                     </p>
 
@@ -258,13 +258,13 @@ export class InvoiceDraftPage extends Page {
 
                             <tr>
 
-                                <th>Invoice</th>
-                                <th>Customer</th>
-                                <th>Created</th>
-                                <th>Issued</th>
-                                <th>Total</th>
-                                <th>Status</th>
-                                <th>Actions</th>
+                                <th>الفاتورة</th>
+                                <th>العميل</th>
+                                <th>تاريخ الإنشاء</th>
+                                <th>تاريخ الإصدار</th>
+                                <th>الإجمالي</th>
+                                <th>الحالة</th>
+                                <th>الإجراءات</th>
 
                             </tr>
 
@@ -357,7 +357,7 @@ export class InvoiceDraftPage extends Page {
         const products = this.selectableProducts();
 
         this.productSelect.innerHTML = [
-            "<option value=\"\">Select a product</option>",
+            "<option value=\"\">اختر منتجاً</option>",
             ...products.map(product => `
                 <option
                     value="${this.escapeHtml(product.id)}"
@@ -407,7 +407,7 @@ export class InvoiceDraftPage extends Page {
         if (invoices.length === 0) {
             this.draftsBody.innerHTML = `
                 <tr>
-                    <td colspan="7">No invoices.</td>
+                    <td colspan="7">لا توجد فواتير.</td>
                 </tr>
             `;
             return;
@@ -434,7 +434,7 @@ export class InvoiceDraftPage extends Page {
                 <td>${this.escapeHtml(this.formatDateTime(invoice.createdAt))}</td>
                 <td>${this.escapeHtml(this.formatOptionalDateTime(invoice.issuedAt))}</td>
                 <td>${this.formatCurrency(invoice.total)}</td>
-                <td>${this.escapeHtml(invoice.status)}</td>
+                <td>${this.escapeHtml(this.formatInvoiceStatus(invoice.status))}</td>
                 <td>${this.renderInvoiceActions(invoice)}</td>
             </tr>
             <tr
@@ -458,15 +458,15 @@ export class InvoiceDraftPage extends Page {
             >
                 <thead>
                     <tr>
-                        <th>Product snapshot</th>
-                        <th>Quantity</th>
-                        <th>Unit price</th>
-                        <th>Line total</th>
-                        <th>Stock movement</th>
-                        <th>Reversal movement</th>
-                        <th>Remaining returnable</th>
-                        <th>Return</th>
-                        <th>Return audit</th>
+                        <th>نسخة المنتج</th>
+                        <th>الكمية</th>
+                        <th>سعر الوحدة</th>
+                        <th>إجمالي السطر</th>
+                        <th>حركة المخزون</th>
+                        <th>حركة العكس</th>
+                        <th>الكمية القابلة للإرجاع</th>
+                        <th>الإرجاع</th>
+                        <th>سجل الإرجاع</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -488,10 +488,10 @@ export class InvoiceDraftPage extends Page {
         const reversalStockMovementId =
             line.reversalStockMovementId?.trim() ?? "";
         const stockMovementDisplay = invoice.status !== "draft"
-            ? stockMovementId || "Missing movement"
-            : "Not issued";
+            ? stockMovementId || "حركة مفقودة"
+            : "غير مُصدرة";
         const reversalDisplay = invoice.status === "cancelled"
-            ? reversalStockMovementId || "Missing reversal"
+            ? reversalStockMovementId || "حركة عكس مفقودة"
             : "-";
         const remainingReturnable =
             this.remainingReturnableQuantity(invoice, line);
@@ -549,11 +549,11 @@ export class InvoiceDraftPage extends Page {
         }
 
         if (!line.stockMovementId?.trim()) {
-            return "Missing deduction";
+            return "خصم مخزون مفقود";
         }
 
         if (remainingReturnable <= 0) {
-            return "Fully returned";
+            return "مُرجع بالكامل";
         }
 
         const defaultQuantity = Math.min(1, remainingReturnable);
@@ -575,7 +575,7 @@ export class InvoiceDraftPage extends Page {
                 data-invoice-id="${this.escapeHtml(invoice.id)}"
                 data-invoice-line-id="${this.escapeHtml(line.id)}"
             >
-                Return
+                إرجاع
             </button>
         `;
 
@@ -600,10 +600,10 @@ export class InvoiceDraftPage extends Page {
             returnSummaries.push(`
                 <div class="invoice-return-audit-entry">
                     ${this.escapeHtml(invoiceReturn.returnNumber)}
-                    ${this.escapeHtml(invoiceReturn.status)}
-                    qty ${this.escapeHtml(returnLine.returnQuantity)}
-                    movement ${this.escapeHtml(
-                        returnLine.returnStockMovementId ?? "Pending movement"
+                    ${this.escapeHtml(this.formatInvoiceReturnStatus(invoiceReturn.status))}
+                    الكمية ${this.escapeHtml(returnLine.returnQuantity)}
+                    الحركة ${this.escapeHtml(
+                        returnLine.returnStockMovementId ?? "حركة معلّقة"
                     )}
                 </div>
             `);
@@ -611,7 +611,7 @@ export class InvoiceDraftPage extends Page {
 
         return returnSummaries.length > 0
             ? returnSummaries.join("")
-            : "No returns";
+            : "لا توجد مرتجعات";
 
     }
 
@@ -624,13 +624,13 @@ export class InvoiceDraftPage extends Page {
                     data-action="cancel-invoice"
                     data-invoice-id="${this.escapeHtml(invoice.id)}"
                 >
-                    Cancel
+                    إلغاء
                 </button>
             `;
         }
 
         if (invoice.status !== "draft") {
-            return `<span class="invoice-action-readonly">${this.escapeHtml(invoice.status)}</span>`;
+            return `<span class="invoice-action-readonly">${this.escapeHtml(this.formatInvoiceStatus(invoice.status))}</span>`;
         }
 
         return `
@@ -639,14 +639,14 @@ export class InvoiceDraftPage extends Page {
                 data-action="edit-invoice-draft"
                 data-invoice-id="${this.escapeHtml(invoice.id)}"
             >
-                Edit
+                تعديل
             </button>
             <button
                 type="button"
                 data-action="issue-invoice-draft"
                 data-invoice-id="${this.escapeHtml(invoice.id)}"
             >
-                Issue
+                إصدار
             </button>
         `;
 
@@ -672,8 +672,8 @@ export class InvoiceDraftPage extends Page {
 
         this.setMessage(
             this.editingInvoiceId
-                ? "Draft invoice updated."
-                : "Draft invoice saved."
+                ? "تم تحديث مسودة الفاتورة."
+                : "تم حفظ مسودة الفاتورة."
         );
         this.resetForm();
         this.renderDrafts();
@@ -691,33 +691,33 @@ export class InvoiceDraftPage extends Page {
         const tax = this.readOptionalAmount(this.taxInput);
 
         if (!customerName) {
-            errors.push("Customer name is required.");
+            errors.push("اسم العميل مطلوب.");
         }
 
         if (!product) {
-            errors.push("Product is required.");
+            errors.push("المنتج مطلوب.");
         }
 
         if (!Number.isFinite(quantity) || quantity <= 0) {
-            errors.push("Quantity must be greater than zero.");
+            errors.push("يجب أن تكون الكمية أكبر من صفر.");
         }
 
         if (!Number.isFinite(unitPrice) || unitPrice < 0) {
-            errors.push("Unit price must be zero or greater.");
+            errors.push("يجب أن يكون سعر الوحدة صفراً أو أكثر.");
         }
 
         if (!Number.isFinite(discount) || discount < 0) {
-            errors.push("Discount must be zero or greater.");
+            errors.push("يجب أن يكون الخصم صفراً أو أكثر.");
         }
 
         if (!Number.isFinite(tax) || tax < 0) {
-            errors.push("Tax must be zero or greater.");
+            errors.push("يجب أن تكون الضريبة صفراً أو أكثر.");
         }
 
         const lineTotal = (quantity * unitPrice) - discount + tax;
 
         if (Number.isFinite(lineTotal) && lineTotal < 0) {
-            errors.push("Line total cannot be negative.");
+            errors.push("لا يمكن أن يكون إجمالي السطر سالباً.");
         }
 
         if (errors.length > 0 || !product) {
@@ -760,12 +760,12 @@ export class InvoiceDraftPage extends Page {
         const line = invoice?.lines[0];
 
         if (!invoice || !line) {
-            this.setMessage("Draft invoice was not found.");
+            this.setMessage("لم يتم العثور على مسودة الفاتورة.");
             return;
         }
 
         if (invoice.status !== "draft") {
-            this.setMessage("Only draft invoices can be edited.");
+            this.setMessage("يمكن تعديل الفواتير المسودة فقط.");
             return;
         }
 
@@ -801,7 +801,7 @@ export class InvoiceDraftPage extends Page {
         }
 
         this.renderTotalsPreview();
-        this.setMessage("Editing draft invoice.");
+        this.setMessage("جارٍ تعديل مسودة الفاتورة.");
 
     }
 
@@ -817,20 +817,20 @@ export class InvoiceDraftPage extends Page {
 
         this.resetForm();
         this.renderDrafts();
-        this.setMessage("Invoice issued.");
+        this.setMessage("تم إصدار الفاتورة.");
 
     }
 
     private cancelInvoice(invoiceId: string): void {
 
-        if (!confirm("Cancel this issued invoice and reverse its stock movement?")) {
-            this.setMessage("Invoice cancellation cancelled.");
+        if (!confirm("هل تريد إلغاء هذه الفاتورة المُصدرة وعكس حركة المخزون؟")) {
+            this.setMessage("تم إلغاء عملية إلغاء الفاتورة.");
             return;
         }
 
         const result = this.invoiceService.markCancelled(
             invoiceId,
-            "User confirmed invoice cancellation"
+            "تأكيد المستخدم إلغاء الفاتورة"
         );
 
         if (!result.success || !result.invoice) {
@@ -841,7 +841,7 @@ export class InvoiceDraftPage extends Page {
 
         this.resetForm();
         this.renderDrafts();
-        this.setMessage("Invoice cancelled and stock reversed.");
+        this.setMessage("تم إلغاء الفاتورة وعكس حركة المخزون.");
 
     }
 
@@ -853,19 +853,19 @@ export class InvoiceDraftPage extends Page {
         );
 
         if (!invoice || !line) {
-            this.setMessage("Invoice line was not found.");
+            this.setMessage("لم يتم العثور على سطر الفاتورة.");
             return;
         }
 
         if (invoice.status !== "issued") {
-            this.setMessage("Only issued invoices can be returned.");
+            this.setMessage("يمكن إرجاع الفواتير المُصدرة فقط.");
             return;
         }
 
         const returnQuantity = this.readReturnQuantity(invoiceLineId);
 
         if (!Number.isFinite(returnQuantity) || returnQuantity <= 0) {
-            this.setMessage("Return quantity must be positive.");
+            this.setMessage("يجب أن تكون كمية الإرجاع أكبر من صفر.");
             return;
         }
 
@@ -877,14 +877,14 @@ export class InvoiceDraftPage extends Page {
 
         if (returnQuantity > remainingReturnable) {
             this.setMessage(
-                "Return quantity exceeds remaining returnable quantity."
+                "كمية الإرجاع تتجاوز الكمية القابلة للإرجاع."
             );
             return;
         }
 
         const createResult = this.invoiceReturnService.createReturnRecord({
             invoiceId: invoice.id,
-            reason: "Invoice return from invoice UI",
+            reason: "إرجاع فاتورة من واجهة الفواتير",
             lines: [
                 {
                     invoiceLineId: line.id,
@@ -915,7 +915,7 @@ export class InvoiceDraftPage extends Page {
 
         this.renderDrafts();
         this.setMessage(
-            `Invoice return executed. Return ${executeResult.invoiceReturn.returnNumber}. Movement ${executedLine?.returnStockMovementId ?? ""}.`
+            `تم تنفيذ إرجاع الفاتورة. رقم الإرجاع ${executeResult.invoiceReturn.returnNumber}. حركة المخزون ${executedLine?.returnStockMovementId ?? ""}.`
         );
 
     }
@@ -1108,6 +1108,38 @@ export class InvoiceDraftPage extends Page {
 
         return value ? this.formatDateTime(value) : "-";
 
+    }
+
+    private formatInvoiceStatus(value: string): string {
+        if (value === "draft") {
+            return "مسودة";
+        }
+
+        if (value === "issued") {
+            return "مُصدرة";
+        }
+
+        if (value === "cancelled") {
+            return "ملغاة";
+        }
+
+        return value;
+    }
+
+    private formatInvoiceReturnStatus(value: string): string {
+        if (value === "recorded") {
+            return "مسجل";
+        }
+
+        if (value === "executed") {
+            return "منفذ";
+        }
+
+        if (value === "voided") {
+            return "ملغى";
+        }
+
+        return value;
     }
 
     private formatDateTime(value: string): string {

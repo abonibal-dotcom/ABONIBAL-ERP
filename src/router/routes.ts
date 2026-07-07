@@ -106,7 +106,7 @@ export const navigationRoutes: NavigationRoute[] = [
 
     {
         name: "login",
-        label: "Login"
+        label: "🔐 تسجيل الدخول"
     },
 
     {
@@ -116,12 +116,12 @@ export const navigationRoutes: NavigationRoute[] = [
 
     {
         name: "inventory",
-        label: "Inventory"
+        label: "🏬 المخزون"
     },
 
     {
         name: "invoices",
-        label: "Invoices"
+        label: "🧾 الفواتير"
     },
 
 ];

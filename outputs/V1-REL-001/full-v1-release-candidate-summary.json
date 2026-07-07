@@ -1,0 +1,209 @@
+{
+  "accountIdSanitized": "abonib...0af0acc578",
+  "invoiceScopedKey": "invoices:{abonib...0af0acc578}",
+  "invoiceReturnsScopedKey": "invoiceReturns:{abonib...0af0acc578}",
+  "stockMovementScopedKey": "stockMovements:{abonib...0af0acc578}",
+  "productScopedKey": "products:{abonib...0af0acc578}",
+  "authRouteGuardResult": {
+    "loginPageRenders": true,
+    "validLoginSucceeds": true,
+    "logoutClearsAuthenticatedAccess": true,
+    "protectedRoutesBlockUnauthenticated": true,
+    "loginRouteRemainsPublic": true,
+    "routeGuardActive": true
+  },
+  "dashboardNavigationResult": {
+    "dashboardVisible": true,
+    "mainNavigationVisible": true,
+    "navigationItems": [
+      {
+        "page": "dashboard",
+        "label": "🏠 الرئيسية"
+      },
+      {
+        "page": "login",
+        "label": "Login"
+      },
+      {
+        "page": "products",
+        "label": "📦 المنتجات"
+      },
+      {
+        "page": "inventory",
+        "label": "Inventory"
+      },
+      {
+        "page": "invoices",
+        "label": "Invoices"
+      }
+    ]
+  },
+  "productRegressionResult": {
+    "productCreateWorks": true,
+    "productEditWorks": true,
+    "productSearchFilterWorks": true,
+    "productSafeDeleteWorks": true,
+    "softDeletedProductHiddenFromUi": true,
+    "productReloadPersistenceWorks": true,
+    "productQuantityPreserved": true,
+    "productCountBeforeReleaseCrud": 0,
+    "productCountAfterSafeDelete": 2
+  },
+  "inventoryRegressionResult": {
+    "inventoryPageVisible": true,
+    "manualOpeningBalanceWorks": true,
+    "manualAdjustmentWorks": true,
+    "currentStockViewRenders": true,
+    "movementHistoryRenders": true,
+    "currentQuantityAfterAdjustment": 4,
+    "currentQuantityAfterVoid": 5,
+    "currentQuantityEqualsLedger": true,
+    "voidedMovementsExcluded": true,
+    "stockAvailabilityGateCorrect": true,
+    "stockAvailabilityBlocksOverRequest": true,
+    "salesLifecycleFixtureReady": true,
+    "productQuantityNotUpdatedByInventory": true
+  },
+  "draftInvoiceId": "394e2d...2f0cc15b6f",
+  "issuedInvoiceId": "0aacb6...ed1a84ddb9",
+  "cancelledInvoiceId": "0aacb6...ed1a84ddb9",
+  "returnInvoiceId": "603288...a45d4f8944",
+  "returnedInvoiceId": "603288...a45d4f8944",
+  "saleDeductionMovementId": "513274...18e9250d7b",
+  "saleReturnCancellationMovementId": "705fc3...0e4cc4c5f0",
+  "saleReturnReturnMovementId": "c4f5dd...09281857b4",
+  "duplicateIssueResult": {
+    "blocked": true,
+    "invoiceStillIssued": true
+  },
+  "duplicateCancellationResult": {
+    "blocked": true,
+    "invoiceStillCancelled": true
+  },
+  "duplicateReturnResult": {
+    "blocked": true,
+    "returnCountStable": true,
+    "movementCountStable": true
+  },
+  "overReturnRejectionResult": true,
+  "availabilityBeforeIssue": 6,
+  "availabilityAfterIssue": 4,
+  "availabilityAfterCancellation": 6,
+  "availabilityAfterReturn": 5,
+  "availabilityAfterReload": 5,
+  "invoiceCountBefore": 0,
+  "invoiceCountAfter": 3,
+  "invoiceReturnCountBefore": 0,
+  "invoiceReturnCountAfter": 1,
+  "movementCountBefore": 3,
+  "movementCountAfter": 7,
+  "productScopedKeyHashBefore": "43aa2d04f4e6d49346a60451bfdc940b37abd88f4241f09ad9fa43ec34fc4868",
+  "productScopedKeyHashAfter": "43aa2d04f4e6d49346a60451bfdc940b37abd88f4241f09ad9fa43ec34fc4868",
+  "legacyProductKeyHashBefore": null,
+  "legacyProductKeyHashAfter": null,
+  "routeEvidence": {
+    "productsRouteWorks": true,
+    "inventoryRouteWorks": true,
+    "invoiceRouteWorks": true,
+    "invoiceRouteAccess": "protected",
+    "routeGuardActive": true
+  },
+  "draftCreateUpdateResult": {
+    "invalidDraftRejected": true,
+    "validDraftCreated": true,
+    "draftUpdated": true,
+    "draftUpdateNoMovement": true
+  },
+  "failedIssueResult": {
+    "blocked": true,
+    "remainsDraft": true,
+    "noSaleDeduction": true
+  },
+  "successfulIssueResult": {
+    "issued": true,
+    "saleDeductionCreated": true,
+    "stockMovementLinked": true,
+    "availableStockDecreased": true
+  },
+  "returnUiResult": {
+    "rendersForIssuedInvoice": true,
+    "hiddenForDraftInvoice": true,
+    "hiddenForCancelledInvoice": true,
+    "returnableLinesRender": true,
+    "remainingDisplayed": true
+  },
+  "returnExecutionResult": {
+    "invalidRejected": true,
+    "overReturnRejected": true,
+    "duplicateExcessiveRejected": true,
+    "recordCreated": true,
+    "executed": true,
+    "saleReturnCreated": true,
+    "stockMovementIdSet": true,
+    "stockMovementIdReferencesMovement": true,
+    "remainingReturnableBefore": 2,
+    "remainingReturnableAfter": 1,
+    "remainingDecreasesCorrectly": true
+  },
+  "auditViewResult": {
+    "issuedVisibleAfterReload": true,
+    "cancelledVisibleAfterReload": true,
+    "invoiceNumberVisible": true,
+    "invoiceTotalVisible": true,
+    "issuedAtVisible": true,
+    "productSnapshotVisible": true,
+    "stockMovementIdVisible": true,
+    "reversalReferenceVisible": true,
+    "reloadIssuedExists": true,
+    "reloadCancelledExists": true
+  },
+  "cancellationResult": {
+    "draftCancellationBlocked": true,
+    "issuedCancellationSucceeded": true,
+    "cancelledStatusSet": true,
+    "cancelledAtSet": true,
+    "cancelledBySet": true,
+    "saleReturnCreated": true,
+    "saleReturnPositive": true,
+    "saleReturnReferencesOriginal": true,
+    "availableStockRestored": true
+  },
+  "reloadPersistenceResult": {
+    "draftInvoices": true,
+    "issuedInvoices": true,
+    "cancelledInvoices": true,
+    "saleDeduction": true,
+    "saleReturn": true,
+    "invoiceReturn": true,
+    "returnSaleReturn": true,
+    "returnAudit": true,
+    "auditTraceability": true,
+    "availabilityMatchesLedger": true
+  },
+  "productSafetyResult": {
+    "productRecordsUnchanged": true,
+    "productQuantityBefore": 888,
+    "productQuantityAfterIssue": 888,
+    "productQuantityAfterCancellation": 888,
+    "legacyProductsUnchanged": true
+  },
+  "inventorySafetyResult": {
+    "stockMovementsOnlyExpectedChanges": true,
+    "invoicesOnlyExpectedLifecycleWrites": true,
+    "invoiceReturnsOnlyExpectedRecords": true
+  },
+  "noInvoiceHardDelete": true,
+  "consoleErrorsCount": 0,
+  "pageExceptionsCount": 0,
+  "envUntracked": true,
+  "screenshotList": [
+    "outputs/V1-REL-001/screenshots/login-page.png",
+    "outputs/V1-REL-001/screenshots/dashboard.png",
+    "outputs/V1-REL-001/screenshots/products-page.png",
+    "outputs/V1-REL-001/screenshots/inventory-page.png",
+    "outputs/V1-REL-001/screenshots/invoice-draft-page.png",
+    "outputs/V1-REL-001/screenshots/issued-invoice-audit.png",
+    "outputs/V1-REL-001/screenshots/cancelled-invoice-audit.png",
+    "outputs/V1-REL-001/screenshots/invoice-return-ui.png"
+  ]
+}

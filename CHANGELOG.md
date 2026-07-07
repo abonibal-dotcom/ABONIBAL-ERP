@@ -1,5 +1,36 @@
 # Changelog
 
+## V1-REL-001 - Full V1 Production Regression / Release Candidate
+
+- Verified the accepted V1 application as a release candidate.
+- Confirmed no application source fix was needed.
+- Verified Login, Logout, authenticated `AuthSession`, explicit `accountId`,
+  Route Guard, protected business routes, public Login route, Dashboard, and
+  main navigation.
+- Verified Product create, edit, search/filter, safe delete, scoped
+  `products:{accountId}` storage, soft-deleted Product hiding, and Product
+  persistence.
+- Verified Inventory opening balance, manual adjustment, current stock view,
+  movement history, non-destructive void exclusion, availability fulfillment,
+  and over-request blocking through `stockMovements:{accountId}`.
+- Verified invoice draft create/update, failed issue blocking, successful
+  issue, `sale_deduction`, issued audit view, duplicate issue safety,
+  cancellation, cancellation `sale_return`, and duplicate cancellation safety.
+- Verified invoice return UI, invalid return rejection, over-return rejection,
+  duplicate excessive return rejection, executed return record,
+  return `sale_return`, `returnStockMovementId`, and return audit after reload.
+- Verified storage boundaries for `products:{accountId}`,
+  `stockMovements:{accountId}`, `invoices:{accountId}`, and
+  `invoiceReturns:{accountId}`.
+- Verified reload persistence, Product safety, Inventory ledger correctness,
+  clean console, zero page exceptions, eight release screenshots, and `.env`
+  untracked.
+- Confirmed no UI redesign, no deployment, no localStorage migration, no hard
+  delete, no `Product.quantity` mutation, no Auth weakening, no Route Guard
+  weakening, no Firebase UID/accountId fallback, and no default account
+  fallback.
+- Final status: `V1-REL-001 Ready for Architect / Owner Review`.
+
 ## V1-SALES-014 - Sales Lifecycle Regression Including Returns
 
 - Verified the complete accepted Sales lifecycle including invoice returns.

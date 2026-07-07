@@ -575,6 +575,37 @@ Recommended next Sales / Invoice step:
 Architect / Owner review of V1-SALES-014 before approving the next Sales
 mission.
 
+## V1 Release Candidate Gate
+
+V1-REL-001 verified the accepted V1 application as a release candidate.
+
+Accepted verification result:
+
+- No source fix was needed.
+- Login, Logout, AuthSession, explicit `accountId`, Route Guard, Dashboard,
+  and main navigation passed.
+- Products passed create, edit, search/filter, safe delete, scoped storage,
+  soft-delete hiding, and persistence verification.
+- Inventory passed opening balance, manual adjustment, current stock view,
+  movement history, void exclusion, availability fulfillment, and over-request
+  blocking through the account-scoped Stock Movement Ledger.
+- Sales passed draft create/update, failed issue blocking, successful issue,
+  `sale_deduction`, issued audit view, cancellation, cancellation
+  `sale_return`, and duplicate safety.
+- Returns passed UI visibility rules, invalid/over-return rejection, executed
+  return record creation, return `sale_return`, `returnStockMovementId`, and
+  return audit after reload.
+- Storage boundaries passed for `products:{accountId}`,
+  `stockMovements:{accountId}`, `invoices:{accountId}`, and
+  `invoiceReturns:{accountId}`.
+- Reload persistence, Product safety, Inventory ledger correctness, clean
+  console, zero page exceptions, screenshots, and `.env` untracked all passed.
+
+Recommended next step:
+
+Architect / Owner review of V1-REL-001 before approving release packaging,
+deployment planning, or the next V1 module mission.
+
 ## Verification Expectation
 
 Each future ECS must include:

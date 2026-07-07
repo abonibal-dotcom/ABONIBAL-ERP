@@ -110,6 +110,8 @@ V1-SALES-013 Invoice Returns UI Flow is complete from execution side and ready f
 
 V1-SALES-014 Sales Lifecycle Regression Including Returns is complete from execution side and ready for Architect / Owner review.
 
+V1-REL-001 Full V1 Production Regression / Release Candidate is complete from execution side and ready for Architect / Owner review.
+
 Completed stabilization work:
 
 - `PATCH-000-ECS-001 - Route Registry Stabilization`
@@ -299,6 +301,9 @@ Completed stabilization work:
 - V1-SALES-014 verified the complete accepted Sales lifecycle including returns without requiring a source fix.
 - V1-SALES-014 verifies protected Invoice route, draft create/update, failed issue, successful issue, `sale_deduction`, issued audit view, duplicate issue safety, cancellation, cancellation `sale_return`, duplicate cancellation safety, return UI, return execution, return `sale_return`, over-return rejection, duplicate return safety, reload persistence, Product safety, Inventory ledger correctness, clean console, zero page exceptions, and `.env` untracked.
 - V1-SALES-014 did not change source files, Product CRUD behavior, Product records, `Product.quantity`, invoice hard delete behavior, Auth behavior, Route Guard behavior, localStorage migration, Firebase uid/provider user id as `accountId`, or default account fallback.
+- V1-REL-001 verified the accepted V1 application as a release candidate without requiring a source fix.
+- V1-REL-001 verifies Login, Logout, AuthSession, explicit `accountId`, Route Guard, Dashboard, navigation, Products, Inventory, invoice draft/issue/audit/cancellation, invoice returns, storage boundaries, reload persistence, Product safety, Inventory ledger correctness, clean console, zero page exceptions, eight screenshots, and `.env` untracked.
+- V1-REL-001 did not change source files, add features, redesign UI, deploy, migrate localStorage, hard-delete Products/invoices/returns/stock movements, mutate `Product.quantity`, weaken Auth, weaken Route Guard, use Firebase uid/provider user id as `accountId`, or add default account fallback.
 - Expenses are missing.
 - Safes and cash movement are missing.
 - Basic ledger is missing.
@@ -310,11 +315,11 @@ Completed stabilization work:
 
 Current mission:
 
-`V1-SALES-014 - Sales Lifecycle Regression Including Returns`
+`V1-REL-001 - Full V1 Production Regression / Release Candidate`
 
 Current next mission:
 
-V1-SALES-014 complete from execution side and ready for Architect / Owner review.
+V1-REL-001 complete from execution side and ready for Architect / Owner review.
 
 Classification:
 
@@ -322,18 +327,18 @@ Classification:
 
 Allowed scope completed:
 
-Sales lifecycle regression including invoice returns, runtime evidence, and
-documentation. No source fix was needed.
+Full V1 production regression / release-candidate verification, runtime
+evidence, visual screenshots, and documentation. No source fix was needed.
 
 Forbidden scope preserved:
 
 No source files changed, no Product CRUD behavior change, no Product quantity
 migration, no Product record mutation, no invoice hard delete, no Auth redesign,
 no Route Guard weakening, no destructive migration, no localStorage migration,
-no hardcoded credentials, no real credentials committed, and no Firebase
-uid/provider user id to `accountId` assumption.
+no hardcoded credentials, no real credentials committed, no deployment, no hard
+delete, and no Firebase uid/provider user id to `accountId` assumption.
 
 ## Next State
 
-Await Architect / Owner review for V1-SALES-014. Do not start the next mission
-until V1-SALES-014 is reviewed and accepted.
+Await Architect / Owner review for V1-REL-001. Do not start the next mission
+until V1-REL-001 is reviewed and accepted.
