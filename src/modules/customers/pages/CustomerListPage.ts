@@ -94,7 +94,7 @@ export class CustomerListPage extends Page {
                             <button id="customer-reset" type="button">إلغاء</button>
                         </div>
 
-                        <p id="customer-message" role="status"></p>
+                        <p id="customer-message" class="customer-message" role="status" aria-live="polite" hidden></p>
                     </form>
                 </section>
 
@@ -238,12 +238,12 @@ export class CustomerListPage extends Page {
         );
 
         if (!result.success) {
-            this.setMessage(result.errors.join(" "));
+            this.setMessage(result.errors.join(" "), "error");
             return;
         }
 
         this.clearForm();
-        this.setMessage("تمت إضافة العميل بنجاح.");
+        this.setMessage("تمت إضافة العميل بنجاح.", "success");
         this.renderCustomersIntoTable();
 
     }
@@ -256,12 +256,12 @@ export class CustomerListPage extends Page {
         );
 
         if (!result.success) {
-            this.setMessage(result.errors.join(" "));
+            this.setMessage(result.errors.join(" "), "error");
             return;
         }
 
         this.clearForm();
-        this.setMessage("تم تعديل العميل بنجاح.");
+        this.setMessage("تم تعديل العميل بنجاح.", "success");
         this.renderCustomersIntoTable();
 
     }
@@ -277,7 +277,7 @@ export class CustomerListPage extends Page {
         const errors = this.customerService.safeDelete(customerId);
 
         if (errors.length > 0) {
-            this.setMessage(errors.join(" "));
+            this.setMessage(errors.join(" "), "error");
             return;
         }
 
@@ -285,7 +285,7 @@ export class CustomerListPage extends Page {
             this.clearForm();
         }
 
-        this.setMessage("تم حذف العميل بأمان.");
+        this.setMessage("تم حذف العميل بأمان.", "success");
         this.renderCustomersIntoTable();
 
     }
@@ -295,7 +295,7 @@ export class CustomerListPage extends Page {
         const customer = this.customerService.find(customerId);
 
         if (!customer) {
-            this.setMessage("العميل غير موجود.");
+            this.setMessage("العميل غير موجود.", "error");
             return;
         }
 
@@ -433,11 +433,18 @@ export class CustomerListPage extends Page {
 
     }
 
-    private setMessage(message: string): void {
+    private setMessage(
+        message: string,
+        tone: "success" | "error" | "neutral" = "neutral"
+    ): void {
 
-        if (this.messageElement) {
-            this.messageElement.textContent = message;
+        if (!this.messageElement) {
+            return;
         }
+
+        this.messageElement.textContent = message;
+        this.messageElement.dataset.tone = tone;
+        this.messageElement.hidden = !message;
 
     }
 
