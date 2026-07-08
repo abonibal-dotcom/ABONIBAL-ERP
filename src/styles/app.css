@@ -843,3 +843,31 @@ body:has(#app > form) #app::before {
         content: "سجل الإرجاع";
     }
 }
+
+.customer-message {
+    margin: 12px 0 0;
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-weight: 700;
+    border: 1px solid currentColor;
+}
+
+.customer-message:empty,
+.customer-message[hidden] {
+    display: none;
+}
+
+.customer-message[data-tone="success"] {
+    color: #166534;
+    background: #dcfce7;
+}
+
+.customer-message[data-tone="error"] {
+    color: #991b1b;
+    background: #fee2e2;
+}
+
+.customer-message[data-tone="neutral"] {
+    color: #1e3a8a;
+    background: #dbeafe;
+}
