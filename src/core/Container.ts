@@ -4,6 +4,9 @@ import { Router } from "./Router";
 
 import { LocalStorageDriver } from "./persistence/LocalStorageDriver";
 
+import { CustomerRepository } from "../modules/customers/repositories/CustomerRepository";
+import { CustomerValidator } from "../modules/customers/validators/CustomerValidator";
+import { CustomerService } from "../modules/customers/services/CustomerService";
 import { ProductRepository } from "../modules/products/repositories/ProductRepository";
 import { ProductValidator } from "../modules/products/validators/ProductValidator";
 import { ProductService } from "../modules/products/services/ProductService";
@@ -33,6 +36,22 @@ export class Container {
         const driver = new LocalStorageDriver();
 
         this.register("driver", driver);
+
+        const customerRepository = new CustomerRepository(driver);
+
+        this.register("customerRepository", customerRepository);
+
+        const customerValidator = new CustomerValidator();
+
+        this.register("customerValidator", customerValidator);
+
+        const customerService = new CustomerService(
+            customerRepository,
+            customerValidator,
+            getAuthStateService()
+        );
+
+        this.register("customerService", customerService);
 
         const productRepository = new ProductRepository(driver);
 
@@ -113,9 +132,7 @@ export class Container {
     public static get<T>(name: string): T {
 
         if (!this.services.has(name)) {
-
             throw new Error(`Service "${name}" is not registered.`);
-
         }
 
         return this.services.get(name);

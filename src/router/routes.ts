@@ -4,6 +4,7 @@ import { LoginPage } from "../modules/auth/pages/LoginPage";
 
 import { InventoryPage } from "../modules/inventory/pages/InventoryPage";
 
+import { CustomerListPage } from "../modules/customers/pages/CustomerListPage";
 import { ProductListPage } from "../modules/products/pages/ProductListPage";
 import { InvoiceDraftPage } from "../modules/sales/pages/InvoiceDraftPage";
 import type { Page } from "../framework/Page";
@@ -37,6 +38,11 @@ export const routeRegistry = {
         access: "protected" as const,
     },
 
+    customers: {
+        page: CustomerListPage,
+        access: "protected" as const,
+    },
+
     inventory: {
         page: InventoryPage,
         access: "protected" as const,
@@ -58,6 +64,8 @@ export const routes: Record<RouteName, RoutePage> = {
     login: routeRegistry.login.page,
 
     products: routeRegistry.products.page,
+
+    customers: routeRegistry.customers.page,
 
     inventory: routeRegistry.inventory.page,
 
@@ -112,6 +120,11 @@ export const navigationRoutes: NavigationRoute[] = [
     {
         name: "products",
         label: "📦 المنتجات"
+    },
+
+    {
+        name: "customers",
+        label: "👥 العملاء"
     },
 
     {
