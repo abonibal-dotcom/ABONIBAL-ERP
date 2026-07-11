@@ -1,5 +1,7 @@
 import { Container } from "../../../core/Container";
 import { Page } from "../../../framework/Page";
+import type { Customer } from "../../customers/Customer";
+import type { CustomerService } from "../../customers/services/CustomerService";
 import type { Product } from "../../products/Product";
 import type { ProductService } from "../../products/services/ProductService";
 import type {
@@ -12,11 +14,13 @@ import type { InvoiceService } from "../services/InvoiceService";
 
 export class InvoiceDraftPage extends Page {
 
+    private readonly customerService: CustomerService;
     private readonly invoiceService: InvoiceService;
     private readonly invoiceReturnService: InvoiceReturnService;
     private readonly productService: ProductService;
 
     private form: HTMLFormElement | null = null;
+    private customerSelect: HTMLSelectElement | null = null;
     private customerNameInput: HTMLInputElement | null = null;
     private productSelect: HTMLSelectElement | null = null;
     private quantityInput: HTMLInputElement | null = null;
@@ -116,6 +120,7 @@ export class InvoiceDraftPage extends Page {
 
         super();
 
+        this.customerService = Container.get<CustomerService>("customerService");
         this.invoiceService = Container.get<InvoiceService>("invoiceService");
         this.invoiceReturnService =
             Container.get<InvoiceReturnService>("invoiceReturnService");
@@ -150,9 +155,17 @@ export class InvoiceDraftPage extends Page {
 
                     <div class="form-group">
 
-                        <label for="invoice-customer-name">اسم العميل</label>
+                        <label for="invoice-customer-select">العميل المسجل</label>
 
-                        <input id="invoice-customer-name" type="text" required>
+                        <select id="invoice-customer-select"></select>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="invoice-customer-name">اسم عميل يدوي اختياري</label>
+
+                        <input id="invoice-customer-name" type="text">
 
                     </div>
 
@@ -286,6 +299,7 @@ export class InvoiceDraftPage extends Page {
         this.onLeave();
 
         this.form = document.getElementById("invoice-draft-form") as HTMLFormElement | null;
+        this.customerSelect = document.getElementById("invoice-customer-select") as HTMLSelectElement | null;
         this.customerNameInput = document.getElementById("invoice-customer-name") as HTMLInputElement | null;
         this.productSelect = document.getElementById("invoice-product-select") as HTMLSelectElement | null;
         this.quantityInput = document.getElementById("invoice-quantity") as HTMLInputElement | null;
@@ -302,6 +316,7 @@ export class InvoiceDraftPage extends Page {
         this.totalElement = document.getElementById("invoice-total");
         this.draftCountElement = document.getElementById("invoice-draft-count");
 
+        this.populateCustomerOptions();
         this.populateProductOptions();
         this.renderDrafts();
         this.renderTotalsPreview();
@@ -329,6 +344,7 @@ export class InvoiceDraftPage extends Page {
         this.draftsBody?.removeEventListener("click", this.handleDraftTableClick);
 
         this.form = null;
+        this.customerSelect = null;
         this.customerNameInput = null;
         this.productSelect = null;
         this.quantityInput = null;
@@ -345,6 +361,31 @@ export class InvoiceDraftPage extends Page {
         this.totalElement = null;
         this.draftCountElement = null;
         this.editingInvoiceId = null;
+
+    }
+
+    private populateCustomerOptions(): void {
+
+        if (!this.customerSelect) {
+            return;
+        }
+
+        const customers = this.customerService.getAll();
+
+        this.customerSelect.innerHTML = [
+            "<option value=\"\">بدون عميل مسجل</option>",
+            ...customers.map(customer => {
+                const phone = customer.phone
+                    ? ` — ${customer.phone}`
+                    : "";
+
+                return `
+                <option value="${this.escapeHtml(customer.id)}">
+                    ${this.escapeHtml(customer.displayName + phone)}
+                </option>
+            `;
+            })
+        ].join("");
 
     }
 
@@ -683,16 +724,13 @@ export class InvoiceDraftPage extends Page {
     private buildDraftInput(): DraftInputResult {
 
         const errors: string[] = [];
-        const customerName = this.customerNameInput?.value.trim() ?? "";
+        const customer = this.selectedCustomer();
+        const manualCustomerName = this.customerNameInput?.value.trim() ?? "";
         const product = this.selectedProduct();
         const quantity = this.readNumber(this.quantityInput);
         const unitPrice = this.readNumber(this.unitPriceInput);
         const discount = this.readOptionalAmount(this.discountInput);
         const tax = this.readOptionalAmount(this.taxInput);
-
-        if (!customerName) {
-            errors.push("اسم العميل مطلوب.");
-        }
 
         if (!product) {
             errors.push("المنتج مطلوب.");
@@ -742,9 +780,8 @@ export class InvoiceDraftPage extends Page {
         return {
             errors: [],
             input: {
-                customerSnapshot: {
-                    displayName: customerName
-                },
+                customerId: customer?.id ?? "",
+                customerSnapshot: this.buildCustomerSnapshot(customer, manualCustomerName),
                 lines: [line],
                 discount: 0,
                 tax: 0,
@@ -772,8 +809,14 @@ export class InvoiceDraftPage extends Page {
         this.editingInvoiceId = invoice.id;
         this.setEditingInvoiceId(invoice.id);
 
+        if (this.customerSelect) {
+            this.customerSelect.value = invoice.customerId ?? "";
+        }
+
         if (this.customerNameInput) {
-            this.customerNameInput.value = this.customerDisplayName(invoice);
+            this.customerNameInput.value = invoice.customerId
+                ? ""
+                : this.customerDisplayName(invoice);
         }
 
         if (this.productSelect) {
@@ -932,6 +975,10 @@ export class InvoiceDraftPage extends Page {
             this.taxInput.value = "0";
         }
 
+        if (this.customerSelect) {
+            this.customerSelect.value = "";
+        }
+
         this.editingInvoiceId = null;
         this.setEditingInvoiceId("");
         this.populateSelectedProductPrice();
@@ -946,6 +993,53 @@ export class InvoiceDraftPage extends Page {
         if (page) {
             page.dataset.editingInvoiceId = invoiceId;
         }
+
+    }
+
+    private selectedCustomer(): Customer | null {
+
+        const customerId = this.customerSelect?.value.trim() ?? "";
+
+        if (!customerId) {
+            return null;
+        }
+
+        return this.customerService.find(customerId) ?? null;
+
+    }
+
+    private buildCustomerSnapshot(
+        customer: Customer | null,
+        manualCustomerName: string
+    ): Record<string, unknown> | null {
+
+        if (!customer) {
+            return manualCustomerName
+                ? { displayName: manualCustomerName }
+                : null;
+        }
+
+        const snapshot: Record<string, unknown> = {
+            displayName: customer.displayName
+        };
+
+        if (customer.phone) {
+            snapshot.phone = customer.phone;
+        }
+
+        if (customer.secondaryPhone) {
+            snapshot.secondaryPhone = customer.secondaryPhone;
+        }
+
+        if (customer.email) {
+            snapshot.email = customer.email;
+        }
+
+        if (customer.address) {
+            snapshot.address = customer.address;
+        }
+
+        return snapshot;
 
     }
 
@@ -1071,7 +1165,7 @@ export class InvoiceDraftPage extends Page {
             return snapshot.displayName;
         }
 
-        return "Customer";
+        return "بدون عميل";
 
     }
 
