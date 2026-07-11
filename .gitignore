@@ -7,6 +7,17 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Local environment files
+.env
+.env.*
+!.env.example
+
+# Local Firebase deployment/runtime cache
+.firebase/
+
+# Local runtime evidence/output artifacts
+outputs/
+
 node_modules
 dist
 dist-ssr
