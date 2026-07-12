@@ -85,6 +85,17 @@ export class CashMovementRepository extends Repository<CashMovement> {
 
     }
 
+    public getByTransferId(
+        accountId: string,
+        transferId: string
+    ): CashMovement[] {
+
+        return this
+            .allForAccount(accountId)
+            .filter(movement => movement.transferId === transferId);
+
+    }
+
     public updateForAccount(
         accountId: string,
         movementId: string,

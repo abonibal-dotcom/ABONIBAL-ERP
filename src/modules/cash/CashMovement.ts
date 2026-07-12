@@ -74,3 +74,15 @@ export interface CashMovementUpdateInput {
     notes?: string;
 
 }
+
+export interface CashTransferInput {
+
+    sourceSafeId: string;
+    destinationSafeId: string;
+    amount: number;
+    movementDate: string;
+    idempotencyKey: string;
+    reason: string;
+    notes?: string;
+
+}
