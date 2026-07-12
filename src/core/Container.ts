@@ -13,6 +13,9 @@ import { SupplierService } from "../modules/suppliers/services/SupplierService";
 import { PaymentRepository } from "../modules/payments/repositories/PaymentRepository";
 import { PaymentValidator } from "../modules/payments/validators/PaymentValidator";
 import { PaymentService } from "../modules/payments/services/PaymentService";
+import { PurchaseRepository } from "../modules/purchases/repositories/PurchaseRepository";
+import { PurchaseValidator } from "../modules/purchases/validators/PurchaseValidator";
+import { PurchaseService } from "../modules/purchases/services/PurchaseService";
 import { ProductRepository } from "../modules/products/repositories/ProductRepository";
 import { ProductValidator } from "../modules/products/validators/ProductValidator";
 import { ProductService } from "../modules/products/services/ProductService";
@@ -90,6 +93,22 @@ export class Container {
         );
 
         this.register("paymentService", paymentService);
+
+        const purchaseRepository = new PurchaseRepository(driver);
+
+        this.register("purchaseRepository", purchaseRepository);
+
+        const purchaseValidator = new PurchaseValidator();
+
+        this.register("purchaseValidator", purchaseValidator);
+
+        const purchaseService = new PurchaseService(
+            purchaseRepository,
+            purchaseValidator,
+            getAuthStateService()
+        );
+
+        this.register("purchaseService", purchaseService);
 
         const productRepository = new ProductRepository(driver);
 
