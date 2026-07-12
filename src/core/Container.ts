@@ -10,6 +10,9 @@ import { CustomerService } from "../modules/customers/services/CustomerService";
 import { SupplierRepository } from "../modules/suppliers/repositories/SupplierRepository";
 import { SupplierValidator } from "../modules/suppliers/validators/SupplierValidator";
 import { SupplierService } from "../modules/suppliers/services/SupplierService";
+import { PaymentRepository } from "../modules/payments/repositories/PaymentRepository";
+import { PaymentValidator } from "../modules/payments/validators/PaymentValidator";
+import { PaymentService } from "../modules/payments/services/PaymentService";
 import { ProductRepository } from "../modules/products/repositories/ProductRepository";
 import { ProductValidator } from "../modules/products/validators/ProductValidator";
 import { ProductService } from "../modules/products/services/ProductService";
@@ -71,6 +74,22 @@ export class Container {
         );
 
         this.register("supplierService", supplierService);
+
+        const paymentRepository = new PaymentRepository(driver);
+
+        this.register("paymentRepository", paymentRepository);
+
+        const paymentValidator = new PaymentValidator();
+
+        this.register("paymentValidator", paymentValidator);
+
+        const paymentService = new PaymentService(
+            paymentRepository,
+            paymentValidator,
+            getAuthStateService()
+        );
+
+        this.register("paymentService", paymentService);
 
         const productRepository = new ProductRepository(driver);
 
