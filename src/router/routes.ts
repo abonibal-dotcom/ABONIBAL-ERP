@@ -10,6 +10,7 @@ import { SupplierListPage } from "../modules/suppliers/pages/SupplierListPage";
 import { PaymentListPage } from "../modules/payments/pages/PaymentListPage";
 import { PurchaseListPage } from "../modules/purchases/pages/PurchaseListPage";
 import { ExpenseListPage } from "../modules/expenses/pages/ExpenseListPage";
+import { CashManagementPage } from "../modules/cash/pages/CashManagementPage";
 import { InvoiceDraftPage } from "../modules/sales/pages/InvoiceDraftPage";
 import type { Page } from "../framework/Page";
 
@@ -67,6 +68,11 @@ export const routeRegistry = {
         access: "protected" as const,
     },
 
+    cash: {
+        page: CashManagementPage,
+        access: "protected" as const,
+    },
+
     inventory: {
         page: InventoryPage,
         access: "protected" as const,
@@ -98,6 +104,8 @@ export const routes: Record<RouteName, RoutePage> = {
     purchases: routeRegistry.purchases.page,
 
     expenses: routeRegistry.expenses.page,
+
+    cash: routeRegistry.cash.page,
 
     inventory: routeRegistry.inventory.page,
 
@@ -187,6 +195,11 @@ export const navigationRoutes: NavigationRoute[] = [
     {
         name: "invoices",
         label: "🧾 الفواتير"
+    },
+
+    {
+        name: "cash",
+        label: "الخزائن والنقد"
     },
 
 ];
