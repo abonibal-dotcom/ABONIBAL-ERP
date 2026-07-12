@@ -8,6 +8,10 @@ export class SafeService {
     private readonly repository: SafeRepository;
     private readonly validator: SafeValidator;
     private readonly authStateService: AuthStateService;
+    private movementPolicy: SafeMovementPolicy = {
+        hasPostedMovements: () => false,
+        getCurrentBalance: () => 0
+    };
 
     public constructor(
         repository: SafeRepository,
@@ -18,6 +22,12 @@ export class SafeService {
         this.repository = repository;
         this.validator = validator;
         this.authStateService = authStateService;
+
+    }
+
+    public configureMovementPolicy(policy: SafeMovementPolicy): void {
+
+        this.movementPolicy = policy;
 
     }
 
@@ -114,6 +124,16 @@ export class SafeService {
             return failedSafeMutationResult("Safe not found.");
         }
 
+        if (
+            input.currency !== undefined
+            && normalizeCurrency(input.currency) !== currentSafe.currency
+            && this.movementPolicy.hasPostedMovements(currentSafe.id)
+        ) {
+            return failedSafeMutationResult(
+                "Safe currency cannot change after a movement is posted."
+            );
+        }
+
         const updatedAt = new Date().toISOString();
         const updatedSafe: Safe = {
             ...currentSafe,
@@ -205,6 +225,12 @@ export class SafeService {
             return successfulSafeMutationResult(currentSafe);
         }
 
+        if (Math.abs(this.movementPolicy.getCurrentBalance(currentSafe.id)) > 1e-9) {
+            return failedSafeMutationResult(
+                "Safe must have a zero balance before deactivation."
+            );
+        }
+
         const deactivatedAt = new Date().toISOString();
         const deactivatedSafe: Safe = {
             ...currentSafe,
@@ -268,6 +294,13 @@ interface SafeAccountContext {
 
     accountId: string;
     userId: string;
+
+}
+
+export interface SafeMovementPolicy {
+
+    hasPostedMovements(safeId: string): boolean;
+    getCurrentBalance(safeId: string): number;
 
 }
 

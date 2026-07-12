@@ -22,6 +22,9 @@ import { ExpenseService } from "../modules/expenses/services/ExpenseService";
 import { SafeRepository } from "../modules/cash/repositories/SafeRepository";
 import { SafeValidator } from "../modules/cash/validators/SafeValidator";
 import { SafeService } from "../modules/cash/services/SafeService";
+import { CashMovementRepository } from "../modules/cash/repositories/CashMovementRepository";
+import { CashMovementValidator } from "../modules/cash/validators/CashMovementValidator";
+import { CashMovementService } from "../modules/cash/services/CashMovementService";
 import { ProductRepository } from "../modules/products/repositories/ProductRepository";
 import { ProductValidator } from "../modules/products/validators/ProductValidator";
 import { ProductService } from "../modules/products/services/ProductService";
@@ -147,6 +150,30 @@ export class Container {
         );
 
         this.register("safeService", safeService);
+
+        const cashMovementRepository = new CashMovementRepository(driver);
+
+        this.register("cashMovementRepository", cashMovementRepository);
+
+        const cashMovementValidator = new CashMovementValidator();
+
+        this.register("cashMovementValidator", cashMovementValidator);
+
+        const cashMovementService = new CashMovementService(
+            cashMovementRepository,
+            cashMovementValidator,
+            getAuthStateService(),
+            safeService
+        );
+
+        this.register("cashMovementService", cashMovementService);
+
+        safeService.configureMovementPolicy({
+            hasPostedMovements: safeId =>
+                cashMovementService.hasPostedMovementForSafe(safeId),
+            getCurrentBalance: safeId =>
+                cashMovementService.calculateCurrentBalance(safeId)
+        });
 
         const productRepository = new ProductRepository(driver);
 
