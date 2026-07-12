@@ -6,6 +6,8 @@ import { InventoryPage } from "../modules/inventory/pages/InventoryPage";
 
 import { CustomerListPage } from "../modules/customers/pages/CustomerListPage";
 import { ProductListPage } from "../modules/products/pages/ProductListPage";
+import { SupplierListPage } from "../modules/suppliers/pages/SupplierListPage";
+import { PaymentListPage } from "../modules/payments/pages/PaymentListPage";
 import { InvoiceDraftPage } from "../modules/sales/pages/InvoiceDraftPage";
 import type { Page } from "../framework/Page";
 
@@ -43,6 +45,16 @@ export const routeRegistry = {
         access: "protected" as const,
     },
 
+    suppliers: {
+        page: SupplierListPage,
+        access: "protected" as const,
+    },
+
+    payments: {
+        page: PaymentListPage,
+        access: "protected" as const,
+    },
+
     inventory: {
         page: InventoryPage,
         access: "protected" as const,
@@ -66,6 +78,10 @@ export const routes: Record<RouteName, RoutePage> = {
     products: routeRegistry.products.page,
 
     customers: routeRegistry.customers.page,
+
+    suppliers: routeRegistry.suppliers.page,
+
+    payments: routeRegistry.payments.page,
 
     inventory: routeRegistry.inventory.page,
 
@@ -125,6 +141,16 @@ export const navigationRoutes: NavigationRoute[] = [
     {
         name: "customers",
         label: "👥 العملاء"
+    },
+
+    {
+        name: "suppliers",
+        label: "الموردون"
+    },
+
+    {
+        name: "payments",
+        label: "الدفعات"
     },
 
     {

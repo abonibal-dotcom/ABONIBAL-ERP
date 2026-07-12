@@ -7,6 +7,15 @@ import { LocalStorageDriver } from "./persistence/LocalStorageDriver";
 import { CustomerRepository } from "../modules/customers/repositories/CustomerRepository";
 import { CustomerValidator } from "../modules/customers/validators/CustomerValidator";
 import { CustomerService } from "../modules/customers/services/CustomerService";
+import { SupplierRepository } from "../modules/suppliers/repositories/SupplierRepository";
+import { SupplierValidator } from "../modules/suppliers/validators/SupplierValidator";
+import { SupplierService } from "../modules/suppliers/services/SupplierService";
+import { PaymentRepository } from "../modules/payments/repositories/PaymentRepository";
+import { PaymentValidator } from "../modules/payments/validators/PaymentValidator";
+import { PaymentService } from "../modules/payments/services/PaymentService";
+import { PurchaseRepository } from "../modules/purchases/repositories/PurchaseRepository";
+import { PurchaseValidator } from "../modules/purchases/validators/PurchaseValidator";
+import { PurchaseService } from "../modules/purchases/services/PurchaseService";
 import { ProductRepository } from "../modules/products/repositories/ProductRepository";
 import { ProductValidator } from "../modules/products/validators/ProductValidator";
 import { ProductService } from "../modules/products/services/ProductService";
@@ -52,6 +61,54 @@ export class Container {
         );
 
         this.register("customerService", customerService);
+
+        const supplierRepository = new SupplierRepository(driver);
+
+        this.register("supplierRepository", supplierRepository);
+
+        const supplierValidator = new SupplierValidator();
+
+        this.register("supplierValidator", supplierValidator);
+
+        const supplierService = new SupplierService(
+            supplierRepository,
+            supplierValidator,
+            getAuthStateService()
+        );
+
+        this.register("supplierService", supplierService);
+
+        const paymentRepository = new PaymentRepository(driver);
+
+        this.register("paymentRepository", paymentRepository);
+
+        const paymentValidator = new PaymentValidator();
+
+        this.register("paymentValidator", paymentValidator);
+
+        const paymentService = new PaymentService(
+            paymentRepository,
+            paymentValidator,
+            getAuthStateService()
+        );
+
+        this.register("paymentService", paymentService);
+
+        const purchaseRepository = new PurchaseRepository(driver);
+
+        this.register("purchaseRepository", purchaseRepository);
+
+        const purchaseValidator = new PurchaseValidator();
+
+        this.register("purchaseValidator", purchaseValidator);
+
+        const purchaseService = new PurchaseService(
+            purchaseRepository,
+            purchaseValidator,
+            getAuthStateService()
+        );
+
+        this.register("purchaseService", purchaseService);
 
         const productRepository = new ProductRepository(driver);
 
