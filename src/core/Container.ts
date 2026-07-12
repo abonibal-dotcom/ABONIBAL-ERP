@@ -7,6 +7,9 @@ import { LocalStorageDriver } from "./persistence/LocalStorageDriver";
 import { CustomerRepository } from "../modules/customers/repositories/CustomerRepository";
 import { CustomerValidator } from "../modules/customers/validators/CustomerValidator";
 import { CustomerService } from "../modules/customers/services/CustomerService";
+import { SupplierRepository } from "../modules/suppliers/repositories/SupplierRepository";
+import { SupplierValidator } from "../modules/suppliers/validators/SupplierValidator";
+import { SupplierService } from "../modules/suppliers/services/SupplierService";
 import { ProductRepository } from "../modules/products/repositories/ProductRepository";
 import { ProductValidator } from "../modules/products/validators/ProductValidator";
 import { ProductService } from "../modules/products/services/ProductService";
@@ -52,6 +55,22 @@ export class Container {
         );
 
         this.register("customerService", customerService);
+
+        const supplierRepository = new SupplierRepository(driver);
+
+        this.register("supplierRepository", supplierRepository);
+
+        const supplierValidator = new SupplierValidator();
+
+        this.register("supplierValidator", supplierValidator);
+
+        const supplierService = new SupplierService(
+            supplierRepository,
+            supplierValidator,
+            getAuthStateService()
+        );
+
+        this.register("supplierService", supplierService);
 
         const productRepository = new ProductRepository(driver);
 
