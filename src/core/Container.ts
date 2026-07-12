@@ -16,6 +16,9 @@ import { PaymentService } from "../modules/payments/services/PaymentService";
 import { PurchaseRepository } from "../modules/purchases/repositories/PurchaseRepository";
 import { PurchaseValidator } from "../modules/purchases/validators/PurchaseValidator";
 import { PurchaseService } from "../modules/purchases/services/PurchaseService";
+import { ExpenseRepository } from "../modules/expenses/repositories/ExpenseRepository";
+import { ExpenseValidator } from "../modules/expenses/validators/ExpenseValidator";
+import { ExpenseService } from "../modules/expenses/services/ExpenseService";
 import { ProductRepository } from "../modules/products/repositories/ProductRepository";
 import { ProductValidator } from "../modules/products/validators/ProductValidator";
 import { ProductService } from "../modules/products/services/ProductService";
@@ -109,6 +112,22 @@ export class Container {
         );
 
         this.register("purchaseService", purchaseService);
+
+        const expenseRepository = new ExpenseRepository(driver);
+
+        this.register("expenseRepository", expenseRepository);
+
+        const expenseValidator = new ExpenseValidator();
+
+        this.register("expenseValidator", expenseValidator);
+
+        const expenseService = new ExpenseService(
+            expenseRepository,
+            expenseValidator,
+            getAuthStateService()
+        );
+
+        this.register("expenseService", expenseService);
 
         const productRepository = new ProductRepository(driver);
 
