@@ -25,6 +25,12 @@ import { SafeService } from "../modules/cash/services/SafeService";
 import { CashMovementRepository } from "../modules/cash/repositories/CashMovementRepository";
 import { CashMovementValidator } from "../modules/cash/validators/CashMovementValidator";
 import { CashMovementService } from "../modules/cash/services/CashMovementService";
+import { LedgerAccountRepository } from "../modules/ledger/repositories/LedgerAccountRepository";
+import { LedgerAccountValidator } from "../modules/ledger/validators/LedgerAccountValidator";
+import { LedgerAccountService } from "../modules/ledger/services/LedgerAccountService";
+import { JournalEntryRepository } from "../modules/ledger/repositories/JournalEntryRepository";
+import { JournalEntryValidator } from "../modules/ledger/validators/JournalEntryValidator";
+import { JournalEntryService } from "../modules/ledger/services/JournalEntryService";
 import { ProductRepository } from "../modules/products/repositories/ProductRepository";
 import { ProductValidator } from "../modules/products/validators/ProductValidator";
 import { ProductService } from "../modules/products/services/ProductService";
@@ -173,6 +179,46 @@ export class Container {
                 cashMovementService.hasPostedMovementForSafe(safeId),
             getCurrentBalance: safeId =>
                 cashMovementService.calculateCurrentBalance(safeId)
+        });
+
+        const ledgerAccountRepository = new LedgerAccountRepository(driver);
+
+        this.register("ledgerAccountRepository", ledgerAccountRepository);
+
+        const ledgerAccountValidator = new LedgerAccountValidator();
+
+        this.register("ledgerAccountValidator", ledgerAccountValidator);
+
+        const ledgerAccountService = new LedgerAccountService(
+            ledgerAccountRepository,
+            ledgerAccountValidator,
+            getAuthStateService()
+        );
+
+        this.register("ledgerAccountService", ledgerAccountService);
+
+        const journalEntryRepository = new JournalEntryRepository(driver);
+
+        this.register("journalEntryRepository", journalEntryRepository);
+
+        const journalEntryValidator = new JournalEntryValidator();
+
+        this.register("journalEntryValidator", journalEntryValidator);
+
+        const journalEntryService = new JournalEntryService(
+            journalEntryRepository,
+            journalEntryValidator,
+            getAuthStateService(),
+            ledgerAccountService
+        );
+
+        this.register("journalEntryService", journalEntryService);
+
+        ledgerAccountService.configureUsagePolicy({
+            hasPostedUsage: ledgerAccountId =>
+                journalEntryService.hasPostedUsage(ledgerAccountId),
+            getCurrentBalance: ledgerAccountId =>
+                journalEntryService.calculateAccountBalance(ledgerAccountId)
         });
 
         const productRepository = new ProductRepository(driver);
