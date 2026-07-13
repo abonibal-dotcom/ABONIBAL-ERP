@@ -11,6 +11,7 @@ import { PaymentListPage } from "../modules/payments/pages/PaymentListPage";
 import { PurchaseListPage } from "../modules/purchases/pages/PurchaseListPage";
 import { ExpenseListPage } from "../modules/expenses/pages/ExpenseListPage";
 import { CashManagementPage } from "../modules/cash/pages/CashManagementPage";
+import { LedgerManagementPage } from "../modules/ledger/pages/LedgerManagementPage";
 import { InvoiceDraftPage } from "../modules/sales/pages/InvoiceDraftPage";
 import type { Page } from "../framework/Page";
 
@@ -73,6 +74,11 @@ export const routeRegistry = {
         access: "protected" as const,
     },
 
+    ledger: {
+        page: LedgerManagementPage,
+        access: "protected" as const,
+    },
+
     inventory: {
         page: InventoryPage,
         access: "protected" as const,
@@ -106,6 +112,8 @@ export const routes: Record<RouteName, RoutePage> = {
     expenses: routeRegistry.expenses.page,
 
     cash: routeRegistry.cash.page,
+
+    ledger: routeRegistry.ledger.page,
 
     inventory: routeRegistry.inventory.page,
 
@@ -200,6 +208,11 @@ export const navigationRoutes: NavigationRoute[] = [
     {
         name: "cash",
         label: "الخزائن والنقد"
+    },
+
+    {
+        name: "ledger",
+        label: "الدفتر المحاسبي"
     },
 
 ];
