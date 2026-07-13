@@ -16,6 +16,21 @@ import { PaymentService } from "../modules/payments/services/PaymentService";
 import { PurchaseRepository } from "../modules/purchases/repositories/PurchaseRepository";
 import { PurchaseValidator } from "../modules/purchases/validators/PurchaseValidator";
 import { PurchaseService } from "../modules/purchases/services/PurchaseService";
+import { ExpenseRepository } from "../modules/expenses/repositories/ExpenseRepository";
+import { ExpenseValidator } from "../modules/expenses/validators/ExpenseValidator";
+import { ExpenseService } from "../modules/expenses/services/ExpenseService";
+import { SafeRepository } from "../modules/cash/repositories/SafeRepository";
+import { SafeValidator } from "../modules/cash/validators/SafeValidator";
+import { SafeService } from "../modules/cash/services/SafeService";
+import { CashMovementRepository } from "../modules/cash/repositories/CashMovementRepository";
+import { CashMovementValidator } from "../modules/cash/validators/CashMovementValidator";
+import { CashMovementService } from "../modules/cash/services/CashMovementService";
+import { LedgerAccountRepository } from "../modules/ledger/repositories/LedgerAccountRepository";
+import { LedgerAccountValidator } from "../modules/ledger/validators/LedgerAccountValidator";
+import { LedgerAccountService } from "../modules/ledger/services/LedgerAccountService";
+import { JournalEntryRepository } from "../modules/ledger/repositories/JournalEntryRepository";
+import { JournalEntryValidator } from "../modules/ledger/validators/JournalEntryValidator";
+import { JournalEntryService } from "../modules/ledger/services/JournalEntryService";
 import { ProductRepository } from "../modules/products/repositories/ProductRepository";
 import { ProductValidator } from "../modules/products/validators/ProductValidator";
 import { ProductService } from "../modules/products/services/ProductService";
@@ -109,6 +124,102 @@ export class Container {
         );
 
         this.register("purchaseService", purchaseService);
+
+        const expenseRepository = new ExpenseRepository(driver);
+
+        this.register("expenseRepository", expenseRepository);
+
+        const expenseValidator = new ExpenseValidator();
+
+        this.register("expenseValidator", expenseValidator);
+
+        const expenseService = new ExpenseService(
+            expenseRepository,
+            expenseValidator,
+            getAuthStateService()
+        );
+
+        this.register("expenseService", expenseService);
+
+        const safeRepository = new SafeRepository(driver);
+
+        this.register("safeRepository", safeRepository);
+
+        const safeValidator = new SafeValidator();
+
+        this.register("safeValidator", safeValidator);
+
+        const safeService = new SafeService(
+            safeRepository,
+            safeValidator,
+            getAuthStateService()
+        );
+
+        this.register("safeService", safeService);
+
+        const cashMovementRepository = new CashMovementRepository(driver);
+
+        this.register("cashMovementRepository", cashMovementRepository);
+
+        const cashMovementValidator = new CashMovementValidator();
+
+        this.register("cashMovementValidator", cashMovementValidator);
+
+        const cashMovementService = new CashMovementService(
+            cashMovementRepository,
+            cashMovementValidator,
+            getAuthStateService(),
+            safeService
+        );
+
+        this.register("cashMovementService", cashMovementService);
+
+        safeService.configureMovementPolicy({
+            hasPostedMovements: safeId =>
+                cashMovementService.hasPostedMovementForSafe(safeId),
+            getCurrentBalance: safeId =>
+                cashMovementService.calculateCurrentBalance(safeId)
+        });
+
+        const ledgerAccountRepository = new LedgerAccountRepository(driver);
+
+        this.register("ledgerAccountRepository", ledgerAccountRepository);
+
+        const ledgerAccountValidator = new LedgerAccountValidator();
+
+        this.register("ledgerAccountValidator", ledgerAccountValidator);
+
+        const ledgerAccountService = new LedgerAccountService(
+            ledgerAccountRepository,
+            ledgerAccountValidator,
+            getAuthStateService()
+        );
+
+        this.register("ledgerAccountService", ledgerAccountService);
+
+        const journalEntryRepository = new JournalEntryRepository(driver);
+
+        this.register("journalEntryRepository", journalEntryRepository);
+
+        const journalEntryValidator = new JournalEntryValidator();
+
+        this.register("journalEntryValidator", journalEntryValidator);
+
+        const journalEntryService = new JournalEntryService(
+            journalEntryRepository,
+            journalEntryValidator,
+            getAuthStateService(),
+            ledgerAccountService
+        );
+
+        this.register("journalEntryService", journalEntryService);
+
+        ledgerAccountService.configureUsagePolicy({
+            hasPostedUsage: ledgerAccountId =>
+                journalEntryService.hasPostedUsage(ledgerAccountId),
+            getCurrentBalance: ledgerAccountId =>
+                journalEntryService.calculateAccountBalance(ledgerAccountId)
+        });
 
         const productRepository = new ProductRepository(driver);
 
