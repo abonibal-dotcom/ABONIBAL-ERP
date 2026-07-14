@@ -2,7 +2,11 @@ import { Page } from "../../../framework/Page";
 import { Container } from "../../../core/Container";
 import type { Product } from "../../products/Product";
 import type { ProductService } from "../../products/services/ProductService";
-import type { StockMovement } from "../StockMovement";
+import {
+    isLegacyVoidedStockMovement,
+    isReversalStockMovement,
+    type StockMovement
+} from "../StockMovement";
 import type { StockMovementType } from "../StockMovementType";
 import type { InventoryService } from "../services/InventoryService";
 
@@ -392,11 +396,20 @@ export class InventoryPage extends Page {
         const productsById = new Map(
             products.map(product => [product.id, product])
         );
+        const reversedMovementIds = new Set(
+            movements
+                .filter(isReversalStockMovement)
+                .map(movement => movement.reversalOfMovementId)
+                .filter((movementId): movementId is string =>
+                    Boolean(movementId)
+                )
+        );
 
         this.movementHistoryBody.innerHTML = movements
             .map(movement => this.renderMovementHistoryRow(
                 movement,
-                productsById.get(movement.productId)
+                productsById.get(movement.productId),
+                reversedMovementIds.has(movement.id)
             ))
             .join("");
 
@@ -404,11 +417,23 @@ export class InventoryPage extends Page {
 
     private renderMovementHistoryRow(
         movement: StockMovement,
-        product: Product | undefined
+        product: Product | undefined,
+        isReversed: boolean
     ): string {
 
-        const isVoided = Boolean(movement.voidedAt);
+        const isLegacyVoided = isLegacyVoidedStockMovement(movement);
+        const isReversal = isReversalStockMovement(movement);
         const productLabel = product?.name ?? movement.productId;
+        const movementReason = isReversal
+            ? `${movement.reason} (الأصل: ${movement.reversalOfMovementId ?? ""})`
+            : movement.reason;
+        const movementStatus = isLegacyVoided
+            ? "ملغاة (سجل قديم)"
+            : isReversal
+                ? "حركة عكس"
+                : isReversed
+                    ? "معكوسة"
+                    : "نشطة";
 
         return `
             <tr
@@ -416,14 +441,18 @@ export class InventoryPage extends Page {
                 data-product-id="${this.escapeHtml(movement.productId)}"
                 data-movement-type="${this.escapeHtml(movement.type)}"
                 data-quantity-delta="${this.escapeHtml(movement.quantityDelta)}"
-                data-voided="${isVoided}"
+                data-voided="${isLegacyVoided}"
+                data-legacy-voided="${isLegacyVoided}"
+                data-reversal="${isReversal}"
+                data-reversal-of="${this.escapeHtml(movement.reversalOfMovementId)}"
+                data-reversed="${isReversed}"
             >
                 <td>${this.escapeHtml(productLabel)}</td>
                 <td>${this.escapeHtml(this.formatMovementType(movement.type))}</td>
                 <td>${this.formatNumber(movement.quantityDelta)}</td>
-                <td>${this.escapeHtml(movement.reason)}</td>
+                <td>${this.escapeHtml(movementReason)}</td>
                 <td>${this.escapeHtml(this.formatDateTime(movement.createdAt))}</td>
-                <td>${isVoided ? "ملغاة" : "نشطة"}</td>
+                <td>${movementStatus}</td>
             </tr>
         `;
 
@@ -470,6 +499,10 @@ export class InventoryPage extends Page {
 
         if (value === "manual_adjustment") {
             return "تعديل يدوي";
+        }
+
+        if (value === "reversal") {
+            return "عكس حركة";
         }
 
         return value;
