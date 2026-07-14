@@ -1,7 +1,8 @@
 import type { Driver } from "../../../core/persistence/Driver";
 import {
     createPendingSyncOperation,
-    isStoredSyncOperation,
+    normalizeStoredSyncOperation,
+    type LocalApplyState,
     type SyncOperation,
     type SyncOperationInput,
     type SyncOperationStatus
@@ -26,7 +27,8 @@ export class PersistentOutboxRepository {
         }
 
         return stored
-            .filter(isStoredSyncOperation)
+            .map(normalizeStoredSyncOperation)
+            .filter((operation): operation is SyncOperation => operation !== null)
             .filter(operation => operation.accountId === normalizedAccountId);
     }
 
@@ -82,11 +84,127 @@ export class PersistentOutboxRepository {
         return this
             .allForAccount(accountId)
             .filter(operation => operation.status === "pending")
+            .filter(operation => operation.localApplyState === "applied")
             .filter(operation =>
                 !operation.nextAttemptAt
                 || operation.nextAttemptAt <= normalizedNow
             )
             .sort((left, right) => left.createdAt.localeCompare(right.createdAt));
+    }
+
+    public getPendingLocalApply(accountId: string): SyncOperation[] {
+        return this
+            .allForAccount(accountId)
+            .filter(operation => operation.localApplyState === "pending")
+            .sort((left, right) => left.createdAt.localeCompare(right.createdAt));
+    }
+
+    public markLocalApplyAttempt(
+        accountId: string,
+        operationId: string,
+        attemptedAt: string
+    ): SyncOperation {
+        return this.updateLocalApply(
+            accountId,
+            operationId,
+            ["pending"],
+            operation => ({
+                ...operation,
+                localApplyAttemptCount: operation.localApplyAttemptCount + 1,
+                localApplyLastAttemptAt: requireText(
+                    attemptedAt,
+                    "localApplyLastAttemptAt"
+                ),
+                localApplyErrorCode: undefined,
+                localApplyErrorMessageSafe: undefined
+            })
+        );
+    }
+
+    public markLocallyApplied(
+        accountId: string,
+        operationId: string,
+        appliedAt: string
+    ): SyncOperation {
+        const current = this.findByOperationId(accountId, operationId);
+
+        if (current?.localApplyState === "applied") {
+            return current;
+        }
+
+        return this.updateLocalApply(
+            accountId,
+            operationId,
+            ["pending"],
+            operation => ({
+                ...operation,
+                localApplyState: "applied",
+                localAppliedAt: requireText(appliedAt, "localAppliedAt"),
+                localApplyErrorCode: undefined,
+                localApplyErrorMessageSafe: undefined
+            })
+        );
+    }
+
+    public markLocalApplyConflict(
+        accountId: string,
+        operationId: string,
+        errorCode: string,
+        messageSafe: string
+    ): SyncOperation {
+        return this.updateLocalApply(
+            accountId,
+            operationId,
+            ["pending"],
+            operation => ({
+                ...operation,
+                localApplyState: "conflict",
+                localApplyErrorCode: requireText(errorCode, "localApplyErrorCode"),
+                localApplyErrorMessageSafe: requireText(
+                    messageSafe,
+                    "localApplyErrorMessageSafe"
+                )
+            })
+        );
+    }
+
+    public markLocalApplyFailed(
+        accountId: string,
+        operationId: string,
+        errorCode: string,
+        messageSafe: string
+    ): SyncOperation {
+        return this.updateLocalApply(
+            accountId,
+            operationId,
+            ["pending"],
+            operation => ({
+                ...operation,
+                localApplyState: "failed",
+                localApplyErrorCode: requireText(errorCode, "localApplyErrorCode"),
+                localApplyErrorMessageSafe: requireText(
+                    messageSafe,
+                    "localApplyErrorMessageSafe"
+                )
+            })
+        );
+    }
+
+    public resetRecoverableLocalApply(
+        accountId: string,
+        operationId: string
+    ): SyncOperation {
+        return this.updateLocalApply(
+            accountId,
+            operationId,
+            ["failed"],
+            operation => ({
+                ...operation,
+                localApplyState: "pending",
+                localApplyErrorCode: undefined,
+                localApplyErrorMessageSafe: undefined
+            })
+        );
     }
 
     public markSyncing(
@@ -98,15 +216,21 @@ export class PersistentOutboxRepository {
             accountId,
             operationId,
             ["pending"],
-            operation => ({
-                ...operation,
-                status: "syncing",
-                attemptCount: operation.attemptCount + 1,
-                lastAttemptAt: requireText(attemptedAt, "attemptedAt"),
-                nextAttemptAt: undefined,
-                errorCode: undefined,
-                errorMessageSafe: undefined
-            })
+            operation => {
+                if (operation.localApplyState !== "applied") {
+                    throw new Error("Cloud sync requires a locally applied operation.");
+                }
+
+                return {
+                    ...operation,
+                    status: "syncing",
+                    attemptCount: operation.attemptCount + 1,
+                    lastAttemptAt: requireText(attemptedAt, "attemptedAt"),
+                    nextAttemptAt: undefined,
+                    errorCode: undefined,
+                    errorMessageSafe: undefined
+                };
+            }
         );
     }
 
@@ -275,6 +399,16 @@ export class PersistentOutboxRepository {
             .length;
     }
 
+    public countByLocalApplyState(
+        accountId: string,
+        state: LocalApplyState
+    ): number {
+        return this
+            .allForAccount(accountId)
+            .filter(operation => operation.localApplyState === state)
+            .length;
+    }
+
     private update(
         accountId: string,
         operationId: string,
@@ -306,6 +440,39 @@ export class PersistentOutboxRepository {
         return updated;
     }
 
+    private updateLocalApply(
+        accountId: string,
+        operationId: string,
+        allowedStates: LocalApplyState[],
+        updater: (operation: SyncOperation) => SyncOperation
+    ): SyncOperation {
+        const normalizedAccountId = normalizeAccountId(accountId);
+        const normalizedOperationId = requireText(operationId, "operationId");
+        const operations = this.allForAccount(normalizedAccountId);
+        const operationIndex = operations.findIndex(
+            operation => operation.operationId === normalizedOperationId
+        );
+
+        if (operationIndex === -1) {
+            throw new Error("Sync operation was not found.");
+        }
+
+        const operation = operations[operationIndex];
+
+        if (!allowedStates.includes(operation.localApplyState)) {
+            throw new Error(
+                `Local apply cannot transition from ${operation.localApplyState}.`
+            );
+        }
+
+        const updated = updater(operation);
+
+        operations[operationIndex] = updated;
+        this.save(normalizedAccountId, operations);
+
+        return updated;
+    }
+
     private save(accountId: string, operations: SyncOperation[]): void {
         this.driver.write<SyncOperation[]>(
             syncOutboxKeyForAccount(accountId),
@@ -323,7 +490,9 @@ function hasSameIdentity(
         && operation.module === input.module
         && operation.recordId === input.recordId.trim()
         && operation.operationType === input.operationType
-        && operation.idempotencyKey === input.idempotencyKey.trim();
+        && operation.expectedRevision === input.expectedRevision
+        && operation.idempotencyKey === input.idempotencyKey.trim()
+        && operation.writeSetChecksum === input.writeSetChecksum?.trim();
 }
 
 function normalizeAccountId(accountId: string): string {

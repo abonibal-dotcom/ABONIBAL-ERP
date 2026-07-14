@@ -36,6 +36,15 @@ export const syncOperationStatuses = [
 
 export type SyncOperationStatus = typeof syncOperationStatuses[number];
 
+export const localApplyStates = [
+    "pending",
+    "applied",
+    "conflict",
+    "failed"
+] as const;
+
+export type LocalApplyState = typeof localApplyStates[number];
+
 export interface SyncPayloadReference {
     storageKey: string;
     checksum?: string;
@@ -53,6 +62,12 @@ export interface SyncOperation {
     safePayload?: unknown;
     payloadReference?: SyncPayloadReference;
     createdAt: string;
+    localApplyState: LocalApplyState;
+    localAppliedAt?: string;
+    localApplyAttemptCount: number;
+    localApplyLastAttemptAt?: string;
+    localApplyErrorCode?: string;
+    localApplyErrorMessageSafe?: string;
     attemptCount: number;
     lastAttemptAt?: string;
     nextAttemptAt?: string;
@@ -127,6 +142,8 @@ export function createPendingSyncOperation(
             : {}),
         ...(payloadReference ? { payloadReference } : {}),
         createdAt,
+        localApplyState: "pending",
+        localApplyAttemptCount: 0,
         attemptCount: 0,
         status: "pending"
     };
@@ -151,14 +168,25 @@ export function isSyncOperationStatus(
         && syncOperationStatuses.some(status => status === value);
 }
 
+export function isLocalApplyState(value: unknown): value is LocalApplyState {
+    return typeof value === "string"
+        && localApplyStates.some(state => state === value);
+}
+
 export function isStoredSyncOperation(value: unknown): value is SyncOperation {
+    return normalizeStoredSyncOperation(value) !== null;
+}
+
+export function normalizeStoredSyncOperation(
+    value: unknown
+): SyncOperation | null {
     if (!value || typeof value !== "object" || Array.isArray(value)) {
-        return false;
+        return null;
     }
 
     const operation = value as Partial<SyncOperation>;
 
-    return isNonEmptyText(operation.operationId)
+    const baseIsValid = isNonEmptyText(operation.operationId)
         && isNonEmptyText(operation.accountId)
         && isSyncModule(operation.module)
         && isNonEmptyText(operation.recordId)
@@ -172,6 +200,31 @@ export function isStoredSyncOperation(value: unknown): value is SyncOperation {
         && Number.isInteger(operation.attemptCount)
         && (operation.attemptCount as number) >= 0
         && isSyncOperationStatus(operation.status);
+
+    if (!baseIsValid) {
+        return null;
+    }
+
+    const localApplyState = operation.localApplyState === undefined
+        ? "pending"
+        : operation.localApplyState;
+    const localApplyAttemptCount = operation.localApplyAttemptCount === undefined
+        ? 0
+        : operation.localApplyAttemptCount;
+
+    if (
+        !isLocalApplyState(localApplyState)
+        || !Number.isInteger(localApplyAttemptCount)
+        || localApplyAttemptCount < 0
+    ) {
+        return null;
+    }
+
+    return {
+        ...(operation as SyncOperation),
+        localApplyState,
+        localApplyAttemptCount
+    };
 }
 
 function normalizePayloadReference(

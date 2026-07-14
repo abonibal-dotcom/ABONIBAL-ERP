@@ -51,6 +51,9 @@ import { PersistentOutboxRepository } from "../modules/sync/repositories/Persist
 import { SyncConflictRepository } from "../modules/sync/repositories/SyncConflictRepository";
 import { SyncReceiptRepository } from "../modules/sync/repositories/SyncReceiptRepository";
 import { ListenerCoordinator } from "../modules/sync/services/ListenerCoordinator";
+import { DurableMutationCapture } from "../modules/sync/services/DurableMutationCapture";
+import { LocalMutationApplierRegistry } from "../modules/sync/services/LocalMutationApplierRegistry";
+import { LocalMutationReconciler } from "../modules/sync/services/LocalMutationReconciler";
 import { RetryPolicy } from "../modules/sync/services/RetryPolicy";
 import { SyncCoordinator } from "../modules/sync/services/SyncCoordinator";
 import { SyncEchoPolicy } from "../modules/sync/services/SyncEchoPolicy";
@@ -309,6 +312,15 @@ export class Container {
         const syncStatusService = new SyncStatusService();
         const syncRetryPolicy = new RetryPolicy();
         const syncListenerCoordinator = new ListenerCoordinator();
+        const localMutationApplierRegistry = new LocalMutationApplierRegistry();
+        const durableMutationCapture = new DurableMutationCapture(
+            syncOutboxRepository
+        );
+        const localMutationReconciler = new LocalMutationReconciler(
+            syncOutboxRepository,
+            localMutationApplierRegistry,
+            durableMutationCapture
+        );
         const syncEchoPolicy = new SyncEchoPolicy();
         const firebaseRealtimeClient = new FirebaseRealtimeClient(() => {
             const firebaseApp = getFirebaseApp();
@@ -327,6 +339,9 @@ export class Container {
             syncOperationTransport,
             getAuthStateService()
         );
+        syncCoordinator.configureLocalMutationReconciler(
+            localMutationReconciler
+        );
 
         this.register("syncOutboxRepository", syncOutboxRepository);
         this.register("syncReceiptRepository", syncReceiptRepository);
@@ -335,6 +350,9 @@ export class Container {
         this.register("syncStatusService", syncStatusService);
         this.register("syncRetryPolicy", syncRetryPolicy);
         this.register("syncListenerCoordinator", syncListenerCoordinator);
+        this.register("localMutationApplierRegistry", localMutationApplierRegistry);
+        this.register("durableMutationCapture", durableMutationCapture);
+        this.register("localMutationReconciler", localMutationReconciler);
         this.register("syncEchoPolicy", syncEchoPolicy);
         this.register("firebaseRealtimeClient", firebaseRealtimeClient);
         this.register("syncOperationTransport", syncOperationTransport);

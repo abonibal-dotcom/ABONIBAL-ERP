@@ -214,11 +214,23 @@ function operationInput(
 }
 
 function enableMigration(harness: Harness): void {
+    for (const operation of harness.outbox.getPendingLocalApply(accountA)) {
+        markLocalApplied(harness.outbox, operation.operationId);
+    }
+
     harness.mode.enterMigration({
         ownerApproved: true,
         migrationId: "smoke-migration"
     });
     harness.coordinator.start();
+}
+
+function markLocalApplied(
+    outbox: PersistentOutboxRepository,
+    operationId: string
+): void {
+    outbox.markLocalApplyAttempt(accountA, operationId, nowA);
+    outbox.markLocallyApplied(accountA, operationId, nowA);
 }
 
 function assert(condition: unknown, message: string): asserts condition {
@@ -288,6 +300,7 @@ const checks: Array<{ name: string; run: () => void | Promise<void> }> = [
             const harness = createHarness();
 
             harness.outbox.enqueue(accountA, operationInput("syncing"));
+            markLocalApplied(harness.outbox, "syncing");
             const syncing = harness.outbox.markSyncing(accountA, "syncing", nowA);
             assert(syncing.status === "syncing", "Operation did not enter syncing state.");
             assert(syncing.attemptCount === 1 && syncing.lastAttemptAt === nowA, "Sync attempt metadata is incorrect.");
@@ -390,6 +403,7 @@ const checks: Array<{ name: string; run: () => void | Promise<void> }> = [
             const harness = createHarness();
 
             harness.outbox.enqueue(accountA, operationInput("interrupted"));
+            markLocalApplied(harness.outbox, "interrupted");
             harness.outbox.markSyncing(accountA, "interrupted", nowA);
             harness.coordinator.start();
             const recovered = harness.outbox.findByOperationId(accountA, "interrupted");
@@ -403,6 +417,7 @@ const checks: Array<{ name: string; run: () => void | Promise<void> }> = [
             const harness = createHarness();
 
             harness.outbox.enqueue(accountA, operationInput("receipt-recovery"));
+            markLocalApplied(harness.outbox, "receipt-recovery");
             harness.outbox.markSyncing(accountA, "receipt-recovery", nowA);
             harness.receipts.save({
                 operationId: "receipt-recovery",

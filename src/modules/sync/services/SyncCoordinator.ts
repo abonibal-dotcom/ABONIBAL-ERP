@@ -10,6 +10,7 @@ import type { PersistentOutboxRepository } from "../repositories/PersistentOutbo
 import type { SyncConflictRepository } from "../repositories/SyncConflictRepository";
 import type { SyncReceiptRepository } from "../repositories/SyncReceiptRepository";
 import type { ListenerCoordinator } from "./ListenerCoordinator";
+import type { LocalMutationReconciler } from "./LocalMutationReconciler";
 import type { RetryPolicy } from "./RetryPolicy";
 import type { SyncModeService } from "./SyncModeService";
 import type { SyncStatusService } from "./SyncStatusService";
@@ -29,6 +30,8 @@ export class SyncCoordinator {
     private readonly clock: SyncClock;
     private readonly unsubscribeAuth: () => void;
     private readonly unsubscribeMode: () => void;
+
+    private localMutationReconciler: LocalMutationReconciler | null = null;
 
     private currentAccountId: string | null = null;
     private paused = false;
@@ -85,12 +88,27 @@ export class SyncCoordinator {
             accountId,
             this.clock()
         );
+        this.localMutationReconciler?.start(accountId);
+        this.localMutationReconciler?.reconcilePending(accountId);
         this.refreshCounts();
         this.updateReadyState();
     }
 
+    public configureLocalMutationReconciler(
+        reconciler: LocalMutationReconciler
+    ): void {
+        this.ensureNotDisposed();
+
+        if (this.localMutationReconciler) {
+            throw new Error("Local mutation reconciler is already configured.");
+        }
+
+        this.localMutationReconciler = reconciler;
+    }
+
     public stop(): void {
         this.listenerCoordinator.unsubscribeAll();
+        this.localMutationReconciler?.stop();
         this.currentAccountId = null;
         this.paused = false;
         this.statusService.update({
@@ -98,7 +116,10 @@ export class SyncCoordinator {
             accountResolved: false,
             pendingCount: 0,
             conflictCount: 0,
-            failedCount: 0
+            failedCount: 0,
+            pendingLocalApplyCount: 0,
+            localApplyConflictCount: 0,
+            localApplyFailedCount: 0
         });
     }
 
@@ -150,7 +171,7 @@ export class SyncCoordinator {
 
         if (!operation) {
             this.refreshCounts();
-            this.statusService.update({ state: "idle" });
+            this.updateReadyState();
             return false;
         }
 
@@ -508,6 +529,18 @@ export class SyncCoordinator {
             pendingCount: this.outboxRepository.countByStatus(accountId, "pending"),
             conflictCount: this.outboxRepository.countByStatus(accountId, "conflict"),
             failedCount: this.outboxRepository.countByStatus(accountId, "failed"),
+            pendingLocalApplyCount: this.outboxRepository.countByLocalApplyState(
+                accountId,
+                "pending"
+            ),
+            localApplyConflictCount: this.outboxRepository.countByLocalApplyState(
+                accountId,
+                "conflict"
+            ),
+            localApplyFailedCount: this.outboxRepository.countByLocalApplyState(
+                accountId,
+                "failed"
+            ),
             accountResolved: true
         });
     }
@@ -527,6 +560,16 @@ export class SyncCoordinator {
 
         if (status.connectivity === "offline") {
             this.statusService.update({ state: "offline" });
+            return;
+        }
+
+        if (status.localApplyConflictCount > 0) {
+            this.statusService.update({ state: "conflict" });
+            return;
+        }
+
+        if (status.localApplyFailedCount > 0) {
+            this.statusService.update({ state: "error" });
             return;
         }
 
