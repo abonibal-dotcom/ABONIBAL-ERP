@@ -43,7 +43,20 @@ import { InvoiceService } from "../modules/sales/services/InvoiceService";
 import { InvoiceReturnRepository } from "../modules/sales/repositories/InvoiceReturnRepository";
 import { InvoiceReturnValidator } from "../modules/sales/validators/InvoiceReturnValidator";
 import { InvoiceReturnService } from "../modules/sales/services/InvoiceReturnService";
+import { getDatabase } from "firebase/database";
 import { getAuthStateService } from "../modules/auth/AuthRuntime";
+import { getFirebaseApp } from "../modules/auth/firebase/FirebaseAuthClient";
+import { FirebaseRealtimeClient } from "../modules/sync/firebase/FirebaseRealtimeClient";
+import { PersistentOutboxRepository } from "../modules/sync/repositories/PersistentOutboxRepository";
+import { SyncConflictRepository } from "../modules/sync/repositories/SyncConflictRepository";
+import { SyncReceiptRepository } from "../modules/sync/repositories/SyncReceiptRepository";
+import { ListenerCoordinator } from "../modules/sync/services/ListenerCoordinator";
+import { RetryPolicy } from "../modules/sync/services/RetryPolicy";
+import { SyncCoordinator } from "../modules/sync/services/SyncCoordinator";
+import { SyncEchoPolicy } from "../modules/sync/services/SyncEchoPolicy";
+import { SyncModeService } from "../modules/sync/services/SyncModeService";
+import { SyncStatusService } from "../modules/sync/services/SyncStatusService";
+import { UnconfiguredSyncOperationTransport } from "../modules/sync/services/UnconfiguredSyncOperationTransport";
 
 export class Container {
 
@@ -288,6 +301,44 @@ export class Container {
         );
 
         this.register("invoiceReturnService", invoiceReturnService);
+
+        const syncOutboxRepository = new PersistentOutboxRepository(driver);
+        const syncReceiptRepository = new SyncReceiptRepository(driver);
+        const syncConflictRepository = new SyncConflictRepository(driver);
+        const syncModeService = new SyncModeService();
+        const syncStatusService = new SyncStatusService();
+        const syncRetryPolicy = new RetryPolicy();
+        const syncListenerCoordinator = new ListenerCoordinator();
+        const syncEchoPolicy = new SyncEchoPolicy();
+        const firebaseRealtimeClient = new FirebaseRealtimeClient(() => {
+            const firebaseApp = getFirebaseApp();
+
+            return firebaseApp ? getDatabase(firebaseApp) : null;
+        });
+        const syncOperationTransport = new UnconfiguredSyncOperationTransport();
+        const syncCoordinator = new SyncCoordinator(
+            syncModeService,
+            syncOutboxRepository,
+            syncReceiptRepository,
+            syncConflictRepository,
+            syncRetryPolicy,
+            syncListenerCoordinator,
+            syncStatusService,
+            syncOperationTransport,
+            getAuthStateService()
+        );
+
+        this.register("syncOutboxRepository", syncOutboxRepository);
+        this.register("syncReceiptRepository", syncReceiptRepository);
+        this.register("syncConflictRepository", syncConflictRepository);
+        this.register("syncModeService", syncModeService);
+        this.register("syncStatusService", syncStatusService);
+        this.register("syncRetryPolicy", syncRetryPolicy);
+        this.register("syncListenerCoordinator", syncListenerCoordinator);
+        this.register("syncEchoPolicy", syncEchoPolicy);
+        this.register("firebaseRealtimeClient", firebaseRealtimeClient);
+        this.register("syncOperationTransport", syncOperationTransport);
+        this.register("syncCoordinator", syncCoordinator);
 
     }
 
