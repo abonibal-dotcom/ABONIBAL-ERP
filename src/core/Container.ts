@@ -5,9 +5,13 @@ import { Router } from "./Router";
 import { LocalStorageDriver } from "./persistence/LocalStorageDriver";
 
 import { CustomerRepository } from "../modules/customers/repositories/CustomerRepository";
+import { CustomerSyncRepository } from "../modules/customers/repositories/CustomerSyncRepository";
+import { customerSyncCodec } from "../modules/customers/sync/CustomerSyncCodec";
 import { CustomerValidator } from "../modules/customers/validators/CustomerValidator";
 import { CustomerService } from "../modules/customers/services/CustomerService";
 import { SupplierRepository } from "../modules/suppliers/repositories/SupplierRepository";
+import { SupplierSyncRepository } from "../modules/suppliers/repositories/SupplierSyncRepository";
+import { supplierSyncCodec } from "../modules/suppliers/sync/SupplierSyncCodec";
 import { SupplierValidator } from "../modules/suppliers/validators/SupplierValidator";
 import { SupplierService } from "../modules/suppliers/services/SupplierService";
 import { PaymentRepository } from "../modules/payments/repositories/PaymentRepository";
@@ -32,6 +36,8 @@ import { JournalEntryRepository } from "../modules/ledger/repositories/JournalEn
 import { JournalEntryValidator } from "../modules/ledger/validators/JournalEntryValidator";
 import { JournalEntryService } from "../modules/ledger/services/JournalEntryService";
 import { ProductRepository } from "../modules/products/repositories/ProductRepository";
+import { ProductSyncRepository } from "../modules/products/repositories/ProductSyncRepository";
+import { productSyncCodec } from "../modules/products/sync/ProductSyncCodec";
 import { ProductValidator } from "../modules/products/validators/ProductValidator";
 import { ProductService } from "../modules/products/services/ProductService";
 import { StockMovementRepository } from "../modules/inventory/repositories/StockMovementRepository";
@@ -48,18 +54,22 @@ import { getAuthStateService } from "../modules/auth/AuthRuntime";
 import { getFirebaseApp } from "../modules/auth/firebase/FirebaseAuthClient";
 import { FirebaseRealtimeClient } from "../modules/sync/firebase/FirebaseRealtimeClient";
 import { PersistentOutboxRepository } from "../modules/sync/repositories/PersistentOutboxRepository";
+import { MasterDataSyncStateRepository } from "../modules/sync/repositories/MasterDataSyncStateRepository";
 import { SyncConflictRepository } from "../modules/sync/repositories/SyncConflictRepository";
 import { SyncReceiptRepository } from "../modules/sync/repositories/SyncReceiptRepository";
 import { ListenerCoordinator } from "../modules/sync/services/ListenerCoordinator";
 import { DurableMutationCapture } from "../modules/sync/services/DurableMutationCapture";
 import { LocalMutationApplierRegistry } from "../modules/sync/services/LocalMutationApplierRegistry";
 import { LocalMutationReconciler } from "../modules/sync/services/LocalMutationReconciler";
+import { MasterDataLocalMutationApplier } from "../modules/sync/master-data/MasterDataLocalMutationApplier";
+import { MasterDataModuleSyncAdapter } from "../modules/sync/master-data/MasterDataModuleSyncAdapter";
+import { MasterDataSyncOperationTransport } from "../modules/sync/master-data/MasterDataSyncOperationTransport";
+import { MasterDataSyncRepositoryBridge } from "../modules/sync/master-data/MasterDataSyncRepositoryBridge";
 import { RetryPolicy } from "../modules/sync/services/RetryPolicy";
 import { SyncCoordinator } from "../modules/sync/services/SyncCoordinator";
 import { SyncEchoPolicy } from "../modules/sync/services/SyncEchoPolicy";
 import { SyncModeService } from "../modules/sync/services/SyncModeService";
 import { SyncStatusService } from "../modules/sync/services/SyncStatusService";
-import { UnconfiguredSyncOperationTransport } from "../modules/sync/services/UnconfiguredSyncOperationTransport";
 
 export class Container {
 
@@ -77,9 +87,100 @@ export class Container {
 
         this.register("driver", driver);
 
-        const customerRepository = new CustomerRepository(driver);
+        const syncOutboxRepository = new PersistentOutboxRepository(driver);
+        const syncReceiptRepository = new SyncReceiptRepository(driver);
+        const syncConflictRepository = new SyncConflictRepository(driver);
+        const masterDataSyncStateRepository = new MasterDataSyncStateRepository(driver);
+        const syncModeService = new SyncModeService();
+        const syncStatusService = new SyncStatusService();
+        const syncRetryPolicy = new RetryPolicy();
+        const syncListenerCoordinator = new ListenerCoordinator();
+        const localMutationApplierRegistry = new LocalMutationApplierRegistry();
+        const durableMutationCapture = new DurableMutationCapture(
+            syncOutboxRepository
+        );
+        const localMutationReconciler = new LocalMutationReconciler(
+            syncOutboxRepository,
+            localMutationApplierRegistry,
+            durableMutationCapture
+        );
+        const syncEchoPolicy = new SyncEchoPolicy();
+        const firebaseRealtimeClient = new FirebaseRealtimeClient(() => {
+            const firebaseApp = getFirebaseApp();
 
+            return firebaseApp ? getDatabase(firebaseApp) : null;
+        });
+        const syncOperationTransport = new MasterDataSyncOperationTransport(
+            firebaseRealtimeClient,
+            () => getFirebaseApp()?.options.projectId ?? null
+        );
+        const syncCoordinator = new SyncCoordinator(
+            syncModeService,
+            syncOutboxRepository,
+            syncReceiptRepository,
+            syncConflictRepository,
+            syncRetryPolicy,
+            syncListenerCoordinator,
+            syncStatusService,
+            syncOperationTransport,
+            getAuthStateService()
+        );
+        syncCoordinator.configureLocalMutationReconciler(
+            localMutationReconciler
+        );
+
+        this.register("syncOutboxRepository", syncOutboxRepository);
+        this.register("syncReceiptRepository", syncReceiptRepository);
+        this.register("syncConflictRepository", syncConflictRepository);
+        this.register("masterDataSyncStateRepository", masterDataSyncStateRepository);
+        this.register("syncModeService", syncModeService);
+        this.register("syncStatusService", syncStatusService);
+        this.register("syncRetryPolicy", syncRetryPolicy);
+        this.register("syncListenerCoordinator", syncListenerCoordinator);
+        this.register("localMutationApplierRegistry", localMutationApplierRegistry);
+        this.register("durableMutationCapture", durableMutationCapture);
+        this.register("localMutationReconciler", localMutationReconciler);
+        this.register("syncEchoPolicy", syncEchoPolicy);
+        this.register("firebaseRealtimeClient", firebaseRealtimeClient);
+        this.register("syncOperationTransport", syncOperationTransport);
+        this.register("syncCoordinator", syncCoordinator);
+
+        const customerCacheRepository = new CustomerRepository(driver);
+        const customerLocalMutationApplier = new MasterDataLocalMutationApplier(
+            customerCacheRepository,
+            masterDataSyncStateRepository,
+            customerSyncCodec
+        );
+        localMutationApplierRegistry.register(customerLocalMutationApplier);
+        const customerSyncBridge = new MasterDataSyncRepositoryBridge(
+            customerCacheRepository,
+            syncModeService,
+            durableMutationCapture,
+            customerLocalMutationApplier,
+            masterDataSyncStateRepository,
+            customerSyncCodec
+        );
+        const customerRepository = new CustomerSyncRepository(
+            customerCacheRepository,
+            customerSyncBridge
+        );
+        const customerSyncAdapter = new MasterDataModuleSyncAdapter(
+            firebaseRealtimeClient,
+            syncModeService,
+            getAuthStateService(),
+            syncOutboxRepository,
+            syncConflictRepository,
+            syncReceiptRepository,
+            syncListenerCoordinator,
+            syncEchoPolicy,
+            customerLocalMutationApplier,
+            customerSyncCodec
+        );
+
+        this.register("customerCacheRepository", customerCacheRepository);
         this.register("customerRepository", customerRepository);
+        this.register("customerLocalMutationApplier", customerLocalMutationApplier);
+        this.register("customerSyncAdapter", customerSyncAdapter);
 
         const customerValidator = new CustomerValidator();
 
@@ -93,9 +194,42 @@ export class Container {
 
         this.register("customerService", customerService);
 
-        const supplierRepository = new SupplierRepository(driver);
+        const supplierCacheRepository = new SupplierRepository(driver);
+        const supplierLocalMutationApplier = new MasterDataLocalMutationApplier(
+            supplierCacheRepository,
+            masterDataSyncStateRepository,
+            supplierSyncCodec
+        );
+        localMutationApplierRegistry.register(supplierLocalMutationApplier);
+        const supplierSyncBridge = new MasterDataSyncRepositoryBridge(
+            supplierCacheRepository,
+            syncModeService,
+            durableMutationCapture,
+            supplierLocalMutationApplier,
+            masterDataSyncStateRepository,
+            supplierSyncCodec
+        );
+        const supplierRepository = new SupplierSyncRepository(
+            supplierCacheRepository,
+            supplierSyncBridge
+        );
+        const supplierSyncAdapter = new MasterDataModuleSyncAdapter(
+            firebaseRealtimeClient,
+            syncModeService,
+            getAuthStateService(),
+            syncOutboxRepository,
+            syncConflictRepository,
+            syncReceiptRepository,
+            syncListenerCoordinator,
+            syncEchoPolicy,
+            supplierLocalMutationApplier,
+            supplierSyncCodec
+        );
 
+        this.register("supplierCacheRepository", supplierCacheRepository);
         this.register("supplierRepository", supplierRepository);
+        this.register("supplierLocalMutationApplier", supplierLocalMutationApplier);
+        this.register("supplierSyncAdapter", supplierSyncAdapter);
 
         const supplierValidator = new SupplierValidator();
 
@@ -237,9 +371,42 @@ export class Container {
                 journalEntryService.calculateAccountBalance(ledgerAccountId)
         });
 
-        const productRepository = new ProductRepository(driver);
+        const productCacheRepository = new ProductRepository(driver);
+        const productLocalMutationApplier = new MasterDataLocalMutationApplier(
+            productCacheRepository,
+            masterDataSyncStateRepository,
+            productSyncCodec
+        );
+        localMutationApplierRegistry.register(productLocalMutationApplier);
+        const productSyncBridge = new MasterDataSyncRepositoryBridge(
+            productCacheRepository,
+            syncModeService,
+            durableMutationCapture,
+            productLocalMutationApplier,
+            masterDataSyncStateRepository,
+            productSyncCodec
+        );
+        const productRepository = new ProductSyncRepository(
+            productCacheRepository,
+            productSyncBridge
+        );
+        const productSyncAdapter = new MasterDataModuleSyncAdapter(
+            firebaseRealtimeClient,
+            syncModeService,
+            getAuthStateService(),
+            syncOutboxRepository,
+            syncConflictRepository,
+            syncReceiptRepository,
+            syncListenerCoordinator,
+            syncEchoPolicy,
+            productLocalMutationApplier,
+            productSyncCodec
+        );
 
+        this.register("productCacheRepository", productCacheRepository);
         this.register("productRepository", productRepository);
+        this.register("productLocalMutationApplier", productLocalMutationApplier);
+        this.register("productSyncAdapter", productSyncAdapter);
 
         const productValidator = new ProductValidator();
 
@@ -304,59 +471,6 @@ export class Container {
         );
 
         this.register("invoiceReturnService", invoiceReturnService);
-
-        const syncOutboxRepository = new PersistentOutboxRepository(driver);
-        const syncReceiptRepository = new SyncReceiptRepository(driver);
-        const syncConflictRepository = new SyncConflictRepository(driver);
-        const syncModeService = new SyncModeService();
-        const syncStatusService = new SyncStatusService();
-        const syncRetryPolicy = new RetryPolicy();
-        const syncListenerCoordinator = new ListenerCoordinator();
-        const localMutationApplierRegistry = new LocalMutationApplierRegistry();
-        const durableMutationCapture = new DurableMutationCapture(
-            syncOutboxRepository
-        );
-        const localMutationReconciler = new LocalMutationReconciler(
-            syncOutboxRepository,
-            localMutationApplierRegistry,
-            durableMutationCapture
-        );
-        const syncEchoPolicy = new SyncEchoPolicy();
-        const firebaseRealtimeClient = new FirebaseRealtimeClient(() => {
-            const firebaseApp = getFirebaseApp();
-
-            return firebaseApp ? getDatabase(firebaseApp) : null;
-        });
-        const syncOperationTransport = new UnconfiguredSyncOperationTransport();
-        const syncCoordinator = new SyncCoordinator(
-            syncModeService,
-            syncOutboxRepository,
-            syncReceiptRepository,
-            syncConflictRepository,
-            syncRetryPolicy,
-            syncListenerCoordinator,
-            syncStatusService,
-            syncOperationTransport,
-            getAuthStateService()
-        );
-        syncCoordinator.configureLocalMutationReconciler(
-            localMutationReconciler
-        );
-
-        this.register("syncOutboxRepository", syncOutboxRepository);
-        this.register("syncReceiptRepository", syncReceiptRepository);
-        this.register("syncConflictRepository", syncConflictRepository);
-        this.register("syncModeService", syncModeService);
-        this.register("syncStatusService", syncStatusService);
-        this.register("syncRetryPolicy", syncRetryPolicy);
-        this.register("syncListenerCoordinator", syncListenerCoordinator);
-        this.register("localMutationApplierRegistry", localMutationApplierRegistry);
-        this.register("durableMutationCapture", durableMutationCapture);
-        this.register("localMutationReconciler", localMutationReconciler);
-        this.register("syncEchoPolicy", syncEchoPolicy);
-        this.register("firebaseRealtimeClient", firebaseRealtimeClient);
-        this.register("syncOperationTransport", syncOperationTransport);
-        this.register("syncCoordinator", syncCoordinator);
 
     }
 

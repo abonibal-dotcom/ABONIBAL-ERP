@@ -75,6 +75,22 @@ export class PersistentOutboxRepository {
             .find(operation => operation.operationId === normalizedOperationId);
     }
 
+    public hasOpenOperationForRecord(
+        accountId: string,
+        module: SyncOperation["module"],
+        recordId: string
+    ): boolean {
+        const normalizedRecordId = requireText(recordId, "recordId");
+
+        return this
+            .allForAccount(accountId)
+            .some(operation =>
+                operation.module === module
+                && operation.recordId === normalizedRecordId
+                && operation.status !== "acknowledged"
+            );
+    }
+
     public getPending(
         accountId: string,
         now: string

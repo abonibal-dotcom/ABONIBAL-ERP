@@ -4,7 +4,16 @@ import { Repository } from "../../../core/repositories/Repository";
 import type { Driver } from "../../../core/persistence/Driver";
 import { supplierStorageKeyForAccount } from "../persistence/SupplierPersistenceKey";
 
-export class SupplierRepository extends Repository<Supplier> {
+export interface SupplierRepositoryPort {
+    allForAccount(accountId: string): Supplier[];
+    saveAllForAccount(accountId: string, suppliers: Supplier[]): void;
+    addToAccount(accountId: string, supplier: Supplier): void;
+    updateForAccount(accountId: string, id: string, data: Partial<Supplier>): void;
+    findForAccount(accountId: string, id: string): Supplier | undefined;
+}
+
+export class SupplierRepository extends Repository<Supplier>
+implements SupplierRepositoryPort {
 
     public constructor(driver: Driver) {
 
