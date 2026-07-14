@@ -34,7 +34,8 @@ export class ProductService {
 
         return this.repository
             .allForAccount(accountContext.accountId)
-            .filter(product => !product.isDeleted);
+            .filter(product => !product.isDeleted)
+            .map(normalizeLegacyProduct);
 
     }
 
@@ -48,6 +49,7 @@ export class ProductService {
 
         const ownedProduct: Product = {
             ...product,
+            salePrice: normalizeSalePrice(product.salePrice),
             accountId: accountContext.accountId,
             createdBy: product.createdBy ?? accountContext.userId,
             updatedBy: product.updatedBy ?? accountContext.userId
@@ -88,6 +90,11 @@ export class ProductService {
         const updated: Product = {
             ...current,
             ...data,
+            salePrice: normalizeSalePrice(
+                data.salePrice === undefined
+                    ? current.salePrice
+                    : data.salePrice
+            ),
             accountId: accountContext.accountId,
             createdBy: current.createdBy ?? accountContext.userId,
             updatedBy: accountContext.userId
@@ -168,7 +175,7 @@ export class ProductService {
             return undefined;
         }
 
-        return product;
+        return product ? normalizeLegacyProduct(product) : undefined;
 
     }
 
@@ -315,5 +322,22 @@ interface ProductAccountContext {
 
     accountId: string;
     userId: string;
+
+}
+
+function normalizeLegacyProduct(product: Product): Product {
+
+    return {
+        ...product,
+        salePrice: normalizeSalePrice(product.salePrice)
+    };
+
+}
+
+function normalizeSalePrice(value: unknown): number {
+
+    return typeof value === "number" && Number.isFinite(value)
+        ? value
+        : 0;
 
 }

@@ -185,6 +185,42 @@ export class InvoiceService {
 
     }
 
+    public deleteDraft(invoiceId: string): InvoiceDeleteResult {
+
+        const accountContext = this.currentAccountContext();
+
+        if (!accountContext) {
+            return failedInvoiceDeleteResult(
+                "Authenticated account is required."
+            );
+        }
+
+        const currentInvoice = this.repository.findForAccount(
+            accountContext.accountId,
+            invoiceId.trim()
+        );
+
+        if (!currentInvoice) {
+            return failedInvoiceDeleteResult("Invoice not found.");
+        }
+
+        if (currentInvoice.status !== "draft") {
+            return failedInvoiceDeleteResult(
+                "Only draft invoices can be deleted."
+            );
+        }
+
+        const deleted = this.repository.removeForAccount(
+            accountContext.accountId,
+            currentInvoice.id
+        );
+
+        return deleted
+            ? { success: true, errors: [] }
+            : failedInvoiceDeleteResult("Invoice not found.");
+
+    }
+
     public markIssued(invoiceId: string): InvoiceResult {
 
         const accountContext = this.currentAccountContext();
@@ -514,6 +550,13 @@ export interface InvoiceResult {
 
 }
 
+export interface InvoiceDeleteResult {
+
+    success: boolean;
+    errors: string[];
+
+}
+
 interface InvoiceAccountContext {
 
     accountId: string;
@@ -725,6 +768,17 @@ function failedInvoiceResult(errors: string | string[]): InvoiceResult {
         success: false,
         errors: Array.isArray(errors) ? errors : [errors],
         invoice: null
+    };
+
+}
+
+function failedInvoiceDeleteResult(
+    errors: string | string[]
+): InvoiceDeleteResult {
+
+    return {
+        success: false,
+        errors: Array.isArray(errors) ? errors : [errors]
     };
 
 }
