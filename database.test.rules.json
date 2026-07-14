@@ -1,0 +1,21 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "accountMembers": {
+      ".read": false,
+      ".write": false
+    },
+    "accounts": {
+      "$accountId": {
+        ".read": "auth != null && root.child('accountMembers').child($accountId).child(auth.uid).val() === true",
+        "$module": {
+          "$recordId": {
+            ".write": "auth != null && root.child('accountMembers').child($accountId).child(auth.uid).val() === true && !data.exists() && newData.exists()",
+            ".validate": "newData.child('id').val() === $recordId && newData.child('accountId').val() === $accountId && newData.child('createdAt').isString() && newData.child('createdBy').isString()"
+          }
+        }
+      }
+    }
+  }
+}
