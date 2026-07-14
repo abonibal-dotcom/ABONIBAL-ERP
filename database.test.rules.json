@@ -9,10 +9,18 @@
     "accounts": {
       "$accountId": {
         ".read": "auth != null && root.child('accountMembers').child($accountId).child(auth.uid).val() === true",
+        "_sync": {
+          "operations": {
+            "$operationId": {
+              ".write": "auth != null && root.child('accountMembers').child($accountId).child(auth.uid).val() === true && !data.exists() && newData.exists()",
+              ".validate": "newData.hasChildren(['operationId', 'idempotencyKey', 'state', 'module', 'recordId', 'resultRevision', 'checksum', 'serverAppliedAt']) && newData.child('operationId').val() === $operationId && newData.child('idempotencyKey').isString() && newData.child('idempotencyKey').val().length > 0 && newData.child('state').val() === 'acknowledged' && (newData.child('module').val() === 'products' || newData.child('module').val() === 'customers' || newData.child('module').val() === 'suppliers') && newData.child('recordId').isString() && newData.child('recordId').val().length > 0 && newData.child('resultRevision').isNumber() && newData.child('resultRevision').val() >= 1 && newData.child('checksum').isString() && newData.child('checksum').val().length > 0 && newData.child('serverAppliedAt').isNumber()"
+            }
+          }
+        },
         "$module": {
           "$recordId": {
-            ".write": "auth != null && root.child('accountMembers').child($accountId).child(auth.uid).val() === true && !data.exists() && newData.exists()",
-            ".validate": "newData.child('id').val() === $recordId && newData.child('accountId').val() === $accountId && newData.child('createdAt').isString() && newData.child('createdBy').isString()"
+            ".write": "auth != null && root.child('accountMembers').child($accountId).child(auth.uid).val() === true && ($module === 'products' || $module === 'customers' || $module === 'suppliers') && newData.exists() && ((!data.exists() && newData.child('meta').child('revision').val() === 1) || (data.exists() && newData.child('meta').child('revision').val() === data.child('meta').child('revision').val() + 1))",
+            ".validate": "newData.hasChildren(['data', 'meta']) && newData.child('data').hasChildren(['id', 'accountId', 'createdAt', 'createdBy']) && newData.child('data').child('id').val() === $recordId && newData.child('data').child('accountId').val() === $accountId && newData.child('data').child('createdAt').exists() && newData.child('data').child('createdBy').isString() && newData.child('data').child('createdBy').val().length > 0 && (!data.exists() || (newData.child('data').child('id').val() === data.child('data').child('id').val() && newData.child('data').child('accountId').val() === data.child('data').child('accountId').val() && newData.child('data').child('createdAt').val() === data.child('data').child('createdAt').val() && newData.child('data').child('createdBy').val() === data.child('data').child('createdBy').val())) && newData.child('meta').hasChildren(['schemaVersion', 'revision', 'serverUpdatedAt', 'lastOperationId', 'tombstone', 'writeSetChecksum']) && newData.child('meta').child('schemaVersion').val() === 1 && newData.child('meta').child('revision').isNumber() && newData.child('meta').child('serverUpdatedAt').isNumber() && newData.child('meta').child('lastOperationId').isString() && newData.child('meta').child('lastOperationId').val().length > 0 && newData.child('meta').child('tombstone').isBoolean() && newData.child('meta').child('writeSetChecksum').isString() && newData.child('meta').child('writeSetChecksum').val().length > 0"
           }
         }
       }

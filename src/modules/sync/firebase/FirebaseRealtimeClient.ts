@@ -3,6 +3,8 @@ import {
     onValue,
     ref,
     runTransaction,
+    serverTimestamp,
+    update,
     type Database
 } from "firebase/database";
 
@@ -88,6 +90,36 @@ export class FirebaseRealtimeClient {
         } catch (error) {
             throw normalizeFirebaseError(error);
         }
+    }
+
+    public async updateChildren(
+        path: string,
+        values: Record<string, unknown>
+    ): Promise<void> {
+        if (
+            !values
+            || typeof values !== "object"
+            || Array.isArray(values)
+            || Object.keys(values).length === 0
+        ) {
+            throw new FirebaseRealtimeClientError(
+                "invalid_realtime_update",
+                "Firebase Realtime Database update requires child values."
+            );
+        }
+
+        try {
+            await update(
+                ref(this.requireDatabase(), normalizePath(path)),
+                values
+            );
+        } catch (error) {
+            throw normalizeFirebaseError(error);
+        }
+    }
+
+    public serverTimestampValue(): object {
+        return serverTimestamp();
     }
 
     public async compareAndSet<T extends RevisionedRealtimeRecord>(

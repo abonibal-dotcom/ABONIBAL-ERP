@@ -27,6 +27,9 @@ export interface SyncStatus {
     pendingCount: number;
     conflictCount: number;
     failedCount: number;
+    pendingLocalApplyCount: number;
+    localApplyConflictCount: number;
+    localApplyFailedCount: number;
     lastSuccessfulSyncAt?: string;
     lastErrorSafe?: string;
     connectivity: SyncConnectivity;

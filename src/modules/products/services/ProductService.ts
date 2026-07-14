@@ -1,19 +1,19 @@
 import type { Product } from "../Product";
-import {
-    ProductRepository,
-    type ProductLegacyImportBackup
+import type {
+    ProductLegacyImportBackup,
+    ProductRepositoryPort
 } from "../repositories/ProductRepository";
 import { ProductValidator } from "../validators/ProductValidator";
 import type { AuthStateService } from "../../auth/AuthStateService";
 
 export class ProductService {
 
-    private repository: ProductRepository;
+    private repository: ProductRepositoryPort;
     private validator: ProductValidator;
     private authStateService: AuthStateService;
 
     constructor(
-        repository: ProductRepository,
+        repository: ProductRepositoryPort,
         validator: ProductValidator,
         authStateService: AuthStateService
     ) {
@@ -61,10 +61,14 @@ export class ProductService {
             return errors;
         }
 
-        this.repository.addToAccount(
-            accountContext.accountId,
-            ownedProduct
-        );
+        try {
+            this.repository.addToAccount(
+                accountContext.accountId,
+                ownedProduct
+            );
+        } catch (error) {
+            return [safePersistenceError(error)];
+        }
 
         return [];
 
@@ -106,11 +110,15 @@ export class ProductService {
             return errors;
         }
 
-        this.repository.updateForAccount(
-            accountContext.accountId,
-            id,
-            updated
-        );
+        try {
+            this.repository.updateForAccount(
+                accountContext.accountId,
+                id,
+                updated
+            );
+        } catch (error) {
+            return [safePersistenceError(error)];
+        }
 
         return [];
 
@@ -139,20 +147,24 @@ export class ProductService {
             return ["Product not found."];
         }
 
-        this.repository.updateForAccount(
-            accountContext.accountId,
-            id,
-            {
-                ...current,
-                accountId: accountContext.accountId,
-                createdBy: current.createdBy ?? accountContext.userId,
-                updatedBy: accountContext.userId,
-                deletedBy: accountContext.userId,
-                deletedAt: new Date().toISOString(),
-                isDeleted: true,
-                updatedAt: new Date()
-            }
-        );
+        try {
+            this.repository.updateForAccount(
+                accountContext.accountId,
+                id,
+                {
+                    ...current,
+                    accountId: accountContext.accountId,
+                    createdBy: current.createdBy ?? accountContext.userId,
+                    updatedBy: accountContext.userId,
+                    deletedBy: accountContext.userId,
+                    deletedAt: new Date().toISOString(),
+                    isDeleted: true,
+                    updatedAt: new Date()
+                }
+            );
+        } catch (error) {
+            return [safePersistenceError(error)];
+        }
 
         return [];
 
@@ -339,5 +351,23 @@ function normalizeSalePrice(value: unknown): number {
     return typeof value === "number" && Number.isFinite(value)
         ? value
         : 0;
+
+}
+
+function safePersistenceError(error: unknown): string {
+
+    return isSafePersistenceError(error)
+        ? error.messageSafe
+        : "Product persistence failed safely.";
+
+}
+
+function isSafePersistenceError(
+    error: unknown
+): error is { messageSafe: string } {
+
+    return Boolean(error)
+        && typeof error === "object"
+        && typeof (error as { messageSafe?: unknown }).messageSafe === "string";
 
 }

@@ -4,18 +4,18 @@ import type {
     CustomerStatus,
     CustomerUpdateInput
 } from "../Customer";
-import { CustomerRepository } from "../repositories/CustomerRepository";
+import type { CustomerRepositoryPort } from "../repositories/CustomerRepository";
 import { CustomerValidator } from "../validators/CustomerValidator";
 import type { AuthStateService } from "../../auth/AuthStateService";
 
 export class CustomerService {
 
-    private repository: CustomerRepository;
+    private repository: CustomerRepositoryPort;
     private validator: CustomerValidator;
     private authStateService: AuthStateService;
 
     constructor(
-        repository: CustomerRepository,
+        repository: CustomerRepositoryPort,
         validator: CustomerValidator,
         authStateService: AuthStateService
     ) {
@@ -72,10 +72,14 @@ export class CustomerService {
             return failedCustomerMutationResult(errors);
         }
 
-        this.repository.addToAccount(
-            accountContext.accountId,
-            customer
-        );
+        try {
+            this.repository.addToAccount(
+                accountContext.accountId,
+                customer
+            );
+        } catch (error) {
+            return failedCustomerMutationResult(safePersistenceError(error));
+        }
 
         return {
             success: true,
@@ -128,11 +132,15 @@ export class CustomerService {
             return failedCustomerMutationResult(errors);
         }
 
-        this.repository.updateForAccount(
-            accountContext.accountId,
-            id,
-            updated
-        );
+        try {
+            this.repository.updateForAccount(
+                accountContext.accountId,
+                id,
+                updated
+            );
+        } catch (error) {
+            return failedCustomerMutationResult(safePersistenceError(error));
+        }
 
         return {
             success: true,
@@ -161,19 +169,23 @@ export class CustomerService {
 
         const now = new Date().toISOString();
 
-        this.repository.updateForAccount(
-            accountContext.accountId,
-            id,
-            {
-                ...current,
-                accountId: accountContext.accountId,
-                deletedAt: now,
-                deletedBy: accountContext.userId,
-                isDeleted: true,
-                updatedAt: now,
-                updatedBy: accountContext.userId
-            }
-        );
+        try {
+            this.repository.updateForAccount(
+                accountContext.accountId,
+                id,
+                {
+                    ...current,
+                    accountId: accountContext.accountId,
+                    deletedAt: now,
+                    deletedBy: accountContext.userId,
+                    isDeleted: true,
+                    updatedAt: now,
+                    updatedBy: accountContext.userId
+                }
+            );
+        } catch (error) {
+            return [safePersistenceError(error)];
+        }
 
         return [];
 
@@ -294,5 +306,23 @@ interface CustomerAccountContext {
 
     accountId: string;
     userId: string;
+
+}
+
+function safePersistenceError(error: unknown): string {
+
+    return isSafePersistenceError(error)
+        ? error.messageSafe
+        : "Customer persistence failed safely.";
+
+}
+
+function isSafePersistenceError(
+    error: unknown
+): error is { messageSafe: string } {
+
+    return Boolean(error)
+        && typeof error === "object"
+        && typeof (error as { messageSafe?: unknown }).messageSafe === "string";
 
 }

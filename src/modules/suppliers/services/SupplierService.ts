@@ -5,17 +5,17 @@ import type {
     SupplierStatus,
     SupplierUpdateInput
 } from "../Supplier";
-import { SupplierRepository } from "../repositories/SupplierRepository";
+import type { SupplierRepositoryPort } from "../repositories/SupplierRepository";
 import { SupplierValidator } from "../validators/SupplierValidator";
 
 export class SupplierService {
 
-    private readonly repository: SupplierRepository;
+    private readonly repository: SupplierRepositoryPort;
     private readonly validator: SupplierValidator;
     private readonly authStateService: AuthStateService;
 
     public constructor(
-        repository: SupplierRepository,
+        repository: SupplierRepositoryPort,
         validator: SupplierValidator,
         authStateService: AuthStateService
     ) {
@@ -72,10 +72,14 @@ export class SupplierService {
             return failedSupplierMutationResult(errors);
         }
 
-        this.repository.addToAccount(
-            accountContext.accountId,
-            supplier
-        );
+        try {
+            this.repository.addToAccount(
+                accountContext.accountId,
+                supplier
+            );
+        } catch (error) {
+            return failedSupplierMutationResult(safePersistenceError(error));
+        }
 
         return {
             success: true,
@@ -137,11 +141,15 @@ export class SupplierService {
             return failedSupplierMutationResult(errors);
         }
 
-        this.repository.updateForAccount(
-            accountContext.accountId,
-            id,
-            updated
-        );
+        try {
+            this.repository.updateForAccount(
+                accountContext.accountId,
+                id,
+                updated
+            );
+        } catch (error) {
+            return failedSupplierMutationResult(safePersistenceError(error));
+        }
 
         return {
             success: true,
@@ -170,19 +178,23 @@ export class SupplierService {
 
         const now = new Date().toISOString();
 
-        this.repository.updateForAccount(
-            accountContext.accountId,
-            id,
-            {
-                ...current,
-                accountId: accountContext.accountId,
-                deletedAt: now,
-                deletedBy: accountContext.userId,
-                isDeleted: true,
-                updatedAt: now,
-                updatedBy: accountContext.userId
-            }
-        );
+        try {
+            this.repository.updateForAccount(
+                accountContext.accountId,
+                id,
+                {
+                    ...current,
+                    accountId: accountContext.accountId,
+                    deletedAt: now,
+                    deletedBy: accountContext.userId,
+                    isDeleted: true,
+                    updatedAt: now,
+                    updatedBy: accountContext.userId
+                }
+            );
+        } catch (error) {
+            return [safePersistenceError(error)];
+        }
 
         return [];
 
@@ -303,5 +315,23 @@ interface SupplierAccountContext {
 
     accountId: string;
     userId: string;
+
+}
+
+function safePersistenceError(error: unknown): string {
+
+    return isSafePersistenceError(error)
+        ? error.messageSafe
+        : "Supplier persistence failed safely.";
+
+}
+
+function isSafePersistenceError(
+    error: unknown
+): error is { messageSafe: string } {
+
+    return Boolean(error)
+        && typeof error === "object"
+        && typeof (error as { messageSafe?: unknown }).messageSafe === "string";
 
 }

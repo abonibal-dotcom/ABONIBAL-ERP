@@ -10,6 +10,9 @@ export class SyncStatusService {
         pendingCount: 0,
         conflictCount: 0,
         failedCount: 0,
+        pendingLocalApplyCount: 0,
+        localApplyConflictCount: 0,
+        localApplyFailedCount: 0,
         connectivity: "unknown",
         accountResolved: false
     };
@@ -29,6 +32,9 @@ export class SyncStatusService {
         validateCount(next.pendingCount, "pendingCount");
         validateCount(next.conflictCount, "conflictCount");
         validateCount(next.failedCount, "failedCount");
+        validateCount(next.pendingLocalApplyCount, "pendingLocalApplyCount");
+        validateCount(next.localApplyConflictCount, "localApplyConflictCount");
+        validateCount(next.localApplyFailedCount, "localApplyFailedCount");
 
         this.status = next;
         this.notify();

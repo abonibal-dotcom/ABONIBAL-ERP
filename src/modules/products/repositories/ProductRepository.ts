@@ -8,7 +8,21 @@ import {
     productStorageKeyForAccount
 } from "../persistence/ProductPersistenceKey";
 
-export class ProductRepository extends Repository<Product> {
+export interface ProductRepositoryPort {
+    allForAccount(accountId: string): Product[];
+    allLegacy(): Product[];
+    saveAllForAccount(accountId: string, products: Product[]): void;
+    addToAccount(accountId: string, product: Product): void;
+    updateForAccount(accountId: string, id: string, data: Partial<Product>): void;
+    findForAccount(accountId: string, id: string): Product | undefined;
+    saveLegacyImportBackup(
+        accountId: string,
+        backup: ProductLegacyImportBackup
+    ): string;
+}
+
+export class ProductRepository extends Repository<Product>
+implements ProductRepositoryPort {
 
     constructor(driver: Driver) {
 
