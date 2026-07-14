@@ -7,6 +7,10 @@ export class GeneralTab {
     private skuInput: Input;
     private barcodeInput: Input;
 
+    private salePriceInput: Input;
+
+    private openingQuantityInput: Input;
+
     constructor() {
 
         this.nameInput = new Input({
@@ -51,6 +55,30 @@ export class GeneralTab {
 
         });
 
+        this.salePriceInput = new Input({
+
+            id: "product-sale-price",
+
+            label: "سعر البيع الافتراضي",
+
+            type: "number",
+
+            placeholder: "0"
+
+        });
+
+        this.openingQuantityInput = new Input({
+
+            id: "product-opening-quantity",
+
+            label: "الكمية الافتتاحية",
+
+            type: "number",
+
+            placeholder: "0"
+
+        });
+
     }
 
     public render(): string {
@@ -65,6 +93,17 @@ export class GeneralTab {
                 ${this.skuInput.render()}
 
                 ${this.barcodeInput.render()}
+
+                ${this.salePriceInput.render()}
+
+                <div id="product-opening-quantity-field">
+                    ${this.openingQuantityInput.render()}
+                </div>
+
+                <p id="product-current-quantity-field" hidden>
+                    الكمية الحالية المشتقة من المخزون:
+                    <strong id="product-current-quantity">0</strong>
+                </p>
 
             </div>
         `;

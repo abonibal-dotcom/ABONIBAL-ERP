@@ -82,6 +82,9 @@ export class InvoiceDraftPage extends Page {
         const issueButton = target.closest<HTMLButtonElement>(
             "[data-action=\"issue-invoice-draft\"]"
         );
+        const deleteButton = target.closest<HTMLButtonElement>(
+            "[data-action=\"delete-invoice-draft\"]"
+        );
         const cancelButton = target.closest<HTMLButtonElement>(
             "[data-action=\"cancel-invoice\"]"
         );
@@ -91,6 +94,7 @@ export class InvoiceDraftPage extends Page {
 
         const invoiceId = editButton?.dataset.invoiceId;
         const issueInvoiceId = issueButton?.dataset.invoiceId;
+        const deleteInvoiceId = deleteButton?.dataset.invoiceId;
         const cancelInvoiceId = cancelButton?.dataset.invoiceId;
         const returnInvoiceId = returnButton?.dataset.invoiceId;
         const returnInvoiceLineId = returnButton?.dataset.invoiceLineId;
@@ -107,6 +111,11 @@ export class InvoiceDraftPage extends Page {
 
         if (issueInvoiceId) {
             this.issueDraft(issueInvoiceId);
+            return;
+        }
+
+        if (deleteInvoiceId) {
+            this.deleteDraft(deleteInvoiceId);
             return;
         }
 
@@ -689,6 +698,13 @@ export class InvoiceDraftPage extends Page {
             >
                 إصدار
             </button>
+            <button
+                type="button"
+                data-action="delete-invoice-draft"
+                data-invoice-id="${this.escapeHtml(invoice.id)}"
+            >
+                حذف المسودة
+            </button>
         `;
 
     }
@@ -861,6 +877,30 @@ export class InvoiceDraftPage extends Page {
         this.resetForm();
         this.renderDrafts();
         this.setMessage("تم إصدار الفاتورة.");
+
+    }
+
+    private deleteDraft(invoiceId: string): void {
+
+        if (!confirm("هل تريد حذف هذه المسودة نهائياً؟")) {
+            this.setMessage("تم إلغاء حذف المسودة.");
+            return;
+        }
+
+        const result = this.invoiceService.deleteDraft(invoiceId);
+
+        if (!result.success) {
+            this.setMessage(result.errors.join(" "));
+            this.renderDrafts();
+            return;
+        }
+
+        if (this.editingInvoiceId === invoiceId) {
+            this.resetForm();
+        }
+
+        this.renderDrafts();
+        this.setMessage("تم حذف مسودة الفاتورة.");
 
     }
 

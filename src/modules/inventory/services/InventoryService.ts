@@ -84,6 +84,55 @@ export class InventoryService {
 
     }
 
+    public addOpeningBalanceForNewProduct(
+        productId: string,
+        quantity: number
+    ): StockMovementResult {
+
+        const normalizedProductId = productId.trim();
+
+        if (!normalizedProductId) {
+            return failedStockMovementResult("Product id is required.");
+        }
+
+        if (!Number.isFinite(quantity) || quantity <= 0) {
+            return failedStockMovementResult(
+                "Opening quantity must be a positive number."
+            );
+        }
+
+        const existingMovement = this
+            .getByProductId(normalizedProductId)
+            .find(movement =>
+                !movement.voidedAt
+                && movement.type === "opening_balance"
+                && movement.referenceType === "opening_balance"
+                && movement.referenceId === normalizedProductId
+                && movement.metadata?.source === "product_create"
+            );
+
+        if (existingMovement) {
+            return {
+                success: true,
+                errors: [],
+                movement: existingMovement
+            };
+        }
+
+        return this.addMovement({
+            productId: normalizedProductId,
+            type: "opening_balance",
+            quantityDelta: quantity,
+            reason: "Opening stock created with product.",
+            referenceType: "opening_balance",
+            referenceId: normalizedProductId,
+            metadata: {
+                source: "product_create"
+            }
+        });
+
+    }
+
     public getByProductId(productId: string): StockMovement[] {
 
         const accountContext = this.currentAccountContext();

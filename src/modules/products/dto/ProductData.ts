@@ -8,4 +8,8 @@ export interface ProductData {
 
     barcode: string;
 
+    salePrice: number;
+
+    openingQuantity: number;
+
 }

@@ -14,6 +14,10 @@ export class ProductValidator {
             errors.push("الباركود مطلوب.");
         }
 
+        if (!Number.isFinite(product.salePrice) || product.salePrice < 0) {
+            errors.push("سعر البيع يجب أن يكون رقماً صفراً أو أكبر.");
+        }
+
         return errors;
 
     }

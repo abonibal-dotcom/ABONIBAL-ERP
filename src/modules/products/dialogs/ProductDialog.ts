@@ -79,7 +79,11 @@ export class ProductDialog {
                 document.getElementById(
                     "product-barcode"
                 ) as HTMLInputElement
-            ).value.trim()
+            ).value.trim(),
+
+            salePrice: this.readNumber("product-sale-price"),
+
+            openingQuantity: this.readNumber("product-opening-quantity")
 
         };
 
@@ -91,6 +95,8 @@ export class ProductDialog {
         this.setInputValue("product-english-name", data.englishName);
         this.setInputValue("product-sku", data.sku);
         this.setInputValue("product-barcode", data.barcode);
+        this.setInputValue("product-sale-price", String(data.salePrice ?? 0));
+        this.setInputValue("product-opening-quantity", String(data.openingQuantity ?? 0));
 
     }
 
@@ -100,8 +106,26 @@ export class ProductDialog {
             name: "",
             englishName: "",
             sku: "",
-            barcode: ""
+            barcode: "",
+            salePrice: 0,
+            openingQuantity: 0
         });
+
+    }
+
+    public setCreateMode(): void {
+
+        this.setInputValue("product-opening-quantity", "0");
+        this.setHidden("product-opening-quantity-field", false);
+        this.setHidden("product-current-quantity-field", true);
+
+    }
+
+    public setEditMode(currentQuantity: number): void {
+
+        this.setHidden("product-opening-quantity-field", true);
+        this.setHidden("product-current-quantity-field", false);
+        this.setTextValue("product-current-quantity", String(currentQuantity));
 
     }
 
@@ -114,6 +138,34 @@ export class ProductDialog {
         }
 
         input.value = value;
+
+    }
+
+    private setTextValue(id: string, value: string): void {
+
+        const element = document.getElementById(id);
+
+        if (element) {
+            element.textContent = value;
+        }
+
+    }
+
+    private setHidden(id: string, hidden: boolean): void {
+
+        const element = document.getElementById(id);
+
+        if (element) {
+            element.hidden = hidden;
+        }
+
+    }
+
+    private readNumber(id: string): number {
+
+        const input = document.getElementById(id) as HTMLInputElement | null;
+
+        return Number(input?.value ?? "");
 
     }
 

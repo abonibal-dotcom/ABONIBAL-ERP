@@ -4,12 +4,15 @@ import { ProductDialog } from "../dialogs/ProductDialog";
 import { ProductFactory } from "../factories/ProductFactory";
 import type { Product } from "../Product";
 import type { ProductService } from "../services/ProductService";
+import type { InventoryService } from "../../inventory/services/InventoryService";
 
 export class ProductListPage extends Page {
 
     private dialog: ProductDialog;
 
     private productService: ProductService;
+
+    private inventoryService: InventoryService;
 
     private productFactory: ProductFactory;
 
@@ -27,9 +30,13 @@ export class ProductListPage extends Page {
 
     private dialogElement: HTMLElement | null = null;
 
+    private messageElement: HTMLElement | null = null;
+
     private editingProductId: string | null = null;
 
     private searchQuery = "";
+
+    private isSaving = false;
 
     private readonly openDialog = (): void => {
 
@@ -42,6 +49,10 @@ export class ProductListPage extends Page {
         this.editingProductId = null;
 
         this.dialog.clear();
+
+        this.dialog.setCreateMode();
+
+        this.setMessage("");
 
         this.openDialog();
 
@@ -57,24 +68,76 @@ export class ProductListPage extends Page {
 
     private readonly saveProduct = (): void => {
 
-        if (this.editingProductId) {
-            this.updateProduct(this.editingProductId);
+        if (this.isSaving) {
             return;
         }
 
-        const product = this.productFactory.create(
-            this.dialog.values()
-        );
+        this.isSaving = true;
 
-        const errors = this.productService.add(product);
-
-        if (errors.length > 0) {
-            return;
+        if (this.saveButton instanceof HTMLButtonElement) {
+            this.saveButton.disabled = true;
         }
 
-        this.closeDialog();
+        try {
 
-        this.renderProductsIntoTable();
+            if (this.editingProductId) {
+                this.updateProduct(this.editingProductId);
+                return;
+            }
+
+            const data = this.dialog.values();
+
+            if (!Number.isFinite(data.openingQuantity) || data.openingQuantity < 0) {
+                this.setMessage("الكمية الافتتاحية يجب أن تكون صفراً أو أكبر.");
+                return;
+            }
+
+            const product = this.productFactory.create(data);
+
+            const errors = this.productService.add(product);
+
+            if (errors.length > 0) {
+                this.setMessage(errors.join(" "));
+                return;
+            }
+
+            if (data.openingQuantity > 0) {
+                const movementResult = this.inventoryService
+                    .addOpeningBalanceForNewProduct(
+                        product.id,
+                        data.openingQuantity
+                    );
+
+                if (!movementResult.success) {
+                    const rollbackErrors = this.productService.safeDelete(product.id);
+                    const rollbackMessage = rollbackErrors.length === 0
+                        ? "تمت أرشفة المنتج الجديد لمنع حالة جزئية."
+                        : "تعذر أرشفة المنتج الجديد بعد فشل حركة المخزون.";
+
+                    this.setMessage([
+                        ...movementResult.errors,
+                        rollbackMessage
+                    ].join(" "));
+                    this.renderProductsIntoTable();
+                    return;
+                }
+            }
+
+            this.closeDialog();
+
+            this.renderProductsIntoTable();
+
+            this.setMessage("تم حفظ المنتج.");
+
+        } finally {
+
+            this.isSaving = false;
+
+            if (this.saveButton instanceof HTMLButtonElement) {
+                this.saveButton.disabled = false;
+            }
+
+        }
 
     };
 
@@ -130,6 +193,8 @@ export class ProductListPage extends Page {
 
         this.productService = Container.get<ProductService>("productService");
 
+        this.inventoryService = Container.get<InventoryService>("inventoryService");
+
     }
 
     public title(): string {
@@ -152,6 +217,8 @@ export class ProductListPage extends Page {
                     </button>
 
                 </div>
+
+                <p id="product-message" role="status" aria-live="polite"></p>
 
                 <div class="page-toolbar">
 
@@ -278,7 +345,7 @@ export class ProductListPage extends Page {
                 <td>-</td>
                 <td>${this.escapeHtml(product.name)}</td>
                 <td>${this.escapeHtml(product.barcode)}</td>
-                <td>${this.formatNumber(product.quantity)}</td>
+                <td>${this.formatNumber(this.inventoryService.getCurrentQuantity(product.id))}</td>
                 <td>${this.formatNumber(product.salePrice)}</td>
                 <td>
                     <button
@@ -316,8 +383,14 @@ export class ProductListPage extends Page {
             name: product.name,
             englishName: product.englishName ?? "",
             sku: product.sku,
-            barcode: product.barcode
+            barcode: product.barcode,
+            salePrice: product.salePrice ?? 0,
+            openingQuantity: 0
         });
+
+        this.dialog.setEditMode(
+            this.inventoryService.getCurrentQuantity(product.id)
+        );
 
         this.openDialog();
 
@@ -325,18 +398,25 @@ export class ProductListPage extends Page {
 
     private updateProduct(productId: string): void {
 
-        const errors = this.productService.update(
-            productId,
-            this.dialog.values()
-        );
+        const data = this.dialog.values();
+        const errors = this.productService.update(productId, {
+            name: data.name,
+            englishName: data.englishName,
+            sku: data.sku,
+            barcode: data.barcode,
+            salePrice: data.salePrice
+        });
 
         if (errors.length > 0) {
+            this.setMessage(errors.join(" "));
             return;
         }
 
         this.closeDialog();
 
         this.renderProductsIntoTable();
+
+        this.setMessage("تم تعديل المنتج.");
 
     }
 
@@ -349,10 +429,13 @@ export class ProductListPage extends Page {
         const errors = this.productService.safeDelete(productId);
 
         if (errors.length > 0) {
+            this.setMessage(errors.join(" "));
             return;
         }
 
         this.renderProductsIntoTable();
+
+        this.setMessage("تمت أرشفة المنتج.");
 
     }
 
@@ -379,6 +462,14 @@ export class ProductListPage extends Page {
 
     }
 
+    private setMessage(message: string): void {
+
+        if (this.messageElement) {
+            this.messageElement.textContent = message;
+        }
+
+    }
+
     public onEnter(): void {
 
         this.onLeave();
@@ -388,6 +479,7 @@ export class ProductListPage extends Page {
         this.productsBody = document.getElementById("products-body");
         this.searchInput = document.getElementById("product-search") as HTMLInputElement | null;
         this.dialogElement = document.getElementById("product-dialog");
+        this.messageElement = document.getElementById("product-message");
         this.closeButton = document.getElementById("close-product-dialog");
         this.cancelButton = document.getElementById("cancel-product");
         this.searchQuery = this.searchInput?.value.trim().toLowerCase() ?? "";
@@ -436,9 +528,13 @@ export class ProductListPage extends Page {
 
         this.dialogElement = null;
 
+        this.messageElement = null;
+
         this.editingProductId = null;
 
         this.searchQuery = "";
+
+        this.isSaving = false;
 
     }
 

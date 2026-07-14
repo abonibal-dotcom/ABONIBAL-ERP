@@ -40,7 +40,7 @@ export class LedgerManagementPage extends Page {
                 <style>
                     .ledger-header{display:flex;justify-content:space-between;gap:16px;align-items:end;margin-bottom:18px}.ledger-header p{margin:0}.ledger-section{border-top:1px solid var(--border);padding-top:18px;margin-top:22px}
                     .ledger-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.ledger-grid .ledger-wide{grid-column:span 2}.ledger-actions,.ledger-row-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.ledger-row-actions button{min-height:34px;padding:6px 9px}.ledger-secondary{background:#fff;color:var(--primary-dark);border-color:var(--primary);box-shadow:none}.ledger-danger{background:var(--danger)}
-                    .ledger-message{padding:10px 12px;border-radius:8px;font-weight:700;margin-bottom:14px}.ledger-message[data-tone="success"]{color:#166534;background:#dcfce7}.ledger-message[data-tone="error"]{color:#991b1b;background:#fee2e2}.ledger-message[data-tone="neutral"]{color:#1e3a8a;background:#dbeafe}
+                    .ledger-message,.journal-validation{padding:10px 12px;border-radius:8px;font-weight:700;margin-bottom:14px}.ledger-message[data-tone="success"],.journal-validation[data-tone="success"]{color:#166534;background:#dcfce7}.ledger-message[data-tone="error"],.journal-validation[data-tone="error"]{color:#991b1b;background:#fee2e2}.ledger-message[data-tone="neutral"],.journal-validation[data-tone="neutral"]{color:#1e3a8a;background:#dbeafe}
                     .ledger-checkbox{flex-direction:row;align-items:center;align-self:end}.ledger-checkbox input{width:auto;min-height:auto}.journal-lines{display:grid;gap:10px}.journal-line{display:grid;grid-template-columns:1.4fr 1.4fr .8fr .8fr auto;gap:8px;align-items:end;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--surface-soft)}.journal-line label{margin:0}.journal-totals{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:12px;background:var(--surface-soft);border:1px solid var(--border);border-radius:8px}.journal-totals strong{display:block;font-size:18px}.ledger-status{font-weight:800}.ledger-status[data-status="active"],.ledger-status[data-status="posted"]{color:#166534}.ledger-status[data-status="inactive"],.ledger-status[data-status="reversed"]{color:#6b7280}.ledger-status[data-status="draft"]{color:#92400e}
                     @media(max-width:1000px){.ledger-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.journal-line{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:620px){.ledger-header{display:block}.ledger-grid,.journal-line,.journal-totals{grid-template-columns:1fr}.ledger-grid .ledger-wide{grid-column:span 1}}
                 </style>
@@ -76,6 +76,7 @@ export class LedgerManagementPage extends Page {
                         <div class="journal-lines" id="journal-lines"></div>
                         <div class="ledger-actions"><button id="journal-add-line" type="button" class="ledger-secondary">إضافة سطر</button></div>
                         <div class="journal-totals" id="journal-totals" data-balanced="false"><div>إجمالي المدين<strong id="journal-total-debit">0.00</strong></div><div>إجمالي الدائن<strong id="journal-total-credit">0.00</strong></div><div>الفرق<strong id="journal-total-difference">0.00</strong></div></div>
+                        <p id="journal-entry-validation" class="journal-validation" data-tone="neutral" role="status" aria-live="polite"></p>
                         <div class="ledger-actions"><button id="journal-entry-submit" type="submit" disabled>حفظ المسودة</button><button id="journal-entry-reset" type="button" class="ledger-secondary">إلغاء التعديل</button></div>
                     </form>
                 </section>
@@ -199,7 +200,10 @@ export class LedgerManagementPage extends Page {
 
         const target = event.target;
         if (!(target instanceof HTMLElement)) return;
-        if (target.matches(".journal-line-debit,.journal-line-credit")) this.updateJournalTotals();
+        if (target.matches(".journal-line-debit,.journal-line-credit")) {
+            this.clearOppositeJournalAmount(target as HTMLInputElement);
+            this.updateJournalTotals();
+        }
         if (target.id === "journal-entry-currency") this.refreshLineAccountOptions();
 
     };
@@ -347,7 +351,7 @@ export class LedgerManagementPage extends Page {
         if (!container) return;
         const row = document.createElement("div");
         row.className = "journal-line";
-        row.innerHTML = `<label>الحساب<select class="journal-line-account"></select></label><label>وصف السطر<input class="journal-line-description" value="${escapeHtml(input.description ?? "")}"></label><label>مدين<input class="journal-line-debit" type="number" min="0" step="0.01" value="${escapeHtml(String(input.debit ?? 0))}"></label><label>دائن<input class="journal-line-credit" type="number" min="0" step="0.01" value="${escapeHtml(String(input.credit ?? 0))}"></label><button type="button" class="ledger-danger" data-action="remove-journal-line" title="حذف السطر">حذف</button>`;
+        row.innerHTML = `<label>الحساب<select class="journal-line-account"></select></label><label>وصف السطر<input class="journal-line-description" value="${escapeHtml(input.description ?? "")}"></label><label>مدين<input class="journal-line-debit" type="number" min="0" step="0.01" value="${escapeHtml(amountInputValue(input.debit))}"></label><label>دائن<input class="journal-line-credit" type="number" min="0" step="0.01" value="${escapeHtml(amountInputValue(input.credit))}"></label><button type="button" class="ledger-danger" data-action="remove-journal-line" title="حذف السطر">حذف</button>`;
         container.appendChild(row);
         this.refreshLineAccountOptions();
         const select = row.querySelector<HTMLSelectElement>(".journal-line-account");
@@ -368,6 +372,14 @@ export class LedgerManagementPage extends Page {
 
     private readJournalLines(): JournalLineInput[] {
 
+        return this.readJournalLineRows().filter(
+            line => !isEmptyJournalLine(line)
+        );
+
+    }
+
+    private readJournalLineRows(): JournalLineInput[] {
+
         return Array.from(document.querySelectorAll<HTMLElement>(".journal-line")).map(row => ({
             ledgerAccountId: row.querySelector<HTMLSelectElement>(".journal-line-account")?.value ?? "",
             description: row.querySelector<HTMLInputElement>(".journal-line-description")?.value,
@@ -379,17 +391,47 @@ export class LedgerManagementPage extends Page {
 
     private updateJournalTotals(): void {
 
+        const rawLines = this.readJournalLineRows();
         const lines = this.readJournalLines();
+        const emptyLineCount = rawLines.length - lines.length;
         const debit = lines.reduce((total, line) => total + finiteAmount(line.debit), 0);
         const credit = lines.reduce((total, line) => total + finiteAmount(line.credit), 0);
         const difference = debit - credit;
         this.text("journal-total-debit", formatAmount(debit));
         this.text("journal-total-credit", formatAmount(credit));
         this.text("journal-total-difference", formatAmount(difference));
-        const valid = !validateJournalLines(lines);
+        const validationError = validateJournalLines(lines);
+        const valid = !validationError;
         this.button("journal-entry-submit").disabled = !valid;
         const totals = document.getElementById("journal-totals");
         if (totals) totals.dataset.balanced = String(valid);
+        this.setJournalValidation(
+            validationError
+                ?? (emptyLineCount > 0
+                    ? `سيتم تجاهل ${emptyLineCount} سطر فارغ عند الحفظ.`
+                    : "القيد متوازن وجاهز للحفظ."),
+            validationError ? "error" : valid ? "success" : "neutral"
+        );
+
+    }
+
+    private clearOppositeJournalAmount(input: HTMLInputElement): void {
+
+        const amount = Number(input.value);
+
+        if (!Number.isFinite(amount) || amount <= 0) {
+            return;
+        }
+
+        const row = input.closest(".journal-line");
+        const selector = input.matches(".journal-line-debit")
+            ? ".journal-line-credit"
+            : ".journal-line-debit";
+        const opposite = row?.querySelector<HTMLInputElement>(selector);
+
+        if (opposite) {
+            opposite.value = "";
+        }
 
     }
 
@@ -425,6 +467,22 @@ export class LedgerManagementPage extends Page {
 
     }
 
+    private setJournalValidation(
+        message: string,
+        tone: "success" | "error" | "neutral"
+    ): void {
+
+        const element = document.getElementById("journal-entry-validation");
+
+        if (!element) {
+            return;
+        }
+
+        element.textContent = message;
+        element.dataset.tone = tone;
+
+    }
+
     private readAccountType(): LedgerAccountType {
 
         const value = this.select("ledger-account-type").value;
@@ -444,9 +502,10 @@ function validateJournalLines(lines: JournalLineInput[]): string | null {
 
     if (lines.length < 2) return "القيد يحتاج إلى سطرين على الأقل.";
     for (const line of lines) {
-        if (!line.ledgerAccountId.trim()) return "يجب اختيار حساب لكل سطر.";
+        if (!line.ledgerAccountId.trim()) return "اختر حساب ترحيل لكل سطر.";
         if (!Number.isFinite(line.debit) || !Number.isFinite(line.credit) || line.debit < 0 || line.credit < 0) return "قيم المدين والدائن غير صالحة.";
-        if ((line.debit > 0) === (line.credit > 0)) return "كل سطر يجب أن يحتوي مديناً أو دائناً موجباً، وليس كليهما.";
+        if (line.debit > 0 && line.credit > 0) return "أدخل مديناً أو دائناً، وليس كليهما.";
+        if (line.debit <= 0 && line.credit <= 0) return "أدخل مديناً أو دائناً لكل سطر.";
     }
     const debit = lines.reduce((total, line) => total + line.debit, 0);
     const credit = lines.reduce((total, line) => total + line.credit, 0);
@@ -457,6 +516,8 @@ function validateJournalLines(lines: JournalLineInput[]): string | null {
 
 function emptyLine(): JournalLineInput { return { ledgerAccountId: "", debit: 0, credit: 0 }; }
 function finiteAmount(value: number): number { return Number.isFinite(value) ? value : 0; }
+function amountInputValue(value: number | undefined): string { return typeof value === "number" && value > 0 ? String(value) : ""; }
+function isEmptyJournalLine(line: JournalLineInput): boolean { return !line.ledgerAccountId.trim() && !(line.description?.trim()) && line.debit === 0 && line.credit === 0; }
 function commandKey(prefix: string): string { const id = typeof globalThis.crypto?.randomUUID === "function" ? globalThis.crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`; return `${prefix}:${id}`; }
 function todayDate(): string { return new Date().toISOString().slice(0, 10); }
 function formatAmount(value: number): string { return new Intl.NumberFormat("ar", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value); }

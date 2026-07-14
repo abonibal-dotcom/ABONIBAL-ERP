@@ -34,7 +34,7 @@ export class ProductFactory {
             // الأسعار
             purchasePrice: 0,
 
-            salePrice: 0,
+            salePrice: data.salePrice,
 
             taxRate: 0,
 

@@ -70,6 +70,26 @@ export class InvoiceRepository extends Repository<Invoice> {
 
     }
 
+    public removeForAccount(
+        accountId: string,
+        invoiceId: string
+    ): boolean {
+
+        const invoices = this.allForAccount(accountId);
+        const remainingInvoices = invoices.filter(
+            invoice => invoice.id !== invoiceId
+        );
+
+        if (remainingInvoices.length === invoices.length) {
+            return false;
+        }
+
+        this.saveForAccount(accountId, remainingInvoices);
+
+        return true;
+
+    }
+
     private saveForAccount(accountId: string, invoices: Invoice[]): void {
 
         this.driver.write<Invoice[]>(
@@ -148,4 +168,3 @@ function isNullableRecord(value: unknown): value is Record<string, unknown> | nu
         );
 
 }
-
