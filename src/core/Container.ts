@@ -55,6 +55,11 @@ import { InvoiceService } from "../modules/sales/services/InvoiceService";
 import { InvoiceReturnRepository } from "../modules/sales/repositories/InvoiceReturnRepository";
 import { InvoiceReturnValidator } from "../modules/sales/validators/InvoiceReturnValidator";
 import { InvoiceReturnService } from "../modules/sales/services/InvoiceReturnService";
+import { IssueInvoiceDurableCommandService } from "../modules/sales/services/IssueInvoiceDurableCommandService";
+import { CancelInvoiceDurableCommandService } from "../modules/sales/services/CancelInvoiceDurableCommandService";
+import { ExecuteInvoiceReturnDurableCommandService } from "../modules/sales/services/ExecuteInvoiceReturnDurableCommandService";
+import { InvoiceLocalMutationApplier } from "../modules/sales/sync/InvoiceLocalMutationApplier";
+import { InvoiceReturnLocalMutationApplier } from "../modules/sales/sync/InvoiceReturnLocalMutationApplier";
 import { getDatabase } from "firebase/database";
 import { getAuthStateService } from "../modules/auth/AuthRuntime";
 import { getFirebaseApp } from "../modules/auth/firebase/FirebaseAuthClient";
@@ -548,6 +553,17 @@ export class Container {
 
         this.register("invoiceValidator", invoiceValidator);
 
+        const invoiceLocalMutationApplier = new InvoiceLocalMutationApplier(
+            invoiceRepository,
+            invoiceValidator
+        );
+        localMutationApplierRegistry.register(invoiceLocalMutationApplier);
+
+        this.register(
+            "invoiceLocalMutationApplier",
+            invoiceLocalMutationApplier
+        );
+
         const invoiceService = new InvoiceService(
             invoiceRepository,
             invoiceValidator,
@@ -557,6 +573,41 @@ export class Container {
 
         this.register("invoiceService", invoiceService);
 
+        const issueInvoiceDurableCommandService =
+            new IssueInvoiceDurableCommandService(
+                invoiceService,
+                invoiceRepository,
+                invoiceValidator,
+                inventoryService,
+                stockMovementCacheRepository,
+                stockMovementValidator,
+                durableMutationGroupCapture,
+                syncOutboxRepository,
+                syncModeService,
+                getAuthStateService()
+            );
+        const cancelInvoiceDurableCommandService =
+            new CancelInvoiceDurableCommandService(
+                invoiceService,
+                invoiceRepository,
+                invoiceValidator,
+                stockMovementCacheRepository,
+                stockMovementValidator,
+                durableMutationGroupCapture,
+                syncOutboxRepository,
+                syncModeService,
+                getAuthStateService()
+            );
+
+        this.register(
+            "issueInvoiceDurableCommandService",
+            issueInvoiceDurableCommandService
+        );
+        this.register(
+            "cancelInvoiceDurableCommandService",
+            cancelInvoiceDurableCommandService
+        );
+
         const invoiceReturnRepository = new InvoiceReturnRepository(driver);
 
         this.register("invoiceReturnRepository", invoiceReturnRepository);
@@ -564,6 +615,20 @@ export class Container {
         const invoiceReturnValidator = new InvoiceReturnValidator();
 
         this.register("invoiceReturnValidator", invoiceReturnValidator);
+
+        const invoiceReturnLocalMutationApplier =
+            new InvoiceReturnLocalMutationApplier(
+                invoiceReturnRepository,
+                invoiceReturnValidator
+            );
+        localMutationApplierRegistry.register(
+            invoiceReturnLocalMutationApplier
+        );
+
+        this.register(
+            "invoiceReturnLocalMutationApplier",
+            invoiceReturnLocalMutationApplier
+        );
 
         const invoiceReturnService = new InvoiceReturnService(
             invoiceReturnRepository,
@@ -574,6 +639,25 @@ export class Container {
         );
 
         this.register("invoiceReturnService", invoiceReturnService);
+
+        const executeInvoiceReturnDurableCommandService =
+            new ExecuteInvoiceReturnDurableCommandService(
+                invoiceReturnService,
+                invoiceReturnRepository,
+                invoiceReturnValidator,
+                invoiceRepository,
+                stockMovementCacheRepository,
+                stockMovementValidator,
+                durableMutationGroupCapture,
+                syncOutboxRepository,
+                syncModeService,
+                getAuthStateService()
+            );
+
+        this.register(
+            "executeInvoiceReturnDurableCommandService",
+            executeInvoiceReturnDurableCommandService
+        );
 
     }
 

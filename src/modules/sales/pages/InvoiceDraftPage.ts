@@ -11,12 +11,19 @@ import type {
 } from "../Invoice";
 import type { InvoiceReturnService } from "../services/InvoiceReturnService";
 import type { InvoiceService } from "../services/InvoiceService";
+import type { IssueInvoiceDurableCommandService } from "../services/IssueInvoiceDurableCommandService";
+import type { CancelInvoiceDurableCommandService } from "../services/CancelInvoiceDurableCommandService";
+import type { ExecuteInvoiceReturnDurableCommandService } from "../services/ExecuteInvoiceReturnDurableCommandService";
 
 export class InvoiceDraftPage extends Page {
 
     private readonly customerService: CustomerService;
     private readonly invoiceService: InvoiceService;
     private readonly invoiceReturnService: InvoiceReturnService;
+    private readonly issueInvoiceCommand: IssueInvoiceDurableCommandService;
+    private readonly cancelInvoiceCommand: CancelInvoiceDurableCommandService;
+    private readonly executeInvoiceReturnCommand:
+        ExecuteInvoiceReturnDurableCommandService;
     private readonly productService: ProductService;
 
     private form: HTMLFormElement | null = null;
@@ -134,6 +141,18 @@ export class InvoiceDraftPage extends Page {
         this.invoiceService = Container.get<InvoiceService>("invoiceService");
         this.invoiceReturnService =
             Container.get<InvoiceReturnService>("invoiceReturnService");
+        this.issueInvoiceCommand =
+            Container.get<IssueInvoiceDurableCommandService>(
+                "issueInvoiceDurableCommandService"
+            );
+        this.cancelInvoiceCommand =
+            Container.get<CancelInvoiceDurableCommandService>(
+                "cancelInvoiceDurableCommandService"
+            );
+        this.executeInvoiceReturnCommand =
+            Container.get<ExecuteInvoiceReturnDurableCommandService>(
+                "executeInvoiceReturnDurableCommandService"
+            );
         this.productService = Container.get<ProductService>("productService");
 
     }
@@ -877,7 +896,7 @@ export class InvoiceDraftPage extends Page {
 
     private issueDraft(invoiceId: string): void {
 
-        const result = this.invoiceService.markIssued(invoiceId);
+        const result = this.issueInvoiceCommand.execute(invoiceId);
 
         if (!result.success || !result.invoice) {
             this.setMessage(result.errors.join(" "));
@@ -922,7 +941,7 @@ export class InvoiceDraftPage extends Page {
             return;
         }
 
-        const result = this.invoiceService.markCancelled(
+        const result = this.cancelInvoiceCommand.execute(
             invoiceId,
             "تأكيد المستخدم إلغاء الفاتورة"
         );
@@ -993,7 +1012,7 @@ export class InvoiceDraftPage extends Page {
             return;
         }
 
-        const executeResult = this.invoiceReturnService.executeReturn(
+        const executeResult = this.executeInvoiceReturnCommand.execute(
             createResult.invoiceReturn.id
         );
 
