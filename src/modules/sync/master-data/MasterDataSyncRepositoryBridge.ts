@@ -1,6 +1,7 @@
 import type { SyncModeService } from "../services/SyncModeService";
 import type { DurableMutationCapture } from "../services/DurableMutationCapture";
 import type { MasterDataSyncStateRepository } from "../repositories/MasterDataSyncStateRepository";
+import type { SyncOperationInput } from "../SyncOperation";
 import { sha256Hex } from "./CanonicalJson";
 import type { MasterDataLocalMutationApplier } from "./MasterDataLocalMutationApplier";
 import {
@@ -96,12 +97,53 @@ export class MasterDataSyncRepositoryBridge<T extends object> {
         );
     }
 
+    public prepareCreateOperation(
+        accountId: string,
+        record: T,
+        createdAt: string = this.clock()
+    ): SyncOperationInput {
+        return this.prepareRecordOperation(
+            accountId,
+            record,
+            "create",
+            undefined,
+            createdAt
+        );
+    }
+
     private captureRecord(
         accountId: string,
         record: T,
         operationType: "create" | "update",
         expectedRevision: number | undefined
     ): void {
+        const operation = this.prepareRecordOperation(
+            accountId,
+            record,
+            operationType,
+            expectedRevision,
+            this.clock()
+        );
+        const result = this.capture.capture({
+            accountId,
+            localApplier: this.localApplier,
+            operation
+        });
+
+        if (!result.success) {
+            throw new MasterDataSyncMutationError(
+                result.errors[0] ?? "Master-data mutation capture failed."
+            );
+        }
+    }
+
+    private prepareRecordOperation(
+        accountId: string,
+        record: T,
+        operationType: "create" | "update",
+        expectedRevision: number | undefined,
+        createdAt: string
+    ): SyncOperationInput {
         const recordId = readRecordIdentity(record, "id");
         const recordAccountId = readRecordIdentity(record, "accountId");
 
@@ -135,28 +177,19 @@ export class MasterDataSyncRepositoryBridge<T extends object> {
             tombstone
         );
         const payload: MasterDataMutationPayload = { envelope };
-        const result = this.capture.capture({
-            accountId,
-            localApplier: this.localApplier,
-            operation: {
-                operationId,
-                accountId,
-                module: this.codec.module,
-                recordId,
-                operationType,
-                ...(expectedRevision !== undefined ? { expectedRevision } : {}),
-                idempotencyKey,
-                writeSetChecksum: envelope.meta.writeSetChecksum,
-                safePayload: payload,
-                createdAt: this.clock()
-            }
-        });
 
-        if (!result.success) {
-            throw new MasterDataSyncMutationError(
-                result.errors[0] ?? "Master-data mutation capture failed."
-            );
-        }
+        return {
+            operationId,
+            accountId,
+            module: this.codec.module,
+            recordId,
+            operationType,
+            ...(expectedRevision !== undefined ? { expectedRevision } : {}),
+            idempotencyKey,
+            writeSetChecksum: envelope.meta.writeSetChecksum,
+            safePayload: payload,
+            createdAt
+        };
     }
 }
 

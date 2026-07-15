@@ -50,6 +50,15 @@ export interface SyncPayloadReference {
     checksum?: string;
 }
 
+export interface SyncOperationGroupMembership {
+    groupId: string;
+    groupType: string;
+    groupSequence: number;
+    groupSize: number;
+    requiredForLocalCompletion: boolean;
+    groupChecksum: string;
+}
+
 export interface SyncOperation {
     operationId: string;
     accountId: string;
@@ -61,6 +70,7 @@ export interface SyncOperation {
     writeSetChecksum?: string;
     safePayload?: unknown;
     payloadReference?: SyncPayloadReference;
+    group?: SyncOperationGroupMembership;
     createdAt: string;
     localApplyState: LocalApplyState;
     localAppliedAt?: string;
@@ -87,6 +97,7 @@ export interface SyncOperationInput {
     writeSetChecksum?: string;
     safePayload?: unknown;
     payloadReference?: SyncPayloadReference;
+    group?: SyncOperationGroupMembership;
     createdAt: string;
 }
 
@@ -124,6 +135,9 @@ export function createPendingSyncOperation(
     const payloadReference = input.payloadReference
         ? normalizePayloadReference(input.payloadReference)
         : undefined;
+    const group = input.group
+        ? normalizeGroupMembership(input.group)
+        : undefined;
     const writeSetChecksum = optionalText(input.writeSetChecksum);
 
     return {
@@ -141,6 +155,7 @@ export function createPendingSyncOperation(
             ? { safePayload: input.safePayload }
             : {}),
         ...(payloadReference ? { payloadReference } : {}),
+        ...(group ? { group } : {}),
         createdAt,
         localApplyState: "pending",
         localApplyAttemptCount: 0,
@@ -211,11 +226,15 @@ export function normalizeStoredSyncOperation(
     const localApplyAttemptCount = operation.localApplyAttemptCount === undefined
         ? 0
         : operation.localApplyAttemptCount;
+    const group = operation.group === undefined
+        ? undefined
+        : normalizeStoredGroupMembership(operation.group);
 
     if (
         !isLocalApplyState(localApplyState)
         || !Number.isInteger(localApplyAttemptCount)
         || localApplyAttemptCount < 0
+        || (operation.group !== undefined && !group)
     ) {
         return null;
     }
@@ -223,8 +242,65 @@ export function normalizeStoredSyncOperation(
     return {
         ...(operation as SyncOperation),
         localApplyState,
-        localApplyAttemptCount
+        localApplyAttemptCount,
+        ...(group ? { group } : {})
     };
+}
+
+function normalizeGroupMembership(
+    group: SyncOperationGroupMembership
+): SyncOperationGroupMembership {
+    const groupId = requireGroupKeyText(group.groupId, "group.groupId");
+    const groupType = requireGroupKeyText(group.groupType, "group.groupType");
+    const groupChecksum = requireText(
+        group.groupChecksum,
+        "group.groupChecksum"
+    );
+
+    if (!isPositiveInteger(group.groupSequence)) {
+        throw new Error("Sync group sequence must be a positive integer.");
+    }
+
+    if (!isPositiveInteger(group.groupSize)) {
+        throw new Error("Sync group size must be a positive integer.");
+    }
+
+    if (group.groupSequence > group.groupSize) {
+        throw new Error("Sync group sequence cannot exceed group size.");
+    }
+
+    if (typeof group.requiredForLocalCompletion !== "boolean") {
+        throw new Error("Sync group required-member flag must be boolean.");
+    }
+
+    if (!/^[a-f0-9]{64}$/i.test(groupChecksum)) {
+        throw new Error("Sync group checksum must be a SHA-256 hex value.");
+    }
+
+    return {
+        groupId,
+        groupType,
+        groupSequence: group.groupSequence,
+        groupSize: group.groupSize,
+        requiredForLocalCompletion: group.requiredForLocalCompletion,
+        groupChecksum
+    };
+}
+
+function normalizeStoredGroupMembership(
+    value: unknown
+): SyncOperationGroupMembership | null {
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+        return null;
+    }
+
+    try {
+        return normalizeGroupMembership(
+            value as SyncOperationGroupMembership
+        );
+    } catch {
+        return null;
+    }
 }
 
 function normalizePayloadReference(
@@ -249,6 +325,16 @@ function requireText(value: string, field: string): string {
     return normalized;
 }
 
+function requireGroupKeyText(value: string, field: string): string {
+    const normalized = requireText(value, field);
+
+    if (/[.#$\[\]\/]/.test(normalized)) {
+        throw new Error(`Sync ${field} is not key-safe.`);
+    }
+
+    return normalized;
+}
+
 function optionalText(value: string | undefined): string | undefined {
     const normalized = value?.trim();
 
@@ -263,4 +349,10 @@ function isRevision(value: unknown): value is number {
     return typeof value === "number"
         && Number.isInteger(value)
         && value >= 0;
+}
+
+function isPositiveInteger(value: unknown): value is number {
+    return typeof value === "number"
+        && Number.isInteger(value)
+        && value > 0;
 }

@@ -40,9 +40,12 @@ import { ProductSyncRepository } from "../modules/products/repositories/ProductS
 import { productSyncCodec } from "../modules/products/sync/ProductSyncCodec";
 import { ProductValidator } from "../modules/products/validators/ProductValidator";
 import { ProductService } from "../modules/products/services/ProductService";
+import { ProductFactory } from "../modules/products/factories/ProductFactory";
+import { CreateProductWithOpeningStockService } from "../modules/products/services/CreateProductWithOpeningStockService";
 import { StockMovementRepository } from "../modules/inventory/repositories/StockMovementRepository";
 import { StockMovementValidator } from "../modules/inventory/validators/StockMovementValidator";
 import { InventoryService } from "../modules/inventory/services/InventoryService";
+import { StockMovementLocalMutationApplier } from "../modules/inventory/sync/StockMovementLocalMutationApplier";
 import { InvoiceRepository } from "../modules/sales/repositories/InvoiceRepository";
 import { InvoiceValidator } from "../modules/sales/validators/InvoiceValidator";
 import { InvoiceService } from "../modules/sales/services/InvoiceService";
@@ -59,6 +62,7 @@ import { SyncConflictRepository } from "../modules/sync/repositories/SyncConflic
 import { SyncReceiptRepository } from "../modules/sync/repositories/SyncReceiptRepository";
 import { ListenerCoordinator } from "../modules/sync/services/ListenerCoordinator";
 import { DurableMutationCapture } from "../modules/sync/services/DurableMutationCapture";
+import { DurableMutationGroupCapture } from "../modules/sync/services/DurableMutationGroupCapture";
 import { LocalMutationApplierRegistry } from "../modules/sync/services/LocalMutationApplierRegistry";
 import { LocalMutationReconciler } from "../modules/sync/services/LocalMutationReconciler";
 import { MasterDataLocalMutationApplier } from "../modules/sync/master-data/MasterDataLocalMutationApplier";
@@ -70,6 +74,7 @@ import { SyncCoordinator } from "../modules/sync/services/SyncCoordinator";
 import { SyncEchoPolicy } from "../modules/sync/services/SyncEchoPolicy";
 import { SyncModeService } from "../modules/sync/services/SyncModeService";
 import { SyncStatusService } from "../modules/sync/services/SyncStatusService";
+import { SyncCloudCapabilityRegistry } from "../modules/sync/services/SyncCloudCapabilityRegistry";
 
 export class Container {
 
@@ -87,7 +92,14 @@ export class Container {
 
         this.register("driver", driver);
 
-        const syncOutboxRepository = new PersistentOutboxRepository(driver);
+        const syncCloudCapabilityRegistry = new SyncCloudCapabilityRegistry();
+        syncCloudCapabilityRegistry.register("products", ["create", "update"]);
+        syncCloudCapabilityRegistry.register("customers", ["create", "update"]);
+        syncCloudCapabilityRegistry.register("suppliers", ["create", "update"]);
+        const syncOutboxRepository = new PersistentOutboxRepository(
+            driver,
+            operation => syncCloudCapabilityRegistry.supports(operation)
+        );
         const syncReceiptRepository = new SyncReceiptRepository(driver);
         const syncConflictRepository = new SyncConflictRepository(driver);
         const masterDataSyncStateRepository = new MasterDataSyncStateRepository(driver);
@@ -98,6 +110,11 @@ export class Container {
         const localMutationApplierRegistry = new LocalMutationApplierRegistry();
         const durableMutationCapture = new DurableMutationCapture(
             syncOutboxRepository
+        );
+        const durableMutationGroupCapture = new DurableMutationGroupCapture(
+            syncOutboxRepository,
+            localMutationApplierRegistry,
+            durableMutationCapture
         );
         const localMutationReconciler = new LocalMutationReconciler(
             syncOutboxRepository,
@@ -130,6 +147,7 @@ export class Container {
         );
 
         this.register("syncOutboxRepository", syncOutboxRepository);
+        this.register("syncCloudCapabilityRegistry", syncCloudCapabilityRegistry);
         this.register("syncReceiptRepository", syncReceiptRepository);
         this.register("syncConflictRepository", syncConflictRepository);
         this.register("masterDataSyncStateRepository", masterDataSyncStateRepository);
@@ -139,6 +157,7 @@ export class Container {
         this.register("syncListenerCoordinator", syncListenerCoordinator);
         this.register("localMutationApplierRegistry", localMutationApplierRegistry);
         this.register("durableMutationCapture", durableMutationCapture);
+        this.register("durableMutationGroupCapture", durableMutationGroupCapture);
         this.register("localMutationReconciler", localMutationReconciler);
         this.register("syncEchoPolicy", syncEchoPolicy);
         this.register("firebaseRealtimeClient", firebaseRealtimeClient);
@@ -428,6 +447,20 @@ export class Container {
 
         this.register("stockMovementValidator", stockMovementValidator);
 
+        const stockMovementLocalMutationApplier =
+            new StockMovementLocalMutationApplier(
+                stockMovementRepository,
+                stockMovementValidator
+            );
+        localMutationApplierRegistry.register(
+            stockMovementLocalMutationApplier
+        );
+
+        this.register(
+            "stockMovementLocalMutationApplier",
+            stockMovementLocalMutationApplier
+        );
+
         const inventoryService = new InventoryService(
             stockMovementRepository,
             stockMovementValidator,
@@ -436,6 +469,25 @@ export class Container {
         );
 
         this.register("inventoryService", inventoryService);
+
+        const createProductWithOpeningStockService =
+            new CreateProductWithOpeningStockService(
+                new ProductFactory(),
+                productService,
+                productValidator,
+                productCacheRepository,
+                productSyncBridge,
+                stockMovementRepository,
+                stockMovementValidator,
+                durableMutationGroupCapture,
+                syncModeService,
+                getAuthStateService()
+            );
+
+        this.register(
+            "createProductWithOpeningStockService",
+            createProductWithOpeningStockService
+        );
 
         const invoiceRepository = new InvoiceRepository(driver);
 

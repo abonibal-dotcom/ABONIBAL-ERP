@@ -7,13 +7,28 @@ import {
     type SyncOperationInput,
     type SyncOperationStatus
 } from "../SyncOperation";
+import {
+    buildGroupedSyncOperationInputs,
+    compareGroupedMembers,
+    groupMembershipMatches,
+    inspectSyncOperationGroup,
+    isGroupedOperationCloudEligible,
+    SyncOperationGroupConflictError,
+    type SyncCloudCapabilityResolver,
+    type SyncOperationGroupBatchInput
+} from "../SyncOperationGroup";
 import { syncOutboxKeyForAccount } from "../persistence/SyncPersistenceKeys";
 
 export class PersistentOutboxRepository {
     private readonly driver: Driver;
+    private readonly isCloudCapable: SyncCloudCapabilityResolver;
 
-    public constructor(driver: Driver) {
+    public constructor(
+        driver: Driver,
+        isCloudCapable: SyncCloudCapabilityResolver = () => true
+    ) {
         this.driver = driver;
+        this.isCloudCapable = isCloudCapable;
     }
 
     public allForAccount(accountId: string): SyncOperation[] {
@@ -37,6 +52,12 @@ export class PersistentOutboxRepository {
         input: SyncOperationInput
     ): SyncOperation {
         const normalizedAccountId = normalizeAccountId(accountId);
+
+        if (input.group) {
+            throw new Error(
+                "Grouped sync operations require atomic batch enqueue."
+            );
+        }
 
         if (input.accountId.trim() !== normalizedAccountId) {
             throw new Error("Sync operation accountId does not match outbox account.");
@@ -64,6 +85,71 @@ export class PersistentOutboxRepository {
         return operation;
     }
 
+    public enqueueBatchAtomic(
+        accountId: string,
+        input: SyncOperationGroupBatchInput
+    ): SyncOperation[] {
+        const normalizedAccountId = normalizeAccountId(accountId);
+        const groupedInputs = buildGroupedSyncOperationInputs(input);
+        const candidates = groupedInputs.map(createPendingSyncOperation);
+
+        if (candidates.some(
+            operation => operation.accountId !== normalizedAccountId
+        )) {
+            throw new Error(
+                "Sync operation group accountId does not match outbox account."
+            );
+        }
+
+        const group = candidates[0].group;
+
+        if (!group) {
+            throw new Error("Atomic batch did not produce grouped operations.");
+        }
+
+        const operations = this.allForAccount(normalizedAccountId);
+        const existingGroup = operations.filter(operation =>
+            operation.group?.groupId === group.groupId
+        );
+
+        if (existingGroup.length > 0) {
+            const inspection = inspectSyncOperationGroup(existingGroup);
+            const exactMatch = inspection.valid
+                && inspection.groupChecksum === group.groupChecksum
+                && inspection.members.length === candidates.length
+                && candidates.every(candidate =>
+                    inspection.members.some(existing =>
+                        hasSameGroupedIdentity(existing, candidate)
+                    )
+                );
+
+            if (!exactMatch) {
+                throw new SyncOperationGroupConflictError(
+                    "Sync operation group identity conflict detected."
+                );
+            }
+
+            return inspection.members;
+        }
+
+        for (const candidate of candidates) {
+            const collision = operations.find(operation =>
+                operation.operationId === candidate.operationId
+                || operation.idempotencyKey === candidate.idempotencyKey
+            );
+
+            if (collision) {
+                throw new SyncOperationGroupConflictError(
+                    "Sync operation identity collision detected."
+                );
+            }
+        }
+
+        this.save(normalizedAccountId, [...operations, ...candidates]);
+
+        return candidates.slice().sort(compareGroupedMembers);
+    }
+
     public findByOperationId(
         accountId: string,
         operationId: string
@@ -73,6 +159,18 @@ export class PersistentOutboxRepository {
         return this
             .allForAccount(accountId)
             .find(operation => operation.operationId === normalizedOperationId);
+    }
+
+    public getGroupMembers(
+        accountId: string,
+        groupId: string
+    ): SyncOperation[] {
+        const normalizedGroupId = requireText(groupId, "groupId");
+
+        return this
+            .allForAccount(accountId)
+            .filter(operation => operation.group?.groupId === normalizedGroupId)
+            .sort(compareGroupedMembers);
     }
 
     public hasOpenOperationForRecord(
@@ -96,23 +194,33 @@ export class PersistentOutboxRepository {
         now: string
     ): SyncOperation[] {
         const normalizedNow = requireText(now, "now");
+        const operations = this.allForAccount(accountId);
 
-        return this
-            .allForAccount(accountId)
+        return operations
             .filter(operation => operation.status === "pending")
             .filter(operation => operation.localApplyState === "applied")
             .filter(operation =>
                 !operation.nextAttemptAt
                 || operation.nextAttemptAt <= normalizedNow
             )
-            .sort((left, right) => left.createdAt.localeCompare(right.createdAt));
+            .filter(operation =>
+                isGroupedOperationCloudEligible(
+                    operation,
+                    operations,
+                    this.isCloudCapable
+                )
+            )
+            .sort(comparePendingOperations);
     }
 
     public getPendingLocalApply(accountId: string): SyncOperation[] {
-        return this
-            .allForAccount(accountId)
+        const operations = this.allForAccount(accountId);
+
+        return operations
             .filter(operation => operation.localApplyState === "pending")
-            .sort((left, right) => left.createdAt.localeCompare(right.createdAt));
+            .sort((left, right) =>
+                compareLocalApplyOperations(left, right, operations)
+            );
     }
 
     public markLocalApplyAttempt(
@@ -228,9 +336,30 @@ export class PersistentOutboxRepository {
         operationId: string,
         attemptedAt: string
     ): SyncOperation {
+        const normalizedAccountId = normalizeAccountId(accountId);
+        const normalizedOperationId = requireText(operationId, "operationId");
+        const operations = this.allForAccount(normalizedAccountId);
+        const current = operations.find(operation =>
+            operation.operationId === normalizedOperationId
+        );
+
+        if (!current) {
+            throw new Error("Sync operation was not found.");
+        }
+
+        if (!isGroupedOperationCloudEligible(
+            current,
+            operations,
+            this.isCloudCapable
+        )) {
+            throw new Error(
+                "Cloud sync requires an eligible locally complete operation."
+            );
+        }
+
         return this.update(
-            accountId,
-            operationId,
+            normalizedAccountId,
+            normalizedOperationId,
             ["pending"],
             operation => {
                 if (operation.localApplyState !== "applied") {
@@ -397,6 +526,33 @@ export class PersistentOutboxRepository {
             throw new Error("Only acknowledged sync operations can leave the active outbox.");
         }
 
+        if (operation.group) {
+            const groupMembers = operations.filter(candidate =>
+                candidate.group?.groupId === operation.group?.groupId
+            );
+            const inspection = inspectSyncOperationGroup(groupMembers);
+
+            if (!inspection.valid) {
+                throw new Error(
+                    "Invalid sync operation group cannot be removed."
+                );
+            }
+
+            if (!groupMembers.every(
+                member => member.status === "acknowledged"
+            )) {
+                return;
+            }
+
+            this.save(
+                normalizedAccountId,
+                operations.filter(candidate =>
+                    candidate.group?.groupId !== operation.group?.groupId
+                )
+            );
+            return;
+        }
+
         this.save(
             normalizedAccountId,
             operations.filter(candidate =>
@@ -509,6 +665,89 @@ function hasSameIdentity(
         && operation.expectedRevision === input.expectedRevision
         && operation.idempotencyKey === input.idempotencyKey.trim()
         && operation.writeSetChecksum === input.writeSetChecksum?.trim();
+}
+
+function hasSameGroupedIdentity(
+    existing: SyncOperation,
+    candidate: SyncOperation
+): boolean {
+    return existing.operationId === candidate.operationId
+        && existing.accountId === candidate.accountId
+        && existing.module === candidate.module
+        && existing.recordId === candidate.recordId
+        && existing.operationType === candidate.operationType
+        && existing.expectedRevision === candidate.expectedRevision
+        && existing.idempotencyKey === candidate.idempotencyKey
+        && existing.writeSetChecksum === candidate.writeSetChecksum
+        && groupMembershipMatches(existing.group, candidate.group);
+}
+
+function comparePendingOperations(
+    left: SyncOperation,
+    right: SyncOperation
+): number {
+    if (
+        left.group
+        && right.group
+        && left.group.groupId === right.group.groupId
+    ) {
+        return compareGroupedMembers(left, right);
+    }
+
+    const createdAtOrder = left.createdAt.localeCompare(right.createdAt);
+
+    return createdAtOrder !== 0
+        ? createdAtOrder
+        : left.operationId.localeCompare(right.operationId);
+}
+
+function compareLocalApplyOperations(
+    left: SyncOperation,
+    right: SyncOperation,
+    operations: SyncOperation[]
+): number {
+    const leftAnchor = groupQueueAnchor(left, operations);
+    const rightAnchor = groupQueueAnchor(right, operations);
+    const anchorOrder = leftAnchor.createdAt.localeCompare(
+        rightAnchor.createdAt
+    );
+
+    if (anchorOrder !== 0) {
+        return anchorOrder;
+    }
+
+    const bucketOrder = leftAnchor.bucket.localeCompare(rightAnchor.bucket);
+
+    if (bucketOrder !== 0) {
+        return bucketOrder;
+    }
+
+    return compareGroupedMembers(left, right)
+        || left.operationId.localeCompare(right.operationId);
+}
+
+function groupQueueAnchor(
+    operation: SyncOperation,
+    operations: SyncOperation[]
+): { createdAt: string; bucket: string } {
+    if (!operation.group) {
+        return {
+            createdAt: operation.createdAt,
+            bucket: `operation:${operation.operationId}`
+        };
+    }
+
+    const createdAt = operations
+        .filter(candidate =>
+            candidate.group?.groupId === operation.group?.groupId
+        )
+        .map(candidate => candidate.createdAt)
+        .sort()[0] ?? operation.createdAt;
+
+    return {
+        createdAt,
+        bucket: `group:${operation.group.groupId}`
+    };
 }
 
 function normalizeAccountId(accountId: string): string {

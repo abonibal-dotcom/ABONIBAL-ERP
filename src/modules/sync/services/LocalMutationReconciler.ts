@@ -1,4 +1,9 @@
 import type { PersistentOutboxRepository } from "../repositories/PersistentOutboxRepository";
+import {
+    inspectSyncOperationGroup,
+    type SyncOperationGroupInspection
+} from "../SyncOperationGroup";
+import type { SyncOperation } from "../SyncOperation";
 import type { DurableMutationCapture } from "./DurableMutationCapture";
 import type { LocalMutationApplierRegistry } from "./LocalMutationApplierRegistry";
 
@@ -79,11 +84,65 @@ export class LocalMutationReconciler {
         const operations = this.outboxRepository
             .getPendingLocalApply(normalizedAccountId)
             .slice(0, maxOperations);
+        const blockedGroups = new Set<string>();
 
-        for (const operation of operations) {
+        for (const queuedOperation of operations) {
             if (this.activeAccountId !== normalizedAccountId) {
                 result.stopped = true;
                 break;
+            }
+
+            const operation = this.outboxRepository.findByOperationId(
+                normalizedAccountId,
+                queuedOperation.operationId
+            );
+
+            if (!operation || operation.localApplyState !== "pending") {
+                continue;
+            }
+
+            if (operation.group) {
+                const groupId = operation.group.groupId;
+
+                if (blockedGroups.has(groupId)) {
+                    continue;
+                }
+
+                const inspection = inspectSyncOperationGroup(
+                    this.outboxRepository.getGroupMembers(
+                        normalizedAccountId,
+                        groupId
+                    )
+                );
+
+                if (!inspection.valid) {
+                    result.processed += 1;
+                    this.markGroupIntegrityConflict(operation, inspection);
+                    result.conflicts += 1;
+                    blockedGroups.add(groupId);
+                    continue;
+                }
+
+                if (inspection.localState === "conflict") {
+                    blockedGroups.add(groupId);
+                    continue;
+                }
+
+                if (inspection.localState === "failed") {
+                    blockedGroups.add(groupId);
+                    continue;
+                }
+
+                const earlierMemberIsIncomplete = inspection.members
+                    .filter(member =>
+                        member.group!.groupSequence
+                        < operation.group!.groupSequence
+                    )
+                    .some(member => member.localApplyState !== "applied");
+
+                if (earlierMemberIsIncomplete) {
+                    continue;
+                }
             }
 
             result.processed += 1;
@@ -103,8 +162,14 @@ export class LocalMutationReconciler {
                 result.applied += 1;
             } else if (applyResult.outcome === "conflict") {
                 result.conflicts += 1;
+                if (operation.group) {
+                    blockedGroups.add(operation.group.groupId);
+                }
             } else {
                 result.failed += 1;
+                if (operation.group) {
+                    blockedGroups.add(operation.group.groupId);
+                }
             }
         }
 
@@ -142,6 +207,25 @@ export class LocalMutationReconciler {
             );
         } catch {
             // The retained pending operation remains visible for manual recovery.
+        }
+    }
+
+    private markGroupIntegrityConflict(
+        operation: SyncOperation,
+        inspection: SyncOperationGroupInspection
+    ): void {
+        const message = inspection.errors[0]
+            ?? "Sync operation group integrity validation failed.";
+
+        try {
+            this.outboxRepository.markLocalApplyConflict(
+                operation.accountId,
+                operation.operationId,
+                "local_group_integrity_conflict",
+                message
+            );
+        } catch {
+            // The malformed group remains durable and cloud-ineligible.
         }
     }
 }
