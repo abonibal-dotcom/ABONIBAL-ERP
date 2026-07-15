@@ -14,15 +14,21 @@ import {
     inspectSyncOperationGroup,
     isGroupedOperationCloudEligible,
     SyncOperationGroupConflictError,
+    type SyncCloudCapabilityResolver,
     type SyncOperationGroupBatchInput
 } from "../SyncOperationGroup";
 import { syncOutboxKeyForAccount } from "../persistence/SyncPersistenceKeys";
 
 export class PersistentOutboxRepository {
     private readonly driver: Driver;
+    private readonly isCloudCapable: SyncCloudCapabilityResolver;
 
-    public constructor(driver: Driver) {
+    public constructor(
+        driver: Driver,
+        isCloudCapable: SyncCloudCapabilityResolver = () => true
+    ) {
         this.driver = driver;
+        this.isCloudCapable = isCloudCapable;
     }
 
     public allForAccount(accountId: string): SyncOperation[] {
@@ -198,7 +204,11 @@ export class PersistentOutboxRepository {
                 || operation.nextAttemptAt <= normalizedNow
             )
             .filter(operation =>
-                isGroupedOperationCloudEligible(operation, operations)
+                isGroupedOperationCloudEligible(
+                    operation,
+                    operations,
+                    this.isCloudCapable
+                )
             )
             .sort(comparePendingOperations);
     }
@@ -337,7 +347,11 @@ export class PersistentOutboxRepository {
             throw new Error("Sync operation was not found.");
         }
 
-        if (!isGroupedOperationCloudEligible(current, operations)) {
+        if (!isGroupedOperationCloudEligible(
+            current,
+            operations,
+            this.isCloudCapable
+        )) {
             throw new Error(
                 "Cloud sync requires an eligible locally complete operation."
             );

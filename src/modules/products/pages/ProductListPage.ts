@@ -1,9 +1,9 @@
 import { Page } from "../../../framework/Page";
 import { Container } from "../../../core/Container";
 import { ProductDialog } from "../dialogs/ProductDialog";
-import { ProductFactory } from "../factories/ProductFactory";
 import type { Product } from "../Product";
 import type { ProductService } from "../services/ProductService";
+import type { CreateProductWithOpeningStockService } from "../services/CreateProductWithOpeningStockService";
 import type { InventoryService } from "../../inventory/services/InventoryService";
 
 export class ProductListPage extends Page {
@@ -14,7 +14,8 @@ export class ProductListPage extends Page {
 
     private inventoryService: InventoryService;
 
-    private productFactory: ProductFactory;
+    private createProductWithOpeningStockService:
+        CreateProductWithOpeningStockService;
 
     private openButton: HTMLElement | null = null;
 
@@ -38,6 +39,8 @@ export class ProductListPage extends Page {
 
     private isSaving = false;
 
+    private createCommandIdentity: ProductCreateCommandIdentity | null = null;
+
     private readonly openDialog = (): void => {
 
         this.dialogElement?.classList.remove("hidden");
@@ -52,6 +55,8 @@ export class ProductListPage extends Page {
 
         this.dialog.setCreateMode();
 
+        this.createCommandIdentity = createProductCommandIdentity();
+
         this.setMessage("");
 
         this.openDialog();
@@ -63,6 +68,8 @@ export class ProductListPage extends Page {
         this.dialogElement?.classList.add("hidden");
 
         this.editingProductId = null;
+
+        this.createCommandIdentity = null;
 
     };
 
@@ -86,41 +93,18 @@ export class ProductListPage extends Page {
             }
 
             const data = this.dialog.values();
+            const identity = this.createCommandIdentity
+                ?? createProductCommandIdentity();
+            this.createCommandIdentity = identity;
+            const result = this.createProductWithOpeningStockService.execute({
+                productId: identity.productId,
+                createdAt: identity.createdAt,
+                data
+            });
 
-            if (!Number.isFinite(data.openingQuantity) || data.openingQuantity < 0) {
-                this.setMessage("الكمية الافتتاحية يجب أن تكون صفراً أو أكبر.");
+            if (!result.success) {
+                this.setMessage(result.errors.join(" "));
                 return;
-            }
-
-            const product = this.productFactory.create(data);
-
-            const errors = this.productService.add(product);
-
-            if (errors.length > 0) {
-                this.setMessage(errors.join(" "));
-                return;
-            }
-
-            if (data.openingQuantity > 0) {
-                const movementResult = this.inventoryService
-                    .addOpeningBalanceForNewProduct(
-                        product.id,
-                        data.openingQuantity
-                    );
-
-                if (!movementResult.success) {
-                    const rollbackErrors = this.productService.safeDelete(product.id);
-                    const rollbackMessage = rollbackErrors.length === 0
-                        ? "تمت أرشفة المنتج الجديد لمنع حالة جزئية."
-                        : "تعذر أرشفة المنتج الجديد بعد فشل حركة المخزون.";
-
-                    this.setMessage([
-                        ...movementResult.errors,
-                        rollbackMessage
-                    ].join(" "));
-                    this.renderProductsIntoTable();
-                    return;
-                }
             }
 
             this.closeDialog();
@@ -189,11 +173,13 @@ export class ProductListPage extends Page {
 
         this.dialog = new ProductDialog();
 
-        this.productFactory = new ProductFactory();
-
         this.productService = Container.get<ProductService>("productService");
 
         this.inventoryService = Container.get<InventoryService>("inventoryService");
+
+        this.createProductWithOpeningStockService = Container.get<CreateProductWithOpeningStockService>(
+            "createProductWithOpeningStockService"
+        );
 
     }
 
@@ -532,10 +518,24 @@ export class ProductListPage extends Page {
 
         this.editingProductId = null;
 
+        this.createCommandIdentity = null;
+
         this.searchQuery = "";
 
         this.isSaving = false;
 
     }
 
+}
+
+interface ProductCreateCommandIdentity {
+    productId: string;
+    createdAt: string;
+}
+
+function createProductCommandIdentity(): ProductCreateCommandIdentity {
+    return {
+        productId: crypto.randomUUID(),
+        createdAt: new Date().toISOString()
+    };
 }

@@ -3,12 +3,19 @@ import type { ProductData } from "../dto/ProductData";
 
 export class ProductFactory {
 
-    public create(data: ProductData): Product {
+    public create(
+        data: ProductData,
+        identity?: ProductFactoryIdentity
+    ): Product {
+
+        const timestamp = identity
+            ? new Date(identity.timestamp.getTime())
+            : new Date();
 
         return {
 
             // الهوية
-            id: crypto.randomUUID(),
+            id: identity?.id ?? crypto.randomUUID(),
 
             sku: data.sku,
 
@@ -47,12 +54,20 @@ export class ProductFactory {
             isActive: true,
 
             // التواريخ
-            createdAt: new Date(),
+            createdAt: timestamp,
 
-            updatedAt: new Date()
+            updatedAt: new Date(timestamp.getTime())
 
         };
 
     }
+
+}
+
+export interface ProductFactoryIdentity {
+
+    id: string;
+
+    timestamp: Date;
 
 }

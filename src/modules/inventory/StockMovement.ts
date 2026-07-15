@@ -12,6 +12,13 @@ export interface StockMovementReversalIdentity {
 
 }
 
+export interface ProductOpeningStockMovementIdentity {
+
+    movementId: string;
+    idempotencyKey: string;
+
+}
+
 export interface StockMovement {
 
     id: string;
@@ -66,6 +73,23 @@ export function buildStockMovementReversalIdentity(
     return {
         movementId: `reversal-${normalizedMovementId}`,
         idempotencyKey: `stockMovement:reverse:${normalizedMovementId}`
+    };
+
+}
+
+export function buildProductOpeningStockMovementIdentity(
+    productId: string
+): ProductOpeningStockMovementIdentity | null {
+
+    const normalizedProductId = productId.trim();
+
+    if (!/^[A-Za-z0-9_-]+$/.test(normalizedProductId)) {
+        return null;
+    }
+
+    return {
+        movementId: `opening-${normalizedProductId}`,
+        idempotencyKey: `stockMovement:opening:${normalizedProductId}`
     };
 
 }

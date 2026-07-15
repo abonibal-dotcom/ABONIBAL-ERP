@@ -172,7 +172,8 @@ export function isGroupedSyncOperation(
 
 export function isGroupedOperationCloudEligible(
     operation: SyncOperation,
-    accountOperations: SyncOperation[]
+    accountOperations: SyncOperation[],
+    isCloudCapable: SyncCloudCapabilityResolver = () => true
 ): boolean {
     if (!operation.group) {
         return operation.localApplyState === "applied"
@@ -197,6 +198,12 @@ export function isGroupedOperationCloudEligible(
         return false;
     }
 
+    if (!inspection.members
+        .filter(member => member.group?.requiredForLocalCompletion)
+        .every(isCloudCapable)) {
+        return false;
+    }
+
     return inspection.members
         .filter(member =>
             (member.group?.groupSequence ?? 0)
@@ -204,6 +211,10 @@ export function isGroupedOperationCloudEligible(
         )
         .every(member => member.status === "acknowledged");
 }
+
+export type SyncCloudCapabilityResolver = (
+    operation: SyncOperation
+) => boolean;
 
 export function compareGroupedMembers(
     left: SyncOperation,
