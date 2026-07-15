@@ -22,7 +22,9 @@ export class InvoiceReturnRepository extends Repository<InvoiceReturn> {
             return [];
         }
 
-        return storedReturns.filter(isInvoiceReturn);
+        return storedReturns
+            .filter(isInvoiceReturn)
+            .map(normalizeStoredInvoiceReturn);
 
     }
 
@@ -32,6 +34,21 @@ export class InvoiceReturnRepository extends Repository<InvoiceReturn> {
     ): void {
 
         const invoiceReturns = this.allForAccount(accountId);
+
+        if (invoiceReturn.accountId !== accountId) {
+            throw new Error("Invoice return account mismatch.");
+        }
+
+        if (
+            invoiceReturn.status !== "recorded"
+            || invoiceReturnRevision(invoiceReturn) !== 0
+        ) {
+            throw new Error("Only a revision zero recorded return can be created.");
+        }
+
+        if (invoiceReturns.some(current => current.id === invoiceReturn.id)) {
+            throw new Error("Invoice return identity already exists.");
+        }
 
         invoiceReturns.push(invoiceReturn);
 
@@ -63,6 +80,29 @@ export class InvoiceReturnRepository extends Repository<InvoiceReturn> {
 
         if (invoiceReturnIndex === -1) {
             return null;
+        }
+
+        const currentReturn = invoiceReturns[invoiceReturnIndex];
+
+        if (
+            updatedReturn.accountId !== accountId
+            || updatedReturn.id !== invoiceReturnId
+            || currentReturn.accountId !== accountId
+        ) {
+            throw new Error("Invoice return immutable identity mismatch.");
+        }
+
+        if (
+            invoiceReturnRevision(updatedReturn)
+            !== invoiceReturnRevision(currentReturn) + 1
+        ) {
+            throw new Error("Invoice return revision conflict.");
+        }
+
+        if (!isAllowedInvoiceReturnUpdate(currentReturn, updatedReturn)) {
+            throw new Error(
+                "Invoice return lifecycle or immutable data update is not allowed."
+            );
         }
 
         invoiceReturns[invoiceReturnIndex] = updatedReturn;
@@ -112,6 +152,7 @@ function isInvoiceReturn(value: unknown): value is InvoiceReturn {
         && isNonEmptyString(invoiceReturn.invoiceId)
         && isNonEmptyString(invoiceReturn.invoiceNumberSnapshot)
         && isInvoiceReturnStatus(invoiceReturn.status)
+        && isOptionalRevision(invoiceReturn.revision)
         && isNonEmptyString(invoiceReturn.reason)
         && Array.isArray(invoiceReturn.lines)
         && invoiceReturn.lines.every(isInvoiceReturnLine)
@@ -131,7 +172,7 @@ function isInvoiceReturnLine(value: unknown): value is InvoiceReturnLine {
 
     const line = value as Partial<InvoiceReturnLine>;
 
-    return isNonEmptyString(line.id)
+    return isOptionalLineId(line.id)
         && isNonEmptyString(line.invoiceLineId)
         && isNonEmptyString(line.productId)
         && isNonEmptyString(line.productNameSnapshot)
@@ -157,5 +198,137 @@ function isFiniteNumber(value: unknown): value is number {
 function isPositiveNumber(value: unknown): value is number {
 
     return isFiniteNumber(value) && value > 0;
+
+}
+
+function normalizeStoredInvoiceReturn(
+    invoiceReturn: InvoiceReturn
+): InvoiceReturn {
+
+    return {
+        ...invoiceReturn,
+        lines: invoiceReturn.lines.map(line => ({
+            ...line,
+            id: typeof line.id === "string" ? line.id : ""
+        }))
+    };
+
+}
+
+function isAllowedInvoiceReturnUpdate(
+    currentReturn: InvoiceReturn,
+    updatedReturn: InvoiceReturn
+): boolean {
+
+    if (!hasStableInvoiceReturnIdentity(currentReturn, updatedReturn)) {
+        return false;
+    }
+
+    if (
+        currentReturn.status === "recorded"
+        && updatedReturn.status === "recorded"
+    ) {
+        return !updatedReturn.executionCommandId
+            && updatedReturn.lines.every(line => !line.returnStockMovementId);
+    }
+
+    if (
+        currentReturn.status === "recorded"
+        && updatedReturn.status === "executed"
+    ) {
+        return canonicalJson(invoiceReturnCommercialSnapshot(currentReturn))
+                === canonicalJson(invoiceReturnCommercialSnapshot(updatedReturn))
+            && isNonEmptyString(updatedReturn.executionCommandId)
+            && updatedReturn.lines.every(line =>
+                isNonEmptyString(line.returnStockMovementId)
+            );
+    }
+
+    return false;
+
+}
+
+function hasStableInvoiceReturnIdentity(
+    currentReturn: InvoiceReturn,
+    updatedReturn: InvoiceReturn
+): boolean {
+
+    return currentReturn.id === updatedReturn.id
+        && currentReturn.accountId === updatedReturn.accountId
+        && currentReturn.returnNumber === updatedReturn.returnNumber
+        && currentReturn.invoiceId === updatedReturn.invoiceId
+        && currentReturn.invoiceNumberSnapshot
+            === updatedReturn.invoiceNumberSnapshot
+        && currentReturn.createdAt === updatedReturn.createdAt
+        && currentReturn.createdBy === updatedReturn.createdBy;
+
+}
+
+function invoiceReturnCommercialSnapshot(invoiceReturn: InvoiceReturn): unknown {
+
+    return {
+        reason: invoiceReturn.reason,
+        notes: invoiceReturn.notes,
+        lines: invoiceReturn.lines.map(line => ({
+            id: line.id,
+            invoiceLineId: line.invoiceLineId,
+            productId: line.productId,
+            productNameSnapshot: line.productNameSnapshot,
+            quantity: line.quantity,
+            unitPriceSnapshot: line.unitPriceSnapshot,
+            lineTotalSnapshot: line.lineTotalSnapshot,
+            returnQuantity: line.returnQuantity,
+            originalSaleDeductionMovementId:
+                line.originalSaleDeductionMovementId
+        })),
+        total: invoiceReturn.total
+    };
+
+}
+
+function invoiceReturnRevision(invoiceReturn: InvoiceReturn): number {
+
+    return typeof invoiceReturn.revision === "number"
+        && Number.isInteger(invoiceReturn.revision)
+        && invoiceReturn.revision >= 0
+        ? invoiceReturn.revision
+        : 0;
+
+}
+
+function isOptionalRevision(value: unknown): boolean {
+
+    return value === undefined
+        || (
+            typeof value === "number"
+            && Number.isInteger(value)
+            && value >= 0
+        );
+
+}
+
+function isOptionalLineId(value: unknown): boolean {
+
+    return value === undefined
+        || value === null
+        || typeof value === "string";
+
+}
+
+function canonicalJson(value: unknown): string {
+
+    if (Array.isArray(value)) {
+        return `[${value.map(canonicalJson).join(",")}]`;
+    }
+
+    if (value && typeof value === "object") {
+        return `{${Object.entries(value)
+            .filter(([, child]) => child !== undefined)
+            .sort(([leftKey], [rightKey]) => leftKey.localeCompare(rightKey))
+            .map(([key, child]) => `${JSON.stringify(key)}:${canonicalJson(child)}`)
+            .join(",")}}`;
+    }
+
+    return JSON.stringify(value) ?? "undefined";
 
 }

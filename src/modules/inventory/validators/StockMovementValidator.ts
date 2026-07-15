@@ -77,6 +77,13 @@ export class StockMovementValidator {
             errors.push("Immutable stock movement cannot contain legacy void metadata.");
         }
 
+        if (
+            movement.idempotencyKey !== undefined
+            && !movement.idempotencyKey.trim()
+        ) {
+            errors.push("Stock movement idempotency key cannot be empty.");
+        }
+
         if (movement.type === "reversal") {
             this.validateReversal(movement, errors);
         } else if (hasReversalFields(movement)) {
@@ -149,7 +156,6 @@ function hasLegacyVoidMetadata(movement: StockMovement): boolean {
 function hasReversalFields(movement: StockMovement): boolean {
 
     return movement.reversalOfMovementId !== undefined
-        || movement.reversalReason !== undefined
-        || movement.idempotencyKey !== undefined;
+        || movement.reversalReason !== undefined;
 
 }

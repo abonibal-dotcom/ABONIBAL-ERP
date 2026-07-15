@@ -6,6 +6,9 @@ export interface Invoice {
     accountId: string;
     invoiceNumber: string;
     status: InvoiceStatus;
+    revision?: number;
+    issueCommandId?: string;
+    cancellationCommandId?: string;
     customerId?: string;
     customerSnapshot: Record<string, unknown> | null;
     lines: InvoiceLine[];
@@ -58,6 +61,7 @@ export interface InvoiceDraftInput {
 
 export interface InvoiceDraftLineInput {
 
+    id?: string;
     productId: string;
     productNameSnapshot: string;
     skuSnapshot?: string;

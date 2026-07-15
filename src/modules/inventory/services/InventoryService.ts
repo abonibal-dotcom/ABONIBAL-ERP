@@ -7,6 +7,7 @@ import {
     isReversalStockMovement,
     stockMovementInventoryEffect,
     type StockMovement,
+    type StockMovementCreateIdentity,
     type StockMovementInput
 } from "../StockMovement";
 import type {
@@ -50,6 +51,24 @@ export class InventoryService {
 
     public addMovement(input: StockMovementInput): StockMovementResult {
 
+        return this.addMovementInternal(input, null);
+
+    }
+
+    public addMovementWithIdentity(
+        input: StockMovementInput,
+        identity: StockMovementCreateIdentity
+    ): StockMovementResult {
+
+        return this.addMovementInternal(input, identity);
+
+    }
+
+    private addMovementInternal(
+        input: StockMovementInput,
+        identity: StockMovementCreateIdentity | null
+    ): StockMovementResult {
+
         const accountContext = this.currentAccountContext();
 
         if (!accountContext) {
@@ -64,8 +83,42 @@ export class InventoryService {
             );
         }
 
+        const normalizedIdentity = identity
+            ? normalizeCreateIdentity(identity)
+            : null;
+
+        if (identity && !normalizedIdentity) {
+            return failedStockMovementResult(
+                "Stock movement deterministic identity is invalid."
+            );
+        }
+
+        if (normalizedIdentity) {
+            const existingMovement = this.repository.findForAccount(
+                accountContext.accountId,
+                normalizedIdentity.movementId
+            );
+
+            if (existingMovement) {
+                return isMatchingCreatedMovement(
+                    existingMovement,
+                    input,
+                    accountContext.accountId,
+                    normalizedIdentity
+                )
+                    ? {
+                        success: true,
+                        errors: [],
+                        movement: existingMovement
+                    }
+                    : failedStockMovementResult(
+                        "Stock movement deterministic identity conflicts with existing data."
+                    );
+            }
+        }
+
         const movement: StockMovement = {
-            id: crypto.randomUUID(),
+            id: normalizedIdentity?.movementId ?? crypto.randomUUID(),
             accountId: accountContext.accountId,
             productId: input.productId.trim(),
             type: input.type,
@@ -79,6 +132,7 @@ export class InventoryService {
             createdBy: accountContext.userId,
             ledgerSemanticsVersion:
                 IMMUTABLE_STOCK_MOVEMENT_SEMANTICS_VERSION,
+            idempotencyKey: normalizedIdentity?.idempotencyKey,
             metadata: input.metadata
         };
         const errors = this.validator.validate(movement);
@@ -653,6 +707,87 @@ function isMatchingReversal(
         && reversal.reason === reason
         && reversal.idempotencyKey === idempotencyKey
         && reversal.ledgerSemanticsVersion === 2;
+
+}
+
+function normalizeCreateIdentity(
+    identity: StockMovementCreateIdentity
+): StockMovementCreateIdentity | null {
+
+    const movementId = identity.movementId.trim();
+    const idempotencyKey = identity.idempotencyKey.trim();
+
+    if (
+        !isKeySafeIdentity(movementId)
+        || !isKeySafeIdentity(idempotencyKey)
+    ) {
+        return null;
+    }
+
+    return { movementId, idempotencyKey };
+
+}
+
+function isMatchingCreatedMovement(
+    movement: StockMovement,
+    input: StockMovementInput,
+    accountId: string,
+    identity: StockMovementCreateIdentity
+): boolean {
+
+    return movement.id === identity.movementId
+        && movement.accountId === accountId
+        && movement.productId === input.productId.trim()
+        && movement.type === input.type
+        && movement.quantityDelta === input.quantityDelta
+        && movement.reason === input.reason.trim()
+        && movement.referenceType === input.referenceType
+        && normalizeComparableText(movement.referenceId)
+            === normalizeComparableText(input.referenceId)
+        && movement.unitCost === input.unitCost
+        && movement.totalCost === input.totalCost
+        && movement.idempotencyKey === identity.idempotencyKey
+        && movement.ledgerSemanticsVersion === 2
+        && canonicalJson(movement.metadata ?? null)
+            === canonicalJson(input.metadata ?? null);
+
+}
+
+function isKeySafeIdentity(value: string): boolean {
+
+    return value.length > 0
+        && value.length <= 512
+        && /^[A-Za-z0-9_-]+$/.test(value);
+
+}
+
+function normalizeComparableText(value: string | undefined): string | undefined {
+
+    const normalizedValue = value?.trim();
+
+    return normalizedValue || undefined;
+
+}
+
+function canonicalJson(value: unknown): string {
+
+    if (Array.isArray(value)) {
+        return `[${value.map(canonicalJson).join(",")}]`;
+    }
+
+    if (value && typeof value === "object") {
+        return `{${Object.entries(value)
+            .filter(([, child]) => child !== undefined)
+            .sort(([leftKey], [rightKey]) =>
+                leftKey.localeCompare(rightKey)
+            )
+            .map(([key, child]) =>
+                `${JSON.stringify(key)}:${canonicalJson(child)}`
+            )
+            .join(",")}}`;
+    }
+
+    return JSON.stringify(value) ?? "undefined";
 
 }
 

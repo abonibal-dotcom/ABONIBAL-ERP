@@ -23,11 +23,40 @@ export class InvoiceValidator {
             errors.push("Invoice status is invalid.");
         }
 
+        if (
+            invoice.revision !== undefined
+            && (
+                !Number.isInteger(invoice.revision)
+                || invoice.revision < 0
+            )
+        ) {
+            errors.push("Invoice revision is invalid.");
+        }
+
+        if (invoice.issueCommandId !== undefined && !invoice.issueCommandId.trim()) {
+            errors.push("Invoice issue command id cannot be empty.");
+        }
+
+        if (
+            invoice.cancellationCommandId !== undefined
+            && !invoice.cancellationCommandId.trim()
+        ) {
+            errors.push("Invoice cancellation command id cannot be empty.");
+        }
+
         if (!Array.isArray(invoice.lines) || invoice.lines.length === 0) {
             errors.push("Invoice must include at least one line.");
         } else {
+            const lineIds = new Set<string>();
+
             for (const line of invoice.lines) {
                 errors.push(...this.validateLine(line));
+
+                if (lineIds.has(line.id)) {
+                    errors.push("Invoice line id must be unique.");
+                }
+
+                lineIds.add(line.id);
             }
         }
 
@@ -118,4 +147,3 @@ function isFiniteCurrency(value: number): boolean {
     return Number.isFinite(value) && value >= 0;
 
 }
-

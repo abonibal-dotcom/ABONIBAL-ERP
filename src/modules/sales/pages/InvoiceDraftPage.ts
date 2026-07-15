@@ -37,6 +37,7 @@ export class InvoiceDraftPage extends Page {
     private totalElement: HTMLElement | null = null;
     private draftCountElement: HTMLElement | null = null;
     private editingInvoiceId: string | null = null;
+    private editingInvoiceRevision = 0;
 
     private readonly handleSubmit = (event: Event): void => {
 
@@ -370,6 +371,7 @@ export class InvoiceDraftPage extends Page {
         this.totalElement = null;
         this.draftCountElement = null;
         this.editingInvoiceId = null;
+        this.editingInvoiceRevision = 0;
 
     }
 
@@ -719,7 +721,11 @@ export class InvoiceDraftPage extends Page {
         }
 
         const result = this.editingInvoiceId
-            ? this.invoiceService.updateDraft(this.editingInvoiceId, draft.input)
+            ? this.invoiceService.updateDraft(
+                this.editingInvoiceId,
+                draft.input,
+                this.editingInvoiceRevision
+            )
             : this.invoiceService.createDraft(draft.input);
 
         if (!result.success || !result.invoice) {
@@ -782,6 +788,10 @@ export class InvoiceDraftPage extends Page {
         }
 
         const line: InvoiceDraftLineInput = {
+            id: this.editingInvoiceId
+                ? this.invoiceService.getById(this.editingInvoiceId)
+                    ?.lines[0]?.id
+                : undefined,
             productId: product.id,
             productNameSnapshot: product.name,
             skuSnapshot: product.sku,
@@ -823,6 +833,7 @@ export class InvoiceDraftPage extends Page {
         }
 
         this.editingInvoiceId = invoice.id;
+        this.editingInvoiceRevision = invoice.revision ?? 0;
         this.setEditingInvoiceId(invoice.id);
 
         if (this.customerSelect) {
@@ -1020,6 +1031,7 @@ export class InvoiceDraftPage extends Page {
         }
 
         this.editingInvoiceId = null;
+        this.editingInvoiceRevision = 0;
         this.setEditingInvoiceId("");
         this.populateSelectedProductPrice();
         this.renderTotalsPreview();

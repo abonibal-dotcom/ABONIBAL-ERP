@@ -1,5 +1,9 @@
 import type { AuthStateService } from "../../auth/AuthStateService";
-import type { StockMovement } from "../../inventory/StockMovement";
+import type {
+    StockMovement,
+    StockMovementCreateIdentity,
+    StockMovementInput
+} from "../../inventory/StockMovement";
 import type { InventoryService } from "../../inventory/services/InventoryService";
 import type { Invoice, InvoiceLine } from "../Invoice";
 import type {
@@ -11,6 +15,12 @@ import type {
 import { InvoiceRepository } from "../repositories/InvoiceRepository";
 import { InvoiceReturnRepository } from "../repositories/InvoiceReturnRepository";
 import { InvoiceReturnValidator } from "../validators/InvoiceReturnValidator";
+import {
+    buildInvoiceReturnExecutionCommandId,
+    buildInvoiceReturnLineId,
+    buildInvoiceReturnMovementIdentity,
+    isStableSalesIdentity
+} from "../SalesIdentity";
 
 export class InvoiceReturnService {
 
@@ -98,14 +108,26 @@ export class InvoiceReturnService {
         const existingReturns = this.repository.allForAccount(
             accountContext.accountId
         );
-        const lines = buildReturnLines(validation.invoice, input.lines);
+        const invoiceReturnId = crypto.randomUUID();
+        let lines: InvoiceReturnLine[];
+
+        try {
+            lines = buildReturnLines(
+                validation.invoice,
+                input.lines,
+                invoiceReturnId
+            );
+        } catch (error) {
+            return failedInvoiceReturnResult(safeReturnError(error));
+        }
         const invoiceReturn: InvoiceReturn = {
-            id: crypto.randomUUID(),
+            id: invoiceReturnId,
             accountId: accountContext.accountId,
             returnNumber: generateReturnNumber(existingReturns, createdAt),
             invoiceId: validation.invoice.id,
             invoiceNumberSnapshot: validation.invoice.invoiceNumber,
             status: "recorded",
+            revision: 0,
             reason: input.reason.trim(),
             notes: normalizeOptionalString(input.notes),
             lines,
@@ -125,10 +147,14 @@ export class InvoiceReturnService {
             return failedInvoiceReturnResult(errors);
         }
 
-        this.repository.appendForAccount(
-            accountContext.accountId,
-            invoiceReturn
-        );
+        try {
+            this.repository.appendForAccount(
+                accountContext.accountId,
+                invoiceReturn
+            );
+        } catch (error) {
+            return failedInvoiceReturnResult(safeReturnError(error));
+        }
 
         return {
             success: true,
@@ -138,7 +164,10 @@ export class InvoiceReturnService {
 
     }
 
-    public executeReturn(invoiceReturnId: string): InvoiceReturnResult {
+    public executeReturn(
+        invoiceReturnId: string,
+        commandId?: string
+    ): InvoiceReturnResult {
 
         const accountContext = this.currentAccountContext();
         const normalizedInvoiceReturnId = invoiceReturnId.trim();
@@ -164,16 +193,45 @@ export class InvoiceReturnService {
             return failedInvoiceReturnResult("Invoice return account mismatch.");
         }
 
+        const expectedCommandId = buildInvoiceReturnExecutionCommandId(
+            currentReturn.id
+        );
+        const requestedCommandId = commandId?.trim() || expectedCommandId;
+
+        if (!expectedCommandId || requestedCommandId !== expectedCommandId) {
+            return failedInvoiceReturnResult(
+                "Invoice return execution command identity conflicts."
+            );
+        }
+
+        if (currentReturn.status === "executed") {
+            const retryErrors = this.validateExecutedReturnRetry(
+                accountContext.accountId,
+                currentReturn,
+                expectedCommandId
+            );
+
+            return retryErrors.length === 0
+                ? {
+                    success: true,
+                    errors: [],
+                    invoiceReturn: currentReturn
+                }
+                : failedInvoiceReturnResult(retryErrors);
+        }
+
         if (currentReturn.status !== "recorded") {
             return failedInvoiceReturnResult(
                 "Only recorded invoice returns can be executed."
             );
         }
 
-        if (currentReturn.lines.some(isExecutedReturnLine)) {
-            return failedInvoiceReturnResult(
-                "Invoice return is already executed."
-            );
+        const lineIdentityErrors = validateStableReturnLineIdentities(
+            currentReturn.lines
+        );
+
+        if (lineIdentityErrors.length > 0) {
+            return failedInvoiceReturnResult(lineIdentityErrors);
         }
 
         const invoice = this.invoiceRepository.findForAccount(
@@ -198,7 +256,8 @@ export class InvoiceReturnService {
         const validation = this.validateReturnExecution(
             accountContext.accountId,
             currentReturn,
-            invoice
+            invoice,
+            expectedCommandId
         );
 
         if (validation.errors.length > 0) {
@@ -208,26 +267,10 @@ export class InvoiceReturnService {
         const createdMovementIds = new Map<string, string>();
 
         for (const line of validation.lines) {
-            const movementResult = this.inventoryService.addMovement({
-                productId: line.returnLine.productId,
-                type: "sale_return",
-                quantityDelta: line.returnLine.returnQuantity,
-                reason: `Invoice return ${currentReturn.returnNumber}`,
-                referenceType: "invoice_return",
-                referenceId: currentReturn.id,
-                metadata: {
-                    invoiceReturnId: currentReturn.id,
-                    invoiceReturnLineId: line.returnLine.id,
-                    invoiceId: invoice.id,
-                    invoiceLineId: line.invoiceLine.id,
-                    invoiceNumber: invoice.invoiceNumber,
-                    originalSaleDeductionMovementId:
-                        line.originalMovement.id,
-                    originalStockMovementId: line.originalMovement.id,
-                    reversesMovementId: line.originalMovement.id,
-                    originalMovementType: line.originalMovement.type
-                }
-            });
+            const movementResult = this.inventoryService.addMovementWithIdentity(
+                line.input,
+                line.identity
+            );
 
             if (!movementResult.success || !movementResult.movement) {
                 return failedInvoiceReturnResult(movementResult.errors);
@@ -243,6 +286,8 @@ export class InvoiceReturnService {
         const executedReturn: InvoiceReturn = {
             ...currentReturn,
             status: "executed",
+            revision: invoiceReturnRevision(currentReturn) + 1,
+            executionCommandId: expectedCommandId,
             lines: currentReturn.lines.map(line => ({
                 ...line,
                 returnStockMovementId:
@@ -259,11 +304,17 @@ export class InvoiceReturnService {
             return failedInvoiceReturnResult(errors);
         }
 
-        const savedReturn = this.repository.updateForAccount(
-            accountContext.accountId,
-            currentReturn.id,
-            executedReturn
-        );
+        let savedReturn: InvoiceReturn | null;
+
+        try {
+            savedReturn = this.repository.updateForAccount(
+                accountContext.accountId,
+                currentReturn.id,
+                executedReturn
+            );
+        } catch (error) {
+            return failedInvoiceReturnResult(safeReturnError(error));
+        }
 
         if (!savedReturn) {
             return failedInvoiceReturnResult("Invoice return not found.");
@@ -416,10 +467,85 @@ export class InvoiceReturnService {
 
     }
 
+    private validateExecutedReturnRetry(
+        accountId: string,
+        invoiceReturn: InvoiceReturn,
+        expectedCommandId: string
+    ): string[] {
+
+        if (invoiceReturn.executionCommandId !== expectedCommandId) {
+            return ["Invoice return execution command identity conflicts."];
+        }
+
+        const errors = validateStableReturnLineIdentities(invoiceReturn.lines);
+        const invoice = this.invoiceRepository.findForAccount(
+            accountId,
+            invoiceReturn.invoiceId
+        );
+        const movements = this.inventoryService.getAll();
+
+        if (!invoice) {
+            return [...errors, "Invoice not found."];
+        }
+
+        for (const returnLine of invoiceReturn.lines) {
+            const invoiceLine = invoice.lines.find(
+                line => line.id === returnLine.invoiceLineId
+            );
+            const originalMovementId = (
+                returnLine.originalSaleDeductionMovementId
+                ?? invoiceLine?.stockMovementId
+                ?? ""
+            ).trim();
+            const originalMovement = movements.find(
+                movement => movement.id === originalMovementId
+            );
+            const identity = buildInvoiceReturnMovementIdentity(
+                invoiceReturn.id,
+                returnLine.id
+            );
+
+            if (!invoiceLine || !originalMovement || !identity) {
+                errors.push("Invoice return execution identity is invalid.");
+                continue;
+            }
+
+            if (returnLine.returnStockMovementId !== identity.movementId) {
+                errors.push("Invoice return movement reference conflicts.");
+                continue;
+            }
+
+            if (!movements.some(movement => movement.id === identity.movementId)) {
+                errors.push("Invoice return movement was not found.");
+                continue;
+            }
+
+            const result = this.inventoryService.addMovementWithIdentity(
+                buildReturnMovementInput(
+                    invoiceReturn,
+                    returnLine,
+                    invoice,
+                    invoiceLine,
+                    originalMovement,
+                    expectedCommandId
+                ),
+                identity
+            );
+
+            if (!result.success) {
+                errors.push(...result.errors);
+            }
+        }
+
+        return errors;
+
+    }
+
     private validateReturnExecution(
         accountId: string,
         invoiceReturn: InvoiceReturn,
-        invoice: Invoice
+        invoice: Invoice,
+        commandId: string
     ): InvoiceReturnExecutionValidation {
 
         const errors: string[] = [];
@@ -494,21 +620,64 @@ export class InvoiceReturnService {
                 continue;
             }
 
-            if (
-                hasExistingReturnMovement(
-                    movements,
-                    invoiceReturn.id,
-                    returnLine.id
-                )
-            ) {
-                errors.push("Invoice return line is already executed.");
+            const identity = buildInvoiceReturnMovementIdentity(
+                invoiceReturn.id,
+                returnLine.id
+            );
+
+            if (!identity) {
+                errors.push("Invoice return movement identity is invalid.");
                 continue;
+            }
+
+            const existingMovement = findExistingReturnMovement(
+                movements,
+                invoiceReturn.id,
+                returnLine.id
+            );
+
+            if (existingMovement && existingMovement.id !== identity.movementId) {
+                errors.push(
+                    "Invoice return line has a conflicting legacy movement."
+                );
+                continue;
+            }
+
+            if (
+                returnLine.returnStockMovementId
+                && returnLine.returnStockMovementId !== identity.movementId
+            ) {
+                errors.push("Invoice return movement reference conflicts.");
+                continue;
+            }
+
+            const input = buildReturnMovementInput(
+                invoiceReturn,
+                returnLine,
+                invoice,
+                invoiceLine,
+                originalMovement,
+                commandId
+            );
+
+            if (existingMovement) {
+                const result = this.inventoryService.addMovementWithIdentity(
+                    input,
+                    identity
+                );
+
+                if (!result.success) {
+                    errors.push(...result.errors);
+                    continue;
+                }
             }
 
             lines.push({
                 returnLine,
                 invoiceLine,
-                originalMovement
+                originalMovement,
+                identity,
+                input
             });
         }
 
@@ -606,9 +775,10 @@ export class InvoiceReturnService {
         }
 
         const accountId = state.session.account.id.trim();
+        const userAccountId = state.session.user.accountId.trim();
         const userId = state.session.user.id.trim();
 
-        if (!accountId || !userId) {
+        if (!accountId || accountId !== userAccountId || !userId) {
             return null;
         }
 
@@ -656,12 +826,15 @@ interface InvoiceReturnExecutionLine {
     returnLine: InvoiceReturnLine;
     invoiceLine: InvoiceLine;
     originalMovement: StockMovement;
+    identity: StockMovementCreateIdentity;
+    input: StockMovementInput;
 
 }
 
 function buildReturnLines(
     invoice: Invoice,
-    lines: InvoiceReturnLineInput[]
+    lines: InvoiceReturnLineInput[],
+    invoiceReturnId: string
 ): InvoiceReturnLine[] {
 
     return lines.map(lineInput => {
@@ -674,7 +847,11 @@ function buildReturnLines(
             throw new Error("Invoice return line source invoice line is missing.");
         }
 
-        return buildReturnLine(invoiceLine, lineInput.returnQuantity);
+        return buildReturnLine(
+            invoiceLine,
+            lineInput.returnQuantity,
+            invoiceReturnId
+        );
 
     });
 
@@ -682,11 +859,21 @@ function buildReturnLines(
 
 function buildReturnLine(
     invoiceLine: InvoiceLine,
-    returnQuantity: number
+    returnQuantity: number,
+    invoiceReturnId: string
 ): InvoiceReturnLine {
 
+    const lineId = buildInvoiceReturnLineId(
+        invoiceReturnId,
+        invoiceLine.id
+    );
+
+    if (!lineId) {
+        throw new Error("Invoice return line stable identity is invalid.");
+    }
+
     return {
-        id: crypto.randomUUID(),
+        id: lineId,
         invoiceLineId: invoiceLine.id,
         productId: invoiceLine.productId,
         productNameSnapshot: invoiceLine.productNameSnapshot,
@@ -748,20 +935,13 @@ function normalizeRequiredString(value: unknown): string {
 
 }
 
-function isExecutedReturnLine(line: InvoiceReturnLine): boolean {
-
-    return typeof line.returnStockMovementId === "string"
-        && line.returnStockMovementId.trim().length > 0;
-
-}
-
-function hasExistingReturnMovement(
+function findExistingReturnMovement(
     movements: StockMovement[],
     invoiceReturnId: string,
     invoiceReturnLineId: string
-): boolean {
+): StockMovement | undefined {
 
-    return movements.some(movement => movement.type === "sale_return"
+    return movements.find(movement => movement.type === "sale_return"
         && movement.referenceType === "invoice_return"
         && !movement.voidedAt
         && (
@@ -771,6 +951,75 @@ function hasExistingReturnMovement(
         )
         && movementMetadataString(movement, "invoiceReturnLineId")
             === invoiceReturnLineId);
+
+}
+
+function buildReturnMovementInput(
+    invoiceReturn: InvoiceReturn,
+    returnLine: InvoiceReturnLine,
+    invoice: Invoice,
+    invoiceLine: InvoiceLine,
+    originalMovement: StockMovement,
+    commandId: string
+): StockMovementInput {
+
+    return {
+        productId: returnLine.productId,
+        type: "sale_return",
+        quantityDelta: returnLine.returnQuantity,
+        reason: `Invoice return ${invoiceReturn.returnNumber}`,
+        referenceType: "invoice_return",
+        referenceId: invoiceReturn.id,
+        metadata: {
+            commandId,
+            invoiceReturnId: invoiceReturn.id,
+            invoiceReturnLineId: returnLine.id,
+            invoiceId: invoice.id,
+            invoiceLineId: invoiceLine.id,
+            invoiceNumber: invoice.invoiceNumber,
+            originalSaleDeductionMovementId: originalMovement.id,
+            originalStockMovementId: originalMovement.id,
+            reversesMovementId: originalMovement.id,
+            originalMovementType: originalMovement.type
+        }
+    };
+
+}
+
+function validateStableReturnLineIdentities(
+    lines: InvoiceReturnLine[]
+): string[] {
+
+    const errors: string[] = [];
+    const lineIds = new Set<string>();
+
+    for (const line of lines) {
+        const lineId = line.id.trim();
+
+        if (!isStableSalesIdentity(lineId)) {
+            errors.push("Invoice return line stable identity is invalid.");
+            continue;
+        }
+
+        if (lineIds.has(lineId)) {
+            errors.push("Invoice return line stable identity is duplicated.");
+            continue;
+        }
+
+        lineIds.add(lineId);
+    }
+
+    return errors;
+
+}
+
+function invoiceReturnRevision(invoiceReturn: InvoiceReturn): number {
+
+    return typeof invoiceReturn.revision === "number"
+        && Number.isInteger(invoiceReturn.revision)
+        && invoiceReturn.revision >= 0
+        ? invoiceReturn.revision
+        : 0;
 
 }
 
@@ -806,5 +1055,13 @@ function failedInvoiceReturnValidation(
         errors: Array.isArray(errors) ? errors : [errors],
         invoice: null
     };
+
+}
+
+function safeReturnError(error: unknown): string {
+
+    return error instanceof Error && error.message.trim()
+        ? error.message
+        : "Invoice return persistence failed.";
 
 }
