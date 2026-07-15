@@ -782,17 +782,19 @@ const checks: Check[] = [
         }
     },
     {
-        name: "StockMovement Firebase transport is not registered",
+        name: "StockMovement Firebase transport is registered by the follow-on integration",
         run: () => {
             const source = readFileSync("src/core/Container.ts", "utf8");
-            assert(!source.includes("StockMovementSyncOperationTransport"), "StockMovement cloud transport was registered.");
+            assert(source.includes("StockMovementSyncOperationTransport"), "StockMovement cloud transport is missing.");
+            assert(source.includes('register("stockMovements", ["append"])'), "StockMovement append capability is missing.");
         }
     },
     {
-        name: "StockMovement cloud listener is not registered",
+        name: "StockMovement pull adapter is registered but not auto-started",
         run: () => {
             const source = readFileSync("src/core/Container.ts", "utf8");
-            assert(!source.includes("StockMovementModuleSyncAdapter"), "StockMovement listener adapter was registered.");
+            assert(source.includes("StockMovementSyncAdapter"), "StockMovement pull adapter is missing.");
+            assert(!source.includes("stockMovementSyncAdapter.startSubscription"), "StockMovement listener starts automatically.");
         }
     },
     {
@@ -841,7 +843,7 @@ async function run(): Promise<void> {
         exactRetry: "PASS",
         conflictHandling: "PASS",
         groupCloudCapabilityGate: "PASS",
-        stockMovementFirebaseTransportRegistered: false,
+        stockMovementFirebaseTransportRegistered: true,
         operationalFirebaseReads: 0,
         operationalFirebaseWrites: 0,
         existingRecordsUploaded: 0,

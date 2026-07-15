@@ -9,7 +9,17 @@ import {
 } from "../StockMovementType";
 import { stockMovementStorageKeyForAccount } from "../persistence/StockMovementPersistenceKey";
 
-export class StockMovementRepository {
+export interface StockMovementRepositoryPort {
+
+    allForAccount(accountId: string): StockMovement[];
+    appendForAccount(accountId: string, movement: StockMovement): StockMovement;
+    findForAccount(accountId: string, movementId: string): StockMovement | undefined;
+    allForProduct(accountId: string, productId: string): StockMovement[];
+    reversalsForAccount(accountId: string, originalMovementId: string): StockMovement[];
+
+}
+
+export class StockMovementRepository implements StockMovementRepositoryPort {
 
     private readonly driver: Driver;
 

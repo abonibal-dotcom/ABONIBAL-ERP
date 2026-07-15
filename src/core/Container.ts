@@ -43,9 +43,12 @@ import { ProductService } from "../modules/products/services/ProductService";
 import { ProductFactory } from "../modules/products/factories/ProductFactory";
 import { CreateProductWithOpeningStockService } from "../modules/products/services/CreateProductWithOpeningStockService";
 import { StockMovementRepository } from "../modules/inventory/repositories/StockMovementRepository";
+import { StockMovementSyncRepository } from "../modules/inventory/repositories/StockMovementSyncRepository";
 import { StockMovementValidator } from "../modules/inventory/validators/StockMovementValidator";
 import { InventoryService } from "../modules/inventory/services/InventoryService";
 import { StockMovementLocalMutationApplier } from "../modules/inventory/sync/StockMovementLocalMutationApplier";
+import { StockMovementSyncAdapter } from "../modules/inventory/sync/StockMovementSyncAdapter";
+import { StockMovementSyncOperationTransport } from "../modules/inventory/sync/StockMovementSyncOperationTransport";
 import { InvoiceRepository } from "../modules/sales/repositories/InvoiceRepository";
 import { InvoiceValidator } from "../modules/sales/validators/InvoiceValidator";
 import { InvoiceService } from "../modules/sales/services/InvoiceService";
@@ -75,6 +78,7 @@ import { SyncEchoPolicy } from "../modules/sync/services/SyncEchoPolicy";
 import { SyncModeService } from "../modules/sync/services/SyncModeService";
 import { SyncStatusService } from "../modules/sync/services/SyncStatusService";
 import { SyncCloudCapabilityRegistry } from "../modules/sync/services/SyncCloudCapabilityRegistry";
+import { SyncOperationTransportRegistry } from "../modules/sync/services/SyncOperationTransportRegistry";
 
 export class Container {
 
@@ -96,6 +100,7 @@ export class Container {
         syncCloudCapabilityRegistry.register("products", ["create", "update"]);
         syncCloudCapabilityRegistry.register("customers", ["create", "update"]);
         syncCloudCapabilityRegistry.register("suppliers", ["create", "update"]);
+        syncCloudCapabilityRegistry.register("stockMovements", ["append"]);
         const syncOutboxRepository = new PersistentOutboxRepository(
             driver,
             operation => syncCloudCapabilityRegistry.supports(operation)
@@ -127,9 +132,24 @@ export class Container {
 
             return firebaseApp ? getDatabase(firebaseApp) : null;
         });
-        const syncOperationTransport = new MasterDataSyncOperationTransport(
-            firebaseRealtimeClient,
-            () => getFirebaseApp()?.options.projectId ?? null
+        const masterDataSyncOperationTransport =
+            new MasterDataSyncOperationTransport(
+                firebaseRealtimeClient,
+                () => getFirebaseApp()?.options.projectId ?? null
+            );
+        const stockMovementSyncOperationTransport =
+            new StockMovementSyncOperationTransport(
+                firebaseRealtimeClient,
+                () => getFirebaseApp()?.options.projectId ?? null
+            );
+        const syncOperationTransport = new SyncOperationTransportRegistry();
+        syncOperationTransport.register(
+            ["products", "customers", "suppliers"],
+            masterDataSyncOperationTransport
+        );
+        syncOperationTransport.register(
+            ["stockMovements"],
+            stockMovementSyncOperationTransport
         );
         const syncCoordinator = new SyncCoordinator(
             syncModeService,
@@ -161,6 +181,14 @@ export class Container {
         this.register("localMutationReconciler", localMutationReconciler);
         this.register("syncEchoPolicy", syncEchoPolicy);
         this.register("firebaseRealtimeClient", firebaseRealtimeClient);
+        this.register(
+            "masterDataSyncOperationTransport",
+            masterDataSyncOperationTransport
+        );
+        this.register(
+            "stockMovementSyncOperationTransport",
+            stockMovementSyncOperationTransport
+        );
         this.register("syncOperationTransport", syncOperationTransport);
         this.register("syncCoordinator", syncCoordinator);
 
@@ -439,9 +467,12 @@ export class Container {
 
         this.register("productService", productService);
 
-        const stockMovementRepository = new StockMovementRepository(driver);
+        const stockMovementCacheRepository = new StockMovementRepository(driver);
 
-        this.register("stockMovementRepository", stockMovementRepository);
+        this.register(
+            "stockMovementCacheRepository",
+            stockMovementCacheRepository
+        );
 
         const stockMovementValidator = new StockMovementValidator();
 
@@ -449,12 +480,32 @@ export class Container {
 
         const stockMovementLocalMutationApplier =
             new StockMovementLocalMutationApplier(
-                stockMovementRepository,
+                stockMovementCacheRepository,
                 stockMovementValidator
             );
         localMutationApplierRegistry.register(
             stockMovementLocalMutationApplier
         );
+
+        const stockMovementRepository = new StockMovementSyncRepository(
+            stockMovementCacheRepository,
+            syncModeService,
+            durableMutationCapture,
+            stockMovementLocalMutationApplier,
+            syncOutboxRepository
+        );
+        const stockMovementSyncAdapter = new StockMovementSyncAdapter(
+            firebaseRealtimeClient,
+            syncModeService,
+            getAuthStateService(),
+            syncOutboxRepository,
+            syncConflictRepository,
+            syncListenerCoordinator,
+            stockMovementLocalMutationApplier
+        );
+
+        this.register("stockMovementRepository", stockMovementRepository);
+        this.register("stockMovementSyncAdapter", stockMovementSyncAdapter);
 
         this.register(
             "stockMovementLocalMutationApplier",
@@ -477,7 +528,7 @@ export class Container {
                 productValidator,
                 productCacheRepository,
                 productSyncBridge,
-                stockMovementRepository,
+                stockMovementCacheRepository,
                 stockMovementValidator,
                 durableMutationGroupCapture,
                 syncModeService,

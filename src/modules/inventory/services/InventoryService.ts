@@ -12,18 +12,18 @@ import {
 import type {
     StockMovementType
 } from "../StockMovementType";
-import { StockMovementRepository } from "../repositories/StockMovementRepository";
+import type { StockMovementRepositoryPort } from "../repositories/StockMovementRepository";
 import { StockMovementValidator } from "../validators/StockMovementValidator";
 
 export class InventoryService {
 
-    private readonly repository: StockMovementRepository;
+    private readonly repository: StockMovementRepositoryPort;
     private readonly validator: StockMovementValidator;
     private readonly authStateService: AuthStateService;
     private readonly productService: ProductService;
 
     public constructor(
-        repository: StockMovementRepository,
+        repository: StockMovementRepositoryPort,
         validator: StockMovementValidator,
         authStateService: AuthStateService,
         productService: ProductService
