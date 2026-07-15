@@ -59,6 +59,7 @@ import { SyncConflictRepository } from "../modules/sync/repositories/SyncConflic
 import { SyncReceiptRepository } from "../modules/sync/repositories/SyncReceiptRepository";
 import { ListenerCoordinator } from "../modules/sync/services/ListenerCoordinator";
 import { DurableMutationCapture } from "../modules/sync/services/DurableMutationCapture";
+import { DurableMutationGroupCapture } from "../modules/sync/services/DurableMutationGroupCapture";
 import { LocalMutationApplierRegistry } from "../modules/sync/services/LocalMutationApplierRegistry";
 import { LocalMutationReconciler } from "../modules/sync/services/LocalMutationReconciler";
 import { MasterDataLocalMutationApplier } from "../modules/sync/master-data/MasterDataLocalMutationApplier";
@@ -98,6 +99,11 @@ export class Container {
         const localMutationApplierRegistry = new LocalMutationApplierRegistry();
         const durableMutationCapture = new DurableMutationCapture(
             syncOutboxRepository
+        );
+        const durableMutationGroupCapture = new DurableMutationGroupCapture(
+            syncOutboxRepository,
+            localMutationApplierRegistry,
+            durableMutationCapture
         );
         const localMutationReconciler = new LocalMutationReconciler(
             syncOutboxRepository,
@@ -139,6 +145,7 @@ export class Container {
         this.register("syncListenerCoordinator", syncListenerCoordinator);
         this.register("localMutationApplierRegistry", localMutationApplierRegistry);
         this.register("durableMutationCapture", durableMutationCapture);
+        this.register("durableMutationGroupCapture", durableMutationGroupCapture);
         this.register("localMutationReconciler", localMutationReconciler);
         this.register("syncEchoPolicy", syncEchoPolicy);
         this.register("firebaseRealtimeClient", firebaseRealtimeClient);
