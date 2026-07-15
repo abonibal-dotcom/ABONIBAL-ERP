@@ -1,17 +1,21 @@
-import { Repository } from "../../../core/repositories/Repository";
 import type { Driver } from "../../../core/persistence/Driver";
-import type { StockMovement } from "../StockMovement";
+import {
+    isReversalStockMovement,
+    type StockMovement
+} from "../StockMovement";
 import {
     isStockMovementReferenceType,
     isStockMovementType
 } from "../StockMovementType";
 import { stockMovementStorageKeyForAccount } from "../persistence/StockMovementPersistenceKey";
 
-export class StockMovementRepository extends Repository<StockMovement> {
+export class StockMovementRepository {
+
+    private readonly driver: Driver;
 
     public constructor(driver: Driver) {
 
-        super("stockMovements", driver);
+        this.driver = driver;
 
     }
 
@@ -32,13 +36,30 @@ export class StockMovementRepository extends Repository<StockMovement> {
     public appendForAccount(
         accountId: string,
         movement: StockMovement
-    ): void {
+    ): StockMovement {
+
+        if (movement.accountId !== accountId) {
+            throw new Error("Stock movement account mismatch.");
+        }
 
         const movements = this.allForAccount(accountId);
+        const existingMovement = movements.find(
+            currentMovement => currentMovement.id === movement.id
+        );
+
+        if (existingMovement) {
+            if (areStockMovementsEquivalent(existingMovement, movement)) {
+                return existingMovement;
+            }
+
+            throw new Error("Stock movement immutable identity conflict.");
+        }
 
         movements.push(movement);
 
         this.saveForAccount(accountId, movements);
+
+        return movement;
 
     }
 
@@ -64,35 +85,17 @@ export class StockMovementRepository extends Repository<StockMovement> {
 
     }
 
-    public voidForAccount(
+    public reversalsForAccount(
         accountId: string,
-        movementId: string,
-        voidMetadata: StockMovementVoidMetadata
-    ): StockMovement | null {
+        originalMovementId: string
+    ): StockMovement[] {
 
-        const movements = this.allForAccount(accountId);
-        const movementIndex = movements.findIndex(
-            movement => movement.id === movementId
-        );
-
-        if (movementIndex === -1) {
-            return null;
-        }
-
-        const voidedMovement: StockMovement = {
-            ...movements[movementIndex],
-            voidedAt: voidMetadata.voidedAt,
-            voidedBy: voidMetadata.voidedBy,
-            voidReason: voidMetadata.voidReason,
-            updatedAt: voidMetadata.voidedAt,
-            updatedBy: voidMetadata.voidedBy
-        };
-
-        movements[movementIndex] = voidedMovement;
-
-        this.saveForAccount(accountId, movements);
-
-        return voidedMovement;
+        return this
+            .allForAccount(accountId)
+            .filter(movement =>
+                isReversalStockMovement(movement)
+                && movement.reversalOfMovementId === originalMovementId
+            );
 
     }
 
@@ -107,14 +110,6 @@ export class StockMovementRepository extends Repository<StockMovement> {
         );
 
     }
-
-}
-
-export interface StockMovementVoidMetadata {
-
-    voidedAt: string;
-    voidedBy: string;
-    voidReason: string;
 
 }
 
@@ -141,5 +136,36 @@ function isStockMovement(value: unknown): value is StockMovement {
 function isNonEmptyString(value: unknown): value is string {
 
     return typeof value === "string" && value.trim().length > 0;
+
+}
+
+function areStockMovementsEquivalent(
+    left: StockMovement,
+    right: StockMovement
+): boolean {
+
+    return JSON.stringify(canonicalize(left))
+        === JSON.stringify(canonicalize(right));
+
+}
+
+function canonicalize(value: unknown): unknown {
+
+    if (Array.isArray(value)) {
+        return value.map(canonicalize);
+    }
+
+    if (value && typeof value === "object") {
+        return Object.fromEntries(
+            Object.entries(value)
+                .filter(([, child]) => child !== undefined)
+                .sort(([leftKey], [rightKey]) =>
+                    leftKey.localeCompare(rightKey)
+                )
+                .map(([key, child]) => [key, canonicalize(child)])
+        );
+    }
+
+    return value;
 
 }

@@ -1,9 +1,17 @@
 import type { AuthStateService } from "../../auth/AuthStateService";
 import type { ProductService } from "../../products/services/ProductService";
-import type {
-    StockMovement,
-    StockMovementInput
+import {
+    buildStockMovementReversalIdentity,
+    IMMUTABLE_STOCK_MOVEMENT_SEMANTICS_VERSION,
+    isLegacyVoidedStockMovement,
+    isReversalStockMovement,
+    stockMovementInventoryEffect,
+    type StockMovement,
+    type StockMovementInput
 } from "../StockMovement";
+import type {
+    StockMovementType
+} from "../StockMovementType";
 import { StockMovementRepository } from "../repositories/StockMovementRepository";
 import { StockMovementValidator } from "../validators/StockMovementValidator";
 
@@ -50,6 +58,12 @@ export class InventoryService {
             );
         }
 
+        if (input.type === "reversal") {
+            return failedStockMovementResult(
+                "Use reverseMovement to create a reversal stock movement."
+            );
+        }
+
         const movement: StockMovement = {
             id: crypto.randomUUID(),
             accountId: accountContext.accountId,
@@ -63,6 +77,8 @@ export class InventoryService {
             totalCost: input.totalCost,
             createdAt: new Date().toISOString(),
             createdBy: accountContext.userId,
+            ledgerSemanticsVersion:
+                IMMUTABLE_STOCK_MOVEMENT_SEMANTICS_VERSION,
             metadata: input.metadata
         };
         const errors = this.validator.validate(movement);
@@ -71,15 +87,21 @@ export class InventoryService {
             return failedStockMovementResult(errors);
         }
 
-        this.repository.appendForAccount(
-            accountContext.accountId,
-            movement
-        );
+        let storedMovement: StockMovement;
+
+        try {
+            storedMovement = this.repository.appendForAccount(
+                accountContext.accountId,
+                movement
+            );
+        } catch (error) {
+            return failedStockMovementResult(safeInventoryError(error));
+        }
 
         return {
             success: true,
             errors: [],
-            movement
+            movement: storedMovement
         };
 
     }
@@ -104,7 +126,7 @@ export class InventoryService {
         const existingMovement = this
             .getByProductId(normalizedProductId)
             .find(movement =>
-                !movement.voidedAt
+                !isLegacyVoidedStockMovement(movement)
                 && movement.type === "opening_balance"
                 && movement.referenceType === "opening_balance"
                 && movement.referenceId === normalizedProductId
@@ -151,7 +173,7 @@ export class InventoryService {
 
     public getCurrentQuantity(productId: string): number {
 
-        return sumNonVoidedQuantityDelta(
+        return sumStockMovementEffects(
             this.getByProductId(productId)
         );
 
@@ -163,13 +185,9 @@ export class InventoryService {
 
         for (const movement of this.getAll()) {
 
-            if (movement.voidedAt) {
-                continue;
-            }
-
             quantities[movement.productId] =
                 (quantities[movement.productId] ?? 0)
-                + movement.quantityDelta;
+                + stockMovementInventoryEffect(movement);
 
         }
 
@@ -314,6 +332,15 @@ export class InventoryService {
         reason: string
     ): StockMovementResult {
 
+        return this.reverseMovement(movementId, reason);
+
+    }
+
+    public reverseMovement(
+        movementId: string,
+        reason: string
+    ): StockMovementResult {
+
         const accountContext = this.currentAccountContext();
         const normalizedMovementId = movementId.trim();
         const normalizedReason = reason.trim();
@@ -347,32 +374,129 @@ export class InventoryService {
             );
         }
 
-        if (currentMovement.voidedAt) {
+        if (isReversalStockMovement(currentMovement)) {
             return failedStockMovementResult(
-                "Stock movement is already voided."
+                "Reversal stock movement cannot be reversed."
             );
         }
 
-        const voidedMovement = this.repository.voidForAccount(
-            accountContext.accountId,
-            normalizedMovementId,
-            {
-                voidedAt: new Date().toISOString(),
-                voidedBy: accountContext.userId,
-                voidReason: normalizedReason
-            }
+        if (currentMovement.voidedAt) {
+            return failedStockMovementResult(
+                "Legacy voided stock movement cannot be reversed again."
+            );
+        }
+
+        if (!isGenericReversalEligible(currentMovement.type)) {
+            return failedStockMovementResult(
+                "Stock movement is owned by another domain or is not reversible."
+            );
+        }
+
+        if (
+            !Number.isFinite(currentMovement.quantityDelta)
+            || currentMovement.quantityDelta === 0
+        ) {
+            return failedStockMovementResult(
+                "Stock movement effect must be finite and non-zero."
+            );
+        }
+
+        const identity = buildStockMovementReversalIdentity(
+            currentMovement.id
         );
 
-        if (!voidedMovement) {
+        if (!identity) {
             return failedStockMovementResult(
-                "Stock movement not found."
+                "Stock movement id is not eligible for deterministic reversal."
             );
+        }
+
+        const existingReversals = this.repository.reversalsForAccount(
+            accountContext.accountId,
+            currentMovement.id
+        );
+
+        if (existingReversals.length > 1) {
+            return failedStockMovementResult(
+                "Multiple reversal movements found for the original movement."
+            );
+        }
+
+        const existingReversal = existingReversals[0];
+
+        if (existingReversal) {
+            return isMatchingReversal(
+                existingReversal,
+                currentMovement,
+                normalizedReason,
+                identity.movementId,
+                identity.idempotencyKey
+            )
+                ? {
+                    success: true,
+                    errors: [],
+                    movement: existingReversal
+                }
+                : failedStockMovementResult(
+                    "Stock movement is already reversed with different reversal data."
+                );
+        }
+
+        if (this.repository.findForAccount(
+            accountContext.accountId,
+            identity.movementId
+        )) {
+            return failedStockMovementResult(
+                "Deterministic reversal movement id is already in use."
+            );
+        }
+
+        const reversalMovement: StockMovement = {
+            id: identity.movementId,
+            accountId: accountContext.accountId,
+            productId: currentMovement.productId,
+            type: "reversal",
+            quantityDelta: -currentMovement.quantityDelta,
+            reason: normalizedReason,
+            referenceType: "movement_reversal",
+            referenceId: currentMovement.id,
+            unitCost: currentMovement.unitCost,
+            totalCost: currentMovement.totalCost === undefined
+                ? undefined
+                : -currentMovement.totalCost,
+            createdAt: new Date().toISOString(),
+            createdBy: accountContext.userId,
+            ledgerSemanticsVersion:
+                IMMUTABLE_STOCK_MOVEMENT_SEMANTICS_VERSION,
+            reversalOfMovementId: currentMovement.id,
+            reversalReason: normalizedReason,
+            idempotencyKey: identity.idempotencyKey,
+            metadata: {
+                source: "stock_movement_reversal",
+                originalMovementType: currentMovement.type
+            }
+        };
+        const errors = this.validator.validate(reversalMovement);
+
+        if (errors.length > 0) {
+            return failedStockMovementResult(errors);
+        }
+
+        let storedReversal: StockMovement;
+
+        try {
+            storedReversal = this.repository.appendForAccount(
+                accountContext.accountId,
+                reversalMovement
+            );
+        } catch (error) {
+            return failedStockMovementResult(safeInventoryError(error));
         }
 
         return {
             success: true,
             errors: [],
-            movement: voidedMovement
+            movement: storedReversal
         };
 
     }
@@ -491,13 +615,51 @@ function failedStockMovementResult(
 
 }
 
-function sumNonVoidedQuantityDelta(movements: StockMovement[]): number {
+function sumStockMovementEffects(movements: StockMovement[]): number {
 
     return movements.reduce(
-        (total, movement) => movement.voidedAt
-            ? total
-            : total + movement.quantityDelta,
+        (total, movement) =>
+            total + stockMovementInventoryEffect(movement),
         0
     );
+
+}
+
+function isGenericReversalEligible(type: StockMovementType): boolean {
+
+    return type === "opening_balance"
+        || type === "manual_adjustment"
+        || type === "correction";
+
+}
+
+function isMatchingReversal(
+    reversal: StockMovement,
+    original: StockMovement,
+    reason: string,
+    movementId: string,
+    idempotencyKey: string
+): boolean {
+
+    return reversal.id === movementId
+        && reversal.accountId === original.accountId
+        && reversal.productId === original.productId
+        && reversal.type === "reversal"
+        && reversal.quantityDelta === -original.quantityDelta
+        && reversal.referenceType === "movement_reversal"
+        && reversal.referenceId === original.id
+        && reversal.reversalOfMovementId === original.id
+        && reversal.reversalReason === reason
+        && reversal.reason === reason
+        && reversal.idempotencyKey === idempotencyKey
+        && reversal.ledgerSemanticsVersion === 2;
+
+}
+
+function safeInventoryError(error: unknown): string {
+
+    return error instanceof Error && error.message.trim()
+        ? error.message
+        : "Stock movement persistence failed.";
 
 }

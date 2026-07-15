@@ -7,6 +7,7 @@ export const stockMovementTypes = [
     "purchase_return",
     "correction",
     "void",
+    "reversal",
 ] as const;
 
 export type StockMovementType = typeof stockMovementTypes[number];
@@ -20,6 +21,7 @@ export const stockMovementReferenceTypes = [
     "purchase_return",
     "correction",
     "void",
+    "movement_reversal",
 ] as const;
 
 export type StockMovementReferenceType =
