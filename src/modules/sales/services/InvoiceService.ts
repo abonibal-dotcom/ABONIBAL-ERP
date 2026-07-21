@@ -12,7 +12,7 @@ import type {
     InvoiceDraftUpdateInput,
     InvoiceLine
 } from "../Invoice";
-import { InvoiceRepository } from "../repositories/InvoiceRepository";
+import type { InvoiceRepositoryPort } from "../repositories/InvoiceRepository";
 import { InvoiceValidator } from "../validators/InvoiceValidator";
 import {
     buildInvoiceCancellationCommandId,
@@ -24,13 +24,13 @@ import {
 
 export class InvoiceService {
 
-    private readonly repository: InvoiceRepository;
+    private readonly repository: InvoiceRepositoryPort;
     private readonly validator: InvoiceValidator;
     private readonly authStateService: AuthStateService;
     private readonly inventoryService: InventoryService;
 
     public constructor(
-        repository: InvoiceRepository,
+        repository: InvoiceRepositoryPort,
         validator: InvoiceValidator,
         authStateService: AuthStateService,
         inventoryService: InventoryService

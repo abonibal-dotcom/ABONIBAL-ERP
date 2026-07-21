@@ -4,7 +4,20 @@ import type { Invoice, InvoiceLine } from "../Invoice";
 import { isInvoiceStatus } from "../InvoiceStatus";
 import { invoiceStorageKeyForAccount } from "../persistence/InvoicePersistenceKey";
 
-export class InvoiceRepository extends Repository<Invoice> {
+export interface InvoiceRepositoryPort {
+    allForAccount(accountId: string): Invoice[];
+    appendForAccount(accountId: string, invoice: Invoice): void;
+    findForAccount(accountId: string, invoiceId: string): Invoice | undefined;
+    updateForAccount(
+        accountId: string,
+        invoiceId: string,
+        invoice: Invoice
+    ): Invoice | null;
+    removeForAccount(accountId: string, invoiceId: string): boolean;
+}
+
+export class InvoiceRepository extends Repository<Invoice>
+implements InvoiceRepositoryPort {
 
     public constructor(driver: Driver) {
 
@@ -46,6 +59,25 @@ export class InvoiceRepository extends Repository<Invoice> {
 
         invoices.push(invoice);
 
+        this.saveForAccount(accountId, invoices);
+
+    }
+
+    public appendAuthoritativeForAccount(
+        accountId: string,
+        invoice: Invoice
+    ): void {
+
+        const invoices = this.allForAccount(accountId);
+
+        if (
+            invoice.accountId !== accountId
+            || invoices.some(currentInvoice => currentInvoice.id === invoice.id)
+        ) {
+            throw new Error("Authoritative Invoice identity conflicts.");
+        }
+
+        invoices.push(invoice);
         this.saveForAccount(accountId, invoices);
 
     }
@@ -127,6 +159,40 @@ export class InvoiceRepository extends Repository<Invoice> {
         this.saveForAccount(accountId, remainingInvoices);
 
         return true;
+
+    }
+
+    public applyAuthoritativeForAccount(
+        accountId: string,
+        invoiceId: string,
+        invoice: Invoice
+    ): Invoice | null {
+
+        const invoices = this.allForAccount(accountId);
+        const invoiceIndex = invoices.findIndex(
+            currentInvoice => currentInvoice.id === invoiceId
+        );
+
+        if (invoiceIndex === -1) {
+            return null;
+        }
+
+        const currentInvoice = invoices[invoiceIndex];
+
+        if (
+            invoice.accountId !== accountId
+            || invoice.id !== invoiceId
+            || currentInvoice.accountId !== accountId
+            || invoiceRevision(invoice) <= invoiceRevision(currentInvoice)
+            || !isAllowedAuthoritativeInvoiceState(currentInvoice, invoice)
+        ) {
+            throw new Error("Authoritative Invoice state is not safe to apply.");
+        }
+
+        invoices[invoiceIndex] = invoice;
+        this.saveForAccount(accountId, invoices);
+
+        return invoice;
 
     }
 
@@ -276,6 +342,76 @@ function isAllowedInvoiceUpdate(
     }
 
     return false;
+
+}
+
+function isAllowedAuthoritativeInvoiceState(
+    currentInvoice: Invoice,
+    authoritativeInvoice: Invoice
+): boolean {
+
+    if (!hasStableInvoiceIdentity(currentInvoice, authoritativeInvoice)) {
+        return false;
+    }
+
+    if (currentInvoice.status === "draft") {
+        if (authoritativeInvoice.status === "draft") {
+            return hasNoIssuedOrCancelledState(authoritativeInvoice)
+                && authoritativeInvoice.lines.every(line =>
+                    !line.stockMovementId && !line.reversalStockMovementId
+                );
+        }
+
+        if (authoritativeInvoice.status === "issued") {
+            return isCompleteIssuedState(authoritativeInvoice);
+        }
+
+        return authoritativeInvoice.status === "cancelled"
+            && isCompleteCancelledState(authoritativeInvoice);
+    }
+
+    if (
+        currentInvoice.status === "issued"
+        && authoritativeInvoice.status === "cancelled"
+    ) {
+        return canonicalJson(invoiceIssuedSnapshot(currentInvoice))
+                === canonicalJson(invoiceIssuedSnapshot(authoritativeInvoice))
+            && isCompleteCancelledState(authoritativeInvoice);
+    }
+
+    return false;
+
+}
+
+function isCompleteIssuedState(invoice: Invoice): boolean {
+
+    return isNonEmptyString(invoice.issueCommandId)
+        && isNonEmptyString(invoice.issuedAt)
+        && isNonEmptyString(invoice.issuedBy)
+        && !invoice.cancelledAt
+        && !invoice.cancelledBy
+        && !invoice.cancelReason
+        && !invoice.cancellationCommandId
+        && invoice.lines.every(line =>
+            isNonEmptyString(line.stockMovementId)
+            && !line.reversalStockMovementId
+        );
+
+}
+
+function isCompleteCancelledState(invoice: Invoice): boolean {
+
+    return isNonEmptyString(invoice.issueCommandId)
+        && isNonEmptyString(invoice.issuedAt)
+        && isNonEmptyString(invoice.issuedBy)
+        && isNonEmptyString(invoice.cancellationCommandId)
+        && isNonEmptyString(invoice.cancelledAt)
+        && isNonEmptyString(invoice.cancelledBy)
+        && isNonEmptyString(invoice.cancelReason)
+        && invoice.lines.every(line =>
+            isNonEmptyString(line.stockMovementId)
+            && isNonEmptyString(line.reversalStockMovementId)
+        );
 
 }
 

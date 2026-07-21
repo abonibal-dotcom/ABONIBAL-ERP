@@ -50,6 +50,8 @@ import { StockMovementLocalMutationApplier } from "../modules/inventory/sync/Sto
 import { StockMovementSyncAdapter } from "../modules/inventory/sync/StockMovementSyncAdapter";
 import { StockMovementSyncOperationTransport } from "../modules/inventory/sync/StockMovementSyncOperationTransport";
 import { InvoiceRepository } from "../modules/sales/repositories/InvoiceRepository";
+import { InvoiceSyncRepository } from "../modules/sales/repositories/InvoiceSyncRepository";
+import { InvoiceSyncStateRepository } from "../modules/sales/repositories/InvoiceSyncStateRepository";
 import { InvoiceValidator } from "../modules/sales/validators/InvoiceValidator";
 import { InvoiceService } from "../modules/sales/services/InvoiceService";
 import { InvoiceReturnRepository } from "../modules/sales/repositories/InvoiceReturnRepository";
@@ -59,6 +61,8 @@ import { IssueInvoiceDurableCommandService } from "../modules/sales/services/Iss
 import { CancelInvoiceDurableCommandService } from "../modules/sales/services/CancelInvoiceDurableCommandService";
 import { ExecuteInvoiceReturnDurableCommandService } from "../modules/sales/services/ExecuteInvoiceReturnDurableCommandService";
 import { InvoiceLocalMutationApplier } from "../modules/sales/sync/InvoiceLocalMutationApplier";
+import { InvoiceSyncAdapter } from "../modules/sales/sync/InvoiceSyncAdapter";
+import { InvoiceSyncOperationTransport } from "../modules/sales/sync/InvoiceSyncOperationTransport";
 import { InvoiceReturnLocalMutationApplier } from "../modules/sales/sync/InvoiceReturnLocalMutationApplier";
 import { getDatabase } from "firebase/database";
 import { getAuthStateService } from "../modules/auth/AuthRuntime";
@@ -106,6 +110,7 @@ export class Container {
         syncCloudCapabilityRegistry.register("customers", ["create", "update"]);
         syncCloudCapabilityRegistry.register("suppliers", ["create", "update"]);
         syncCloudCapabilityRegistry.register("stockMovements", ["append"]);
+        syncCloudCapabilityRegistry.register("invoices", ["create", "update"]);
         const syncOutboxRepository = new PersistentOutboxRepository(
             driver,
             operation => syncCloudCapabilityRegistry.supports(operation)
@@ -147,6 +152,11 @@ export class Container {
                 firebaseRealtimeClient,
                 () => getFirebaseApp()?.options.projectId ?? null
             );
+        const invoiceSyncOperationTransport =
+            new InvoiceSyncOperationTransport(
+                firebaseRealtimeClient,
+                () => getFirebaseApp()?.options.projectId ?? null
+            );
         const syncOperationTransport = new SyncOperationTransportRegistry();
         syncOperationTransport.register(
             ["products", "customers", "suppliers"],
@@ -155,6 +165,10 @@ export class Container {
         syncOperationTransport.register(
             ["stockMovements"],
             stockMovementSyncOperationTransport
+        );
+        syncOperationTransport.register(
+            ["invoices"],
+            invoiceSyncOperationTransport
         );
         const syncCoordinator = new SyncCoordinator(
             syncModeService,
@@ -193,6 +207,10 @@ export class Container {
         this.register(
             "stockMovementSyncOperationTransport",
             stockMovementSyncOperationTransport
+        );
+        this.register(
+            "invoiceSyncOperationTransport",
+            invoiceSyncOperationTransport
         );
         this.register("syncOperationTransport", syncOperationTransport);
         this.register("syncCoordinator", syncCoordinator);
@@ -545,17 +563,17 @@ export class Container {
             createProductWithOpeningStockService
         );
 
-        const invoiceRepository = new InvoiceRepository(driver);
-
-        this.register("invoiceRepository", invoiceRepository);
+        const invoiceCacheRepository = new InvoiceRepository(driver);
+        const invoiceSyncStateRepository = new InvoiceSyncStateRepository(driver);
 
         const invoiceValidator = new InvoiceValidator();
 
         this.register("invoiceValidator", invoiceValidator);
 
         const invoiceLocalMutationApplier = new InvoiceLocalMutationApplier(
-            invoiceRepository,
-            invoiceValidator
+            invoiceCacheRepository,
+            invoiceValidator,
+            invoiceSyncStateRepository
         );
         localMutationApplierRegistry.register(invoiceLocalMutationApplier);
 
@@ -563,6 +581,36 @@ export class Container {
             "invoiceLocalMutationApplier",
             invoiceLocalMutationApplier
         );
+
+        const invoiceRepository = new InvoiceSyncRepository(
+            invoiceCacheRepository,
+            syncModeService,
+            durableMutationCapture,
+            invoiceLocalMutationApplier,
+            () => {
+                const state = getAuthStateService().getState();
+
+                return state.status === "authenticated"
+                    ? state.session.user.id
+                    : null;
+            }
+        );
+        const invoiceSyncAdapter = new InvoiceSyncAdapter(
+            firebaseRealtimeClient,
+            syncModeService,
+            getAuthStateService(),
+            syncOutboxRepository,
+            syncConflictRepository,
+            syncReceiptRepository,
+            syncListenerCoordinator,
+            syncEchoPolicy,
+            invoiceLocalMutationApplier
+        );
+
+        this.register("invoiceCacheRepository", invoiceCacheRepository);
+        this.register("invoiceSyncStateRepository", invoiceSyncStateRepository);
+        this.register("invoiceRepository", invoiceRepository);
+        this.register("invoiceSyncAdapter", invoiceSyncAdapter);
 
         const invoiceService = new InvoiceService(
             invoiceRepository,
@@ -576,7 +624,7 @@ export class Container {
         const issueInvoiceDurableCommandService =
             new IssueInvoiceDurableCommandService(
                 invoiceService,
-                invoiceRepository,
+                invoiceCacheRepository,
                 invoiceValidator,
                 inventoryService,
                 stockMovementCacheRepository,
@@ -589,7 +637,7 @@ export class Container {
         const cancelInvoiceDurableCommandService =
             new CancelInvoiceDurableCommandService(
                 invoiceService,
-                invoiceRepository,
+                invoiceCacheRepository,
                 invoiceValidator,
                 stockMovementCacheRepository,
                 stockMovementValidator,
@@ -633,7 +681,7 @@ export class Container {
         const invoiceReturnService = new InvoiceReturnService(
             invoiceReturnRepository,
             invoiceReturnValidator,
-            invoiceRepository,
+            invoiceCacheRepository,
             getAuthStateService(),
             inventoryService
         );
@@ -645,7 +693,7 @@ export class Container {
                 invoiceReturnService,
                 invoiceReturnRepository,
                 invoiceReturnValidator,
-                invoiceRepository,
+                invoiceCacheRepository,
                 stockMovementCacheRepository,
                 stockMovementValidator,
                 durableMutationGroupCapture,
