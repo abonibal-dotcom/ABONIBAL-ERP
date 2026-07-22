@@ -10,7 +10,8 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "vitest run --exclude tests/emulator/**",
-    "test:rules": "vitest run tests/emulator/receipt-rules.emulator.test.ts"
+    "test:rules": "vitest run tests/emulator/receipt-rules.emulator.test.ts",
+    "test:allocation-emulator": "vitest run tests/emulator/return-allocation.emulator.test.ts"
   },
   "dependencies": {
     "firebase-admin": "14.2.0",
