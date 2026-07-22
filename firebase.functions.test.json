@@ -1,0 +1,15 @@
+{
+  "functions": {
+    "source": "functions",
+    "codebase": "trusted-commercial",
+    "runtime": "nodejs22",
+    "predeploy": [
+      "pnpm --dir functions run build"
+    ]
+  },
+  "emulators": {
+    "functions": {
+      "port": 5002
+    }
+  }
+}
