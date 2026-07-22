@@ -1,25 +1,47 @@
 import type { ReturnAllocationRepository } from "../../src/allocation/ReturnAllocationRepository.js";
+import type { ReturnAllocationCommitRepository } from "../../src/allocation/ReturnAllocationCommitRepository.js";
+import {
+    evaluateReturnAllocationCommitTransaction
+} from "../../src/allocation/ReturnAllocationCommitTransaction.js";
 import {
     evaluateReturnAllocationTransaction,
     parseReturnAllocationState
 } from "../../src/allocation/ReturnAllocationTransaction.js";
 import type {
+    CommitReturnAllocationResult,
     ReserveReturnAllocationResult,
     ReturnAllocationState,
+    ReturnAllocationCommitTransactionInput,
     ReturnAllocationTransactionInput
 } from "../../src/allocation/ReturnAllocationTypes.js";
 
 export class InMemoryReturnAllocationRepository
-implements ReturnAllocationRepository {
+implements ReturnAllocationRepository, ReturnAllocationCommitRepository {
     private readonly states = new Map<string, unknown>();
     private queue: Promise<void> = Promise.resolve();
     reserveCalls = 0;
+    commitCalls = 0;
 
     reserve(input: ReturnAllocationTransactionInput): Promise<ReserveReturnAllocationResult> {
         this.reserveCalls += 1;
         return this.serialized(() => {
             const key = this.key(input.request.accountId, input.request.invoiceId);
             const evaluation = evaluateReturnAllocationTransaction(
+                this.states.get(key) ?? null,
+                input
+            );
+            if (evaluation.nextState) {
+                this.states.set(key, clone(evaluation.nextState));
+            }
+            return evaluation.result;
+        });
+    }
+
+    commit(input: ReturnAllocationCommitTransactionInput): Promise<CommitReturnAllocationResult> {
+        this.commitCalls += 1;
+        return this.serialized(() => {
+            const key = this.key(input.request.accountId, input.request.invoiceId);
+            const evaluation = evaluateReturnAllocationCommitTransaction(
                 this.states.get(key) ?? null,
                 input
             );

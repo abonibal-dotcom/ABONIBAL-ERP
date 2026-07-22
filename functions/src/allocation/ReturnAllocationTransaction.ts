@@ -6,6 +6,7 @@ import type {
     CanonicalInvoiceLine,
     ReserveReturnAllocationResult,
     ReturnAllocationLineAggregate,
+    ReturnAllocationCommit,
     ReturnAllocationReservation,
     ReturnAllocationReservationLine,
     ReturnAllocationState,
@@ -39,7 +40,8 @@ export function evaluateReturnAllocationTransaction(
             invoiceId: input.request.invoiceId,
             revision: 1,
             lines: withRecomputedReserved(lines, reservations),
-            reservations
+            reservations,
+            commits: {}
         };
         return {
             nextState,
@@ -82,7 +84,11 @@ export function evaluateReturnAllocationTransaction(
     const nextState: ReturnAllocationState = {
         ...current,
         revision: current.revision + 1,
-        lines: withRecomputedReserved(current.lines, reservations),
+        lines: withRecomputedAggregates(
+            current.lines,
+            reservations,
+            current.commits
+        ),
         reservations
     };
 
@@ -149,13 +155,26 @@ export function parseReturnAllocationState(
         return null;
     }
 
+    const commits: Record<string, ReturnAllocationCommit> = {};
+    if (state.commits !== undefined && !isObject(state.commits)) {
+        return null;
+    }
+    for (const [commandId, valueCommit] of Object.entries(state.commits ?? {})) {
+        const commit = parseCommit(valueCommit, commandId);
+        if (!commit) {
+            return null;
+        }
+        commits[commandId] = commit;
+    }
+
     return {
         schemaVersion: 1,
         accountId: state.accountId,
         invoiceId: state.invoiceId,
         revision: state.revision,
         lines,
-        reservations
+        reservations,
+        commits
     };
 }
 
@@ -200,11 +219,33 @@ function parseAndValidateState(
         }
     }
 
-    const recomputed = withRecomputedReserved(state.lines, state.reservations);
+    for (const [commandId, commit] of Object.entries(state.commits)) {
+        const reservation = state.reservations[commandId];
+        if (
+            !reservation
+            || commit.accountId !== state.accountId
+            || commit.invoiceId !== state.invoiceId
+            || commit.returnId !== reservation.returnId
+            || commit.requestChecksum !== reservation.requestChecksum
+            || commit.reservationChecksum
+                !== calculateReturnAllocationReservationChecksum(reservation)
+            || !allocationsMatch(commit.allocations, reservation.allocations)
+        ) {
+            return null;
+        }
+    }
+
+    const recomputed = withRecomputedAggregates(
+        state.lines,
+        state.reservations,
+        state.commits
+    );
     for (const lineId of actualLineIds) {
         if (
             recomputed[lineId]?.reservedReturnedQuantity
             !== state.lines[lineId]?.reservedReturnedQuantity
+            || recomputed[lineId]?.committedReturnedQuantity
+                !== state.lines[lineId]?.committedReturnedQuantity
         ) {
             return null;
         }
@@ -271,10 +312,21 @@ function withRecomputedReserved(
     lines: Record<string, ReturnAllocationLineAggregate>,
     reservations: Record<string, ReturnAllocationReservation>
 ): Record<string, ReturnAllocationLineAggregate> {
+    return withRecomputedAggregates(lines, reservations, {});
+}
+
+export function withRecomputedAggregates(
+    lines: Record<string, ReturnAllocationLineAggregate>,
+    reservations: Record<string, ReturnAllocationReservation>,
+    commits: Record<string, ReturnAllocationCommit>
+): Record<string, ReturnAllocationLineAggregate> {
     const totals: Record<string, number> = Object.fromEntries(
         Object.keys(lines).map(lineId => [lineId, 0])
     );
     for (const commandId of Object.keys(reservations).sort()) {
+        if (commits[commandId]) {
+            continue;
+        }
         const reservation = reservations[commandId]!;
         for (const returnLineId of Object.keys(reservation.allocations).sort()) {
             const allocation = reservation.allocations[returnLineId]!;
@@ -283,10 +335,80 @@ function withRecomputedReserved(
         }
     }
 
+    const committedTotals: Record<string, number> = Object.fromEntries(
+        Object.keys(lines).map(lineId => [lineId, 0])
+    );
+    for (const commandId of Object.keys(commits).sort()) {
+        const commit = commits[commandId]!;
+        for (const returnLineId of Object.keys(commit.allocations).sort()) {
+            const allocation = commit.allocations[returnLineId]!;
+            committedTotals[allocation.invoiceLineId] =
+                (committedTotals[allocation.invoiceLineId] ?? 0)
+                + allocation.quantity;
+        }
+    }
+
     return Object.fromEntries(Object.keys(lines).sort().map(lineId => [lineId, {
         ...lines[lineId]!,
-        reservedReturnedQuantity: totals[lineId] ?? 0
+        reservedReturnedQuantity: totals[lineId] ?? 0,
+        committedReturnedQuantity: committedTotals[lineId] ?? 0
     }]));
+}
+
+function parseCommit(
+    value: unknown,
+    commandId: string
+): ReturnAllocationCommit | null {
+    if (!isObject(value)) {
+        return null;
+    }
+    const commit = value as Partial<ReturnAllocationCommit>;
+    if (
+        commit.schemaVersion !== 1
+        || !isIdentifier(commit.accountId)
+        || !isIdentifier(commit.invoiceId)
+        || !isIdentifier(commit.returnId)
+        || commit.commandId !== commandId
+        || commit.commandType !== "invoiceReturn.execute"
+        || !isChecksum(commit.requestChecksum)
+        || !isChecksum(commit.reservationChecksum)
+        || !isIdentifier(commit.publicationId)
+        || !isObject(commit.allocations)
+        || !isNonNegativeFinite(commit.committedAt)
+        || !isChecksum(commit.commitChecksum)
+    ) {
+        return null;
+    }
+
+    const allocations: Record<string, ReturnAllocationReservationLine> = {};
+    const invoiceLineIds = new Set<string>();
+    for (const [returnLineId, valueAllocation] of Object.entries(
+        commit.allocations
+    )) {
+        if (!isObject(valueAllocation)) {
+            return null;
+        }
+        const allocation = valueAllocation as Partial<ReturnAllocationReservationLine>;
+        if (
+            allocation.returnLineId !== returnLineId
+            || !isIdentifier(returnLineId)
+            || !isIdentifier(allocation.invoiceLineId)
+            || !isPositiveFinite(allocation.quantity)
+            || invoiceLineIds.has(allocation.invoiceLineId)
+        ) {
+            return null;
+        }
+        invoiceLineIds.add(allocation.invoiceLineId);
+        allocations[returnLineId] = allocation as ReturnAllocationReservationLine;
+    }
+    if (Object.keys(allocations).length === 0) {
+        return null;
+    }
+
+    const normalized = { ...(commit as ReturnAllocationCommit), allocations };
+    return normalized.commitChecksum === calculateReturnAllocationCommitChecksum(normalized)
+        ? normalized
+        : null;
 }
 
 function parseReservation(
@@ -368,6 +490,38 @@ function immutableReservation(reservation: ReturnAllocationReservation) {
         status: reservation.status,
         allocations: reservation.allocations
     };
+}
+
+export function calculateReturnAllocationReservationChecksum(
+    reservation: ReturnAllocationReservation
+): string {
+    return canonicalChecksum(normalizeJsonObject(immutableReservation(reservation)));
+}
+
+export function calculateReturnAllocationCommitChecksum(
+    commit: Omit<ReturnAllocationCommit, "commitChecksum"> | ReturnAllocationCommit
+): string {
+    return canonicalChecksum(normalizeJsonObject({
+        schemaVersion: commit.schemaVersion,
+        accountId: commit.accountId,
+        invoiceId: commit.invoiceId,
+        returnId: commit.returnId,
+        commandId: commit.commandId,
+        commandType: commit.commandType,
+        requestChecksum: commit.requestChecksum,
+        reservationChecksum: commit.reservationChecksum,
+        publicationId: commit.publicationId,
+        allocations: commit.allocations,
+        committedAt: commit.committedAt
+    }));
+}
+
+function allocationsMatch(
+    left: Record<string, ReturnAllocationReservationLine>,
+    right: Record<string, ReturnAllocationReservationLine>
+): boolean {
+    return canonicalChecksum(normalizeJsonObject(left))
+        === canonicalChecksum(normalizeJsonObject(right));
 }
 
 function normalizeInvoiceLines(

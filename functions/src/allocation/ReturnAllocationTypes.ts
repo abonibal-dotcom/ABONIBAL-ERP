@@ -78,6 +78,21 @@ export type ReturnAllocationReservation = {
     updatedAt: number;
 };
 
+export type ReturnAllocationCommit = {
+    schemaVersion: typeof RETURN_ALLOCATION_SCHEMA_VERSION;
+    accountId: string;
+    invoiceId: string;
+    returnId: string;
+    commandId: string;
+    commandType: "invoiceReturn.execute";
+    requestChecksum: string;
+    reservationChecksum: string;
+    publicationId: string;
+    allocations: Record<string, ReturnAllocationReservationLine>;
+    committedAt: number;
+    commitChecksum: string;
+};
+
 export type ReturnAllocationState = {
     schemaVersion: typeof RETURN_ALLOCATION_SCHEMA_VERSION;
     accountId: string;
@@ -85,6 +100,7 @@ export type ReturnAllocationState = {
     revision: number;
     lines: Record<string, ReturnAllocationLineAggregate>;
     reservations: Record<string, ReturnAllocationReservation>;
+    commits: Record<string, ReturnAllocationCommit>;
 };
 
 export type ReturnAllocationRejectionCode =
@@ -120,5 +136,40 @@ export type ReserveReturnAllocationResult =
 export type ReturnAllocationTransactionInput = {
     request: ReserveReturnAllocationRequest;
     invoiceLines: CanonicalInvoiceLine[];
+    now: number;
+};
+
+export type CommitReturnAllocationRequest = {
+    schemaVersion: typeof RETURN_ALLOCATION_SCHEMA_VERSION;
+    accountId: string;
+    invoiceId: string;
+    returnId: string;
+    commandId: string;
+    commandType: "invoiceReturn.execute";
+    requestChecksum: string;
+    reservationChecksum: string;
+    publicationId: string;
+};
+
+export type CommitReturnAllocationResult =
+    | {
+        kind: "committed" | "exactMatch";
+        allocationRevision: number;
+        commit: ReturnAllocationCommit;
+    }
+    | {
+        kind: "rejected";
+        code: "MISSING_RESERVATION" | "INVALID_COMMIT_REQUEST";
+    }
+    | {
+        kind: "conflict";
+        code:
+            | "ALLOCATION_COMMIT_CONFLICT"
+            | "ALLOCATION_STATE_CONFLICT"
+            | "RESERVATION_CHECKSUM_CONFLICT";
+    };
+
+export type ReturnAllocationCommitTransactionInput = {
+    request: CommitReturnAllocationRequest;
     now: number;
 };
