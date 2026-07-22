@@ -716,7 +716,11 @@ checks.push({
         truthy(!container.includes("invoiceSyncAdapter.startSubscription"));
         truthy(!repository.includes("allForAccount(accountId).forEach"));
         truthy(!adapter.includes("providerUserId"));
-        truthy(!container.includes("invoiceReturnSyncOperationTransport"));
+        truthy(container.includes("invoiceReturnSyncOperationTransport"));
+        truthy(container.includes('"createRecorded"'));
+        truthy(container.includes('"updateRecorded"'));
+        truthy(!container.includes('["execute"]'));
+        truthy(!container.includes("invoiceReturnSyncAdapter.startSubscription"));
     }
 });
 

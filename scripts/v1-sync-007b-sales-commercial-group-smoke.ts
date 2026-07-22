@@ -961,7 +961,7 @@ const checks: Array<{ name: string; run: () => void }> = [
         }
     },
     {
-        name: "Container preserves durable appliers and registers only the approved Invoice capability",
+        name: "Container preserves durable appliers and keeps InvoiceReturn execute capability absent",
         run: () => {
             const source = readFileSync("src/core/Container.ts", "utf8");
             truthy(source.includes("InvoiceLocalMutationApplier"), "Invoice applier is not registered.");
@@ -969,7 +969,10 @@ const checks: Array<{ name: string; run: () => void }> = [
             truthy(source.includes('register("invoices", ["create", "update"])'), "Invoice cloud capability is not registered.");
             truthy(!source.includes('register("invoiceReturns", ["update"])'), "InvoiceReturn cloud capability was added.");
             truthy(source.includes("InvoiceSyncOperationTransport"), "Invoice transport is not registered.");
-            truthy(!source.includes("InvoiceReturnSyncOperationTransport"), "InvoiceReturn transport was added.");
+            truthy(source.includes("InvoiceReturnSyncOperationTransport"), "Recorded InvoiceReturn transport is not registered.");
+            truthy(source.includes('"createRecorded"'), "Recorded create capability is missing.");
+            truthy(source.includes('"updateRecorded"'), "Recorded update capability is missing.");
+            truthy(!source.includes('["execute"]'), "InvoiceReturn execute capability was added.");
         }
     },
     {
