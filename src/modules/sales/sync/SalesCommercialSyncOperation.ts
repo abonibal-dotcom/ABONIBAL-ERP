@@ -55,14 +55,17 @@ export function buildInvoiceReturnLifecycleTransitionOperation(
     commandId: string,
     createdAt: string
 ): SyncOperationInput {
-    return buildCommercialLifecycleOperation(
-        "invoiceReturns",
-        expected,
-        intended,
-        commandId,
-        "execute",
-        createdAt
-    );
+    return {
+        ...buildCommercialLifecycleOperation(
+            "invoiceReturns",
+            expected,
+            intended,
+            commandId,
+            "execute",
+            createdAt
+        ),
+        cloudAction: "execute"
+    };
 }
 
 export function readInvoiceLifecycleTransitionOperation(
@@ -210,6 +213,10 @@ function assertOperationIdentity(
         || rebuilt.accountId !== operation.accountId
         || rebuilt.module !== operation.module
         || rebuilt.recordId !== operation.recordId
+        || (
+            operation.cloudAction !== undefined
+            && rebuilt.cloudAction !== operation.cloudAction
+        )
         || rebuilt.idempotencyKey !== operation.idempotencyKey
         || rebuilt.expectedRevision !== operation.expectedRevision
         || rebuilt.writeSetChecksum !== operation.writeSetChecksum

@@ -429,6 +429,9 @@ function calculateGroupChecksum(
                 module: member.operation.module,
                 recordId: member.operation.recordId,
                 operationType: member.operation.operationType,
+                ...(member.operation.cloudAction
+                    ? { cloudAction: member.operation.cloudAction }
+                    : {}),
                 expectedRevision: member.operation.expectedRevision ?? null,
                 writeSetChecksum: member.operation.writeSetChecksum ?? null,
                 payloadFingerprint: operationPayloadFingerprint(
@@ -505,6 +508,9 @@ function toOperationInput(operation: SyncOperation): SyncOperationInput {
         module: operation.module,
         recordId: operation.recordId,
         operationType: operation.operationType,
+        ...(operation.cloudAction
+            ? { cloudAction: operation.cloudAction }
+            : {}),
         ...(operation.expectedRevision !== undefined
             ? { expectedRevision: operation.expectedRevision }
             : {}),

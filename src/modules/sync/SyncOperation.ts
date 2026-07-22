@@ -26,6 +26,8 @@ export const syncOperationTypes = [
 
 export type SyncOperationType = typeof syncOperationTypes[number];
 
+export type SyncCloudAction = string;
+
 export const syncOperationStatuses = [
     "pending",
     "syncing",
@@ -65,6 +67,7 @@ export interface SyncOperation {
     module: SyncModule;
     recordId: string;
     operationType: SyncOperationType;
+    cloudAction?: SyncCloudAction;
     expectedRevision?: number;
     idempotencyKey: string;
     writeSetChecksum?: string;
@@ -92,6 +95,7 @@ export interface SyncOperationInput {
     module: SyncModule;
     recordId: string;
     operationType: SyncOperationType;
+    cloudAction?: SyncCloudAction;
     expectedRevision?: number;
     idempotencyKey: string;
     writeSetChecksum?: string;
@@ -109,6 +113,9 @@ export function createPendingSyncOperation(
     const recordId = requireText(input.recordId, "recordId");
     const idempotencyKey = requireText(input.idempotencyKey, "idempotencyKey");
     const createdAt = requireText(input.createdAt, "createdAt");
+    const cloudAction = input.cloudAction === undefined
+        ? undefined
+        : requireSyncCloudAction(input.cloudAction);
 
     if (!isSyncModule(input.module)) {
         throw new Error("Sync module is not supported.");
@@ -146,6 +153,7 @@ export function createPendingSyncOperation(
         module: input.module,
         recordId,
         operationType: input.operationType,
+        ...(cloudAction ? { cloudAction } : {}),
         ...(input.expectedRevision !== undefined
             ? { expectedRevision: input.expectedRevision }
             : {}),
@@ -174,6 +182,32 @@ export function isSyncOperationType(
 ): value is SyncOperationType {
     return typeof value === "string"
         && syncOperationTypes.some(type => type === value);
+}
+
+export function isSyncCloudAction(value: unknown): value is SyncCloudAction {
+    return typeof value === "string"
+        && value === value.trim()
+        && /^[a-z][A-Za-z0-9]*$/.test(value);
+}
+
+export function requireSyncCloudAction(value: string): SyncCloudAction {
+    const normalized = value.trim();
+
+    if (!isSyncCloudAction(normalized)) {
+        throw new Error("Sync cloudAction must be a safe non-empty token.");
+    }
+
+    return normalized;
+}
+
+export function syncOperationRouteKey(
+    module: SyncModule,
+    operationType: SyncOperationType,
+    cloudAction?: SyncCloudAction
+): string {
+    return cloudAction
+        ? `${module}:${operationType}:${requireSyncCloudAction(cloudAction)}`
+        : `${module}:${operationType}`;
 }
 
 export function isSyncOperationStatus(
@@ -206,6 +240,10 @@ export function normalizeStoredSyncOperation(
         && isSyncModule(operation.module)
         && isNonEmptyText(operation.recordId)
         && isSyncOperationType(operation.operationType)
+        && (
+            operation.cloudAction === undefined
+            || isSyncCloudAction(operation.cloudAction)
+        )
         && (
             operation.expectedRevision === undefined
             || isRevision(operation.expectedRevision)
@@ -241,6 +279,9 @@ export function normalizeStoredSyncOperation(
 
     return {
         ...(operation as SyncOperation),
+        ...(operation.cloudAction
+            ? { cloudAction: operation.cloudAction }
+            : {}),
         localApplyState,
         localApplyAttemptCount,
         ...(group ? { group } : {})

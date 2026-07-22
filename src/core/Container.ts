@@ -111,9 +111,11 @@ export class Container {
         syncCloudCapabilityRegistry.register("suppliers", ["create", "update"]);
         syncCloudCapabilityRegistry.register("stockMovements", ["append"]);
         syncCloudCapabilityRegistry.register("invoices", ["create", "update"]);
+        const syncOperationTransport = new SyncOperationTransportRegistry();
         const syncOutboxRepository = new PersistentOutboxRepository(
             driver,
             operation => syncCloudCapabilityRegistry.supports(operation)
+                && syncOperationTransport.supports(operation)
         );
         const syncReceiptRepository = new SyncReceiptRepository(driver);
         const syncConflictRepository = new SyncConflictRepository(driver);
@@ -157,7 +159,6 @@ export class Container {
                 firebaseRealtimeClient,
                 () => getFirebaseApp()?.options.projectId ?? null
             );
-        const syncOperationTransport = new SyncOperationTransportRegistry();
         syncOperationTransport.register(
             ["products", "customers", "suppliers"],
             masterDataSyncOperationTransport
