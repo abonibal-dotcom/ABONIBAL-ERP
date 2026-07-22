@@ -31,6 +31,23 @@ export class InvoiceReturnValidator {
             errors.push("Invoice return status is invalid.");
         }
 
+        if (
+            invoiceReturn.revision !== undefined
+            && (
+                !Number.isInteger(invoiceReturn.revision)
+                || invoiceReturn.revision < 0
+            )
+        ) {
+            errors.push("Invoice return revision is invalid.");
+        }
+
+        if (
+            invoiceReturn.executionCommandId !== undefined
+            && !invoiceReturn.executionCommandId.trim()
+        ) {
+            errors.push("Invoice return execution command id cannot be empty.");
+        }
+
         if (!invoiceReturn.reason.trim()) {
             errors.push("Invoice return reason is required.");
         }
@@ -38,8 +55,16 @@ export class InvoiceReturnValidator {
         if (!Array.isArray(invoiceReturn.lines) || invoiceReturn.lines.length === 0) {
             errors.push("Invoice return must include at least one line.");
         } else {
+            const lineIds = new Set<string>();
+
             for (const line of invoiceReturn.lines) {
                 errors.push(...this.validateLine(line));
+
+                if (lineIds.has(line.id)) {
+                    errors.push("Invoice return line id must be unique.");
+                }
+
+                lineIds.add(line.id);
             }
         }
 

@@ -662,6 +662,7 @@ function hasSameIdentity(
         && operation.module === input.module
         && operation.recordId === input.recordId.trim()
         && operation.operationType === input.operationType
+        && operation.cloudAction === input.cloudAction?.trim()
         && operation.expectedRevision === input.expectedRevision
         && operation.idempotencyKey === input.idempotencyKey.trim()
         && operation.writeSetChecksum === input.writeSetChecksum?.trim();
@@ -676,6 +677,7 @@ function hasSameGroupedIdentity(
         && existing.module === candidate.module
         && existing.recordId === candidate.recordId
         && existing.operationType === candidate.operationType
+        && existing.cloudAction === candidate.cloudAction
         && existing.expectedRevision === candidate.expectedRevision
         && existing.idempotencyKey === candidate.idempotencyKey
         && existing.writeSetChecksum === candidate.writeSetChecksum

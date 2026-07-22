@@ -9,7 +9,7 @@ import type {
 } from "../../sync/services/LocalMutationApplier";
 import type { StockMovementRepository } from "../repositories/StockMovementRepository";
 import type { StockMovementValidator } from "../validators/StockMovementValidator";
-import { readOpeningStockMovementAppendPayload } from "./StockMovementSyncOperation";
+import { readStockMovementAppendPayload } from "./StockMovementSyncOperation";
 
 export class StockMovementLocalMutationApplier
 implements LocalMutationApplier {
@@ -27,7 +27,7 @@ implements LocalMutationApplier {
     }
 
     public inspect(operation: SyncOperation): LocalMutationInspection {
-        const intended = readOpeningStockMovementAppendPayload(operation);
+        const intended = readStockMovementAppendPayload(operation);
         const current = this.repository.findForAccount(
             operation.accountId,
             operation.recordId
@@ -44,16 +44,16 @@ implements LocalMutationApplier {
             ? { state: "already_applied" }
             : {
                 state: "conflict",
-                summarySafe: "Opening stock movement identity has divergent local data."
+                summarySafe: "Stock movement identity has divergent local data."
             };
     }
 
     public apply(operation: SyncOperation): void {
-        const intended = readOpeningStockMovementAppendPayload(operation);
+        const intended = readStockMovementAppendPayload(operation);
         const errors = this.validator.validate(intended);
 
         if (errors.length > 0) {
-            throw new Error("Opening stock movement payload failed validation.");
+            throw new Error("Stock movement payload failed validation.");
         }
 
         this.repository.appendForAccount(operation.accountId, intended);

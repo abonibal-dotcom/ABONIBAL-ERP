@@ -19,6 +19,13 @@ export interface ProductOpeningStockMovementIdentity {
 
 }
 
+export interface StockMovementCreateIdentity {
+
+    movementId: string;
+    idempotencyKey: string;
+
+}
+
 export interface StockMovement {
 
     id: string;

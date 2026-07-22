@@ -17,6 +17,30 @@ export interface StockMovementAppendPayload {
     intended: JsonObject;
 }
 
+export function buildStockMovementAppendOperation(
+    movement: StockMovement,
+    createdAt: string
+): SyncOperationInput {
+    const intended = toJsonObject(movement);
+    const writeSetChecksum = canonicalChecksum(intended);
+    const idempotencyKey = stockMovementIdempotencyKey(movement);
+    const operationId = `stockMovements-${sha256Hex(
+        `${idempotencyKey}:${writeSetChecksum}`
+    ).slice(0, 32)}`;
+
+    return {
+        operationId,
+        accountId: requireText(movement.accountId, "accountId"),
+        module: "stockMovements",
+        recordId: requireKeySafeText(movement.id, "movementId"),
+        operationType: "append",
+        idempotencyKey,
+        writeSetChecksum,
+        safePayload: { intended } satisfies StockMovementAppendPayload,
+        createdAt: requireText(createdAt, "createdAt")
+    };
+}
+
 export function buildOpeningStockMovementAppendOperation(
     movement: StockMovement,
     createdAt: string
@@ -29,26 +53,16 @@ export function buildOpeningStockMovementAppendOperation(
         throw new Error("Opening stock movement identity is invalid.");
     }
 
-    const intended = toJsonObject(movement);
-    const writeSetChecksum = canonicalChecksum(intended);
-    const operationId = `stockMovements-${sha256Hex(
-        `${identity.idempotencyKey}:${writeSetChecksum}`
-    ).slice(0, 32)}`;
+    const operation = buildStockMovementAppendOperation(movement, createdAt);
 
-    return {
-        operationId,
-        accountId: movement.accountId,
-        module: "stockMovements",
-        recordId: movement.id,
-        operationType: "append",
-        idempotencyKey: identity.idempotencyKey,
-        writeSetChecksum,
-        safePayload: { intended } satisfies StockMovementAppendPayload,
-        createdAt
-    };
+    if (operation.idempotencyKey !== identity.idempotencyKey) {
+        throw new Error("Opening stock movement idempotency identity is invalid.");
+    }
+
+    return operation;
 }
 
-export function readOpeningStockMovementAppendPayload(
+export function readStockMovementAppendPayload(
     operation: SyncOperation
 ): StockMovement {
     if (
@@ -63,7 +77,7 @@ export function readOpeningStockMovementAppendPayload(
     const payload = operation.safePayload as Partial<StockMovementAppendPayload>;
     const intended = toJsonObject(payload.intended);
     const movement = intended as unknown as StockMovement;
-    const expected = buildOpeningStockMovementAppendOperation(
+    const expected = buildStockMovementAppendOperation(
         movement,
         operation.createdAt
     );
@@ -79,4 +93,55 @@ export function readOpeningStockMovementAppendPayload(
     }
 
     return movement;
+}
+
+export const readOpeningStockMovementAppendPayload =
+    readStockMovementAppendPayload;
+
+function stockMovementIdempotencyKey(movement: StockMovement): string {
+    const explicit = movement.idempotencyKey?.trim();
+
+    if (explicit) {
+        return requireKeySafeText(explicit, "idempotencyKey");
+    }
+
+    const openingIdentity = buildProductOpeningStockMovementIdentity(
+        movement.productId
+    );
+
+    if (
+        openingIdentity
+        && movement.id === openingIdentity.movementId
+        && movement.type === "opening_balance"
+        && movement.referenceType === "opening_balance"
+        && movement.referenceId === movement.productId
+        && movement.metadata?.source === "product_create"
+    ) {
+        return openingIdentity.idempotencyKey;
+    }
+
+    return `stockMovement:append:${requireKeySafeText(
+        movement.id,
+        "movementId"
+    )}`;
+}
+
+function requireKeySafeText(value: string, field: string): string {
+    const normalized = requireText(value, field);
+
+    if (/[.#$\[\]\/]/.test(normalized)) {
+        throw new Error(`Stock movement ${field} is not key-safe.`);
+    }
+
+    return normalized;
+}
+
+function requireText(value: string, field: string): string {
+    const normalized = value.trim();
+
+    if (!normalized) {
+        throw new Error(`Stock movement ${field} is required.`);
+    }
+
+    return normalized;
 }

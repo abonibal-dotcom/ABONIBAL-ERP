@@ -21,11 +21,19 @@ export interface CompareAndSetResult<T> {
     updated: boolean;
     conflict: boolean;
     actualRevision?: number;
+    actualChecksum?: string;
     value: T | null;
 }
 
 export interface RevisionedRealtimeRecord {
     revision: number;
+}
+
+export interface MetaRevisionedRealtimeRecord {
+    meta: {
+        revision: number;
+        recordChecksum: string;
+    };
 }
 
 export class FirebaseRealtimeClientError extends Error {
@@ -166,6 +174,66 @@ export class FirebaseRealtimeClient {
         }
     }
 
+    public async compareAndSetMetaRevision<
+        T extends MetaRevisionedRealtimeRecord
+    >(
+        path: string,
+        expectedRevision: number,
+        expectedChecksum: string,
+        nextValue: T
+    ): Promise<CompareAndSetResult<T>> {
+        validateRevision(expectedRevision, "expectedRevision");
+        validateRevision(nextValue.meta.revision, "nextValue.meta.revision");
+        const normalizedExpectedChecksum = expectedChecksum.trim();
+
+        if (!normalizedExpectedChecksum) {
+            throw new FirebaseRealtimeClientError(
+                "expected_checksum_required",
+                "Compare-and-set requires the expected record checksum."
+            );
+        }
+
+        if (nextValue.meta.revision !== expectedRevision + 1) {
+            throw new FirebaseRealtimeClientError(
+                "invalid_revision_transition",
+                "Compare-and-set requires the next sequential revision."
+            );
+        }
+
+        try {
+            const result = await runTransaction(
+                ref(this.requireDatabase(), normalizePath(path)),
+                current => {
+                    const currentMeta = readMetaRevision(current);
+
+                    return currentMeta?.revision === expectedRevision
+                        && currentMeta.recordChecksum === normalizedExpectedChecksum
+                        ? nextValue
+                        : undefined;
+                },
+                { applyLocally: false }
+            );
+            const actualValue = result.snapshot.exists()
+                ? result.snapshot.val() as T
+                : null;
+            const actualMeta = readMetaRevision(actualValue);
+
+            return {
+                updated: result.committed,
+                conflict: !result.committed,
+                ...(actualMeta
+                    ? {
+                        actualRevision: actualMeta.revision,
+                        actualChecksum: actualMeta.recordChecksum
+                    }
+                    : {}),
+                value: actualValue
+            };
+        } catch (error) {
+            throw normalizeFirebaseError(error);
+        }
+    }
+
     public subscribe<T>(
         path: string,
         callback: (value: T | null) => void,
@@ -252,6 +320,32 @@ function readRevision(value: unknown): number | undefined {
     return typeof revision === "number" && Number.isInteger(revision)
         ? revision
         : undefined;
+}
+
+function readMetaRevision(value: unknown): {
+    revision: number;
+    recordChecksum: string;
+} | undefined {
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+        return undefined;
+    }
+
+    const meta = (value as Partial<MetaRevisionedRealtimeRecord>).meta;
+
+    if (
+        !meta
+        || !Number.isInteger(meta.revision)
+        || meta.revision < 0
+        || typeof meta.recordChecksum !== "string"
+        || !meta.recordChecksum.trim()
+    ) {
+        return undefined;
+    }
+
+    return {
+        revision: meta.revision,
+        recordChecksum: meta.recordChecksum.trim()
+    };
 }
 
 function normalizeFirebaseError(error: unknown): FirebaseRealtimeClientError {

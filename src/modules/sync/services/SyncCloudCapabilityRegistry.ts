@@ -1,7 +1,10 @@
-import type {
-    SyncModule,
-    SyncOperation,
-    SyncOperationType
+import {
+    requireSyncCloudAction,
+    syncOperationRouteKey,
+    type SyncCloudAction,
+    type SyncModule,
+    type SyncOperation,
+    type SyncOperationType
 } from "../SyncOperation";
 
 export class SyncCloudCapabilityRegistry {
@@ -12,20 +15,31 @@ export class SyncCloudCapabilityRegistry {
         operationTypes: readonly SyncOperationType[]
     ): void {
         for (const operationType of operationTypes) {
-            this.capabilities.add(capabilityKey(module, operationType));
+            this.capabilities.add(syncOperationRouteKey(module, operationType));
+        }
+    }
+
+    public registerSpecific(
+        module: SyncModule,
+        operationType: SyncOperationType,
+        cloudActions: readonly SyncCloudAction[]
+    ): void {
+        for (const cloudAction of cloudActions) {
+            this.capabilities.add(syncOperationRouteKey(
+                module,
+                operationType,
+                requireSyncCloudAction(cloudAction)
+            ));
         }
     }
 
     public supports(operation: SyncOperation): boolean {
         return this.capabilities.has(
-            capabilityKey(operation.module, operation.operationType)
+            syncOperationRouteKey(
+                operation.module,
+                operation.operationType,
+                operation.cloudAction
+            )
         );
     }
-}
-
-function capabilityKey(
-    module: SyncModule,
-    operationType: SyncOperationType
-): string {
-    return `${module}:${operationType}`;
 }

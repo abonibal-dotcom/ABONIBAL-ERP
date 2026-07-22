@@ -8,6 +8,8 @@ export interface InvoiceReturn {
     invoiceId: string;
     invoiceNumberSnapshot: string;
     status: InvoiceReturnStatus;
+    revision?: number;
+    executionCommandId?: string;
     reason: string;
     notes?: string;
     lines: InvoiceReturnLine[];

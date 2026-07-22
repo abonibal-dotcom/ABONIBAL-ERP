@@ -11,12 +11,19 @@ import type {
 } from "../Invoice";
 import type { InvoiceReturnService } from "../services/InvoiceReturnService";
 import type { InvoiceService } from "../services/InvoiceService";
+import type { IssueInvoiceDurableCommandService } from "../services/IssueInvoiceDurableCommandService";
+import type { CancelInvoiceDurableCommandService } from "../services/CancelInvoiceDurableCommandService";
+import type { ExecuteInvoiceReturnDurableCommandService } from "../services/ExecuteInvoiceReturnDurableCommandService";
 
 export class InvoiceDraftPage extends Page {
 
     private readonly customerService: CustomerService;
     private readonly invoiceService: InvoiceService;
     private readonly invoiceReturnService: InvoiceReturnService;
+    private readonly issueInvoiceCommand: IssueInvoiceDurableCommandService;
+    private readonly cancelInvoiceCommand: CancelInvoiceDurableCommandService;
+    private readonly executeInvoiceReturnCommand:
+        ExecuteInvoiceReturnDurableCommandService;
     private readonly productService: ProductService;
 
     private form: HTMLFormElement | null = null;
@@ -37,6 +44,7 @@ export class InvoiceDraftPage extends Page {
     private totalElement: HTMLElement | null = null;
     private draftCountElement: HTMLElement | null = null;
     private editingInvoiceId: string | null = null;
+    private editingInvoiceRevision = 0;
 
     private readonly handleSubmit = (event: Event): void => {
 
@@ -133,6 +141,18 @@ export class InvoiceDraftPage extends Page {
         this.invoiceService = Container.get<InvoiceService>("invoiceService");
         this.invoiceReturnService =
             Container.get<InvoiceReturnService>("invoiceReturnService");
+        this.issueInvoiceCommand =
+            Container.get<IssueInvoiceDurableCommandService>(
+                "issueInvoiceDurableCommandService"
+            );
+        this.cancelInvoiceCommand =
+            Container.get<CancelInvoiceDurableCommandService>(
+                "cancelInvoiceDurableCommandService"
+            );
+        this.executeInvoiceReturnCommand =
+            Container.get<ExecuteInvoiceReturnDurableCommandService>(
+                "executeInvoiceReturnDurableCommandService"
+            );
         this.productService = Container.get<ProductService>("productService");
 
     }
@@ -370,6 +390,7 @@ export class InvoiceDraftPage extends Page {
         this.totalElement = null;
         this.draftCountElement = null;
         this.editingInvoiceId = null;
+        this.editingInvoiceRevision = 0;
 
     }
 
@@ -719,7 +740,11 @@ export class InvoiceDraftPage extends Page {
         }
 
         const result = this.editingInvoiceId
-            ? this.invoiceService.updateDraft(this.editingInvoiceId, draft.input)
+            ? this.invoiceService.updateDraft(
+                this.editingInvoiceId,
+                draft.input,
+                this.editingInvoiceRevision
+            )
             : this.invoiceService.createDraft(draft.input);
 
         if (!result.success || !result.invoice) {
@@ -782,6 +807,10 @@ export class InvoiceDraftPage extends Page {
         }
 
         const line: InvoiceDraftLineInput = {
+            id: this.editingInvoiceId
+                ? this.invoiceService.getById(this.editingInvoiceId)
+                    ?.lines[0]?.id
+                : undefined,
             productId: product.id,
             productNameSnapshot: product.name,
             skuSnapshot: product.sku,
@@ -823,6 +852,7 @@ export class InvoiceDraftPage extends Page {
         }
 
         this.editingInvoiceId = invoice.id;
+        this.editingInvoiceRevision = invoice.revision ?? 0;
         this.setEditingInvoiceId(invoice.id);
 
         if (this.customerSelect) {
@@ -866,7 +896,7 @@ export class InvoiceDraftPage extends Page {
 
     private issueDraft(invoiceId: string): void {
 
-        const result = this.invoiceService.markIssued(invoiceId);
+        const result = this.issueInvoiceCommand.execute(invoiceId);
 
         if (!result.success || !result.invoice) {
             this.setMessage(result.errors.join(" "));
@@ -911,7 +941,7 @@ export class InvoiceDraftPage extends Page {
             return;
         }
 
-        const result = this.invoiceService.markCancelled(
+        const result = this.cancelInvoiceCommand.execute(
             invoiceId,
             "تأكيد المستخدم إلغاء الفاتورة"
         );
@@ -982,7 +1012,7 @@ export class InvoiceDraftPage extends Page {
             return;
         }
 
-        const executeResult = this.invoiceReturnService.executeReturn(
+        const executeResult = this.executeInvoiceReturnCommand.execute(
             createResult.invoiceReturn.id
         );
 
@@ -1020,6 +1050,7 @@ export class InvoiceDraftPage extends Page {
         }
 
         this.editingInvoiceId = null;
+        this.editingInvoiceRevision = 0;
         this.setEditingInvoiceId("");
         this.populateSelectedProductPrice();
         this.renderTotalsPreview();
