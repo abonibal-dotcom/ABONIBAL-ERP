@@ -13,7 +13,7 @@ import type {
     InvoiceReturnLineInput
 } from "../InvoiceReturn";
 import { InvoiceRepository } from "../repositories/InvoiceRepository";
-import { InvoiceReturnRepository } from "../repositories/InvoiceReturnRepository";
+import type { InvoiceReturnRepositoryPort } from "../repositories/InvoiceReturnRepository";
 import { InvoiceReturnValidator } from "../validators/InvoiceReturnValidator";
 import {
     buildInvoiceReturnExecutionCommandId,
@@ -24,14 +24,14 @@ import {
 
 export class InvoiceReturnService {
 
-    private readonly repository: InvoiceReturnRepository;
+    private readonly repository: InvoiceReturnRepositoryPort;
     private readonly validator: InvoiceReturnValidator;
     private readonly invoiceRepository: InvoiceRepository;
     private readonly authStateService: AuthStateService;
     private readonly inventoryService: InventoryService;
 
     public constructor(
-        repository: InvoiceReturnRepository,
+        repository: InvoiceReturnRepositoryPort,
         validator: InvoiceReturnValidator,
         invoiceRepository: InvoiceRepository,
         authStateService: AuthStateService,

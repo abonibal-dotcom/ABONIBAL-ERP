@@ -4,7 +4,23 @@ import type { InvoiceReturn, InvoiceReturnLine } from "../InvoiceReturn";
 import { isInvoiceReturnStatus } from "../InvoiceReturnStatus";
 import { invoiceReturnStorageKeyForAccount } from "../persistence/InvoiceReturnPersistenceKey";
 
-export class InvoiceReturnRepository extends Repository<InvoiceReturn> {
+export interface InvoiceReturnRepositoryPort {
+    allForAccount(accountId: string): InvoiceReturn[];
+    appendForAccount(accountId: string, invoiceReturn: InvoiceReturn): void;
+    findForAccount(
+        accountId: string,
+        invoiceReturnId: string
+    ): InvoiceReturn | undefined;
+    updateForAccount(
+        accountId: string,
+        invoiceReturnId: string,
+        updatedReturn: InvoiceReturn
+    ): InvoiceReturn | null;
+    allForInvoice(accountId: string, invoiceId: string): InvoiceReturn[];
+}
+
+export class InvoiceReturnRepository extends Repository<InvoiceReturn>
+implements InvoiceReturnRepositoryPort {
 
     public constructor(driver: Driver) {
 
@@ -67,6 +83,26 @@ export class InvoiceReturnRepository extends Repository<InvoiceReturn> {
 
     }
 
+    public appendAuthoritativeForAccount(
+        accountId: string,
+        invoiceReturn: InvoiceReturn
+    ): void {
+
+        const invoiceReturns = this.allForAccount(accountId);
+
+        if (
+            invoiceReturn.accountId !== accountId
+            || invoiceReturns.some(current => current.id === invoiceReturn.id)
+            || !isCompleteAuthoritativeState(invoiceReturn)
+        ) {
+            throw new Error("Authoritative InvoiceReturn identity conflicts.");
+        }
+
+        invoiceReturns.push(invoiceReturn);
+        this.saveForAccount(accountId, invoiceReturns);
+
+    }
+
     public updateForAccount(
         accountId: string,
         invoiceReturnId: string,
@@ -107,6 +143,44 @@ export class InvoiceReturnRepository extends Repository<InvoiceReturn> {
 
         invoiceReturns[invoiceReturnIndex] = updatedReturn;
 
+        this.saveForAccount(accountId, invoiceReturns);
+
+        return updatedReturn;
+
+    }
+
+    public applyAuthoritativeForAccount(
+        accountId: string,
+        invoiceReturnId: string,
+        updatedReturn: InvoiceReturn
+    ): InvoiceReturn | null {
+
+        const invoiceReturns = this.allForAccount(accountId);
+        const invoiceReturnIndex = invoiceReturns.findIndex(
+            invoiceReturn => invoiceReturn.id === invoiceReturnId
+        );
+
+        if (invoiceReturnIndex === -1) {
+            return null;
+        }
+
+        const currentReturn = invoiceReturns[invoiceReturnIndex];
+
+        if (
+            updatedReturn.accountId !== accountId
+            || updatedReturn.id !== invoiceReturnId
+            || currentReturn.accountId !== accountId
+            || invoiceReturnRevision(updatedReturn)
+                <= invoiceReturnRevision(currentReturn)
+            || !isAllowedAuthoritativeInvoiceReturnState(
+                currentReturn,
+                updatedReturn
+            )
+        ) {
+            throw new Error("Authoritative InvoiceReturn state is not safe to apply.");
+        }
+
+        invoiceReturns[invoiceReturnIndex] = updatedReturn;
         this.saveForAccount(accountId, invoiceReturns);
 
         return updatedReturn;
@@ -229,7 +303,8 @@ function isAllowedInvoiceReturnUpdate(
         && updatedReturn.status === "recorded"
     ) {
         return !updatedReturn.executionCommandId
-            && updatedReturn.lines.every(line => !line.returnStockMovementId);
+            && updatedReturn.lines.every(line => !line.returnStockMovementId)
+            && hasStableRecordedLineIdentities(currentReturn, updatedReturn);
     }
 
     if (
@@ -245,6 +320,76 @@ function isAllowedInvoiceReturnUpdate(
     }
 
     return false;
+
+}
+
+function isAllowedAuthoritativeInvoiceReturnState(
+    currentReturn: InvoiceReturn,
+    updatedReturn: InvoiceReturn
+): boolean {
+
+    if (!hasStableInvoiceReturnIdentity(currentReturn, updatedReturn)) {
+        return false;
+    }
+
+    if (currentReturn.status === "recorded") {
+        if (updatedReturn.status === "recorded") {
+            return isCompleteRecordedState(updatedReturn)
+                && hasStableRecordedLineIdentities(
+                    currentReturn,
+                    updatedReturn
+                );
+        }
+
+        return updatedReturn.status === "executed"
+            && canonicalJson(invoiceReturnCommercialSnapshot(currentReturn))
+                === canonicalJson(invoiceReturnCommercialSnapshot(updatedReturn))
+            && isCompleteExecutedState(updatedReturn);
+    }
+
+    return false;
+
+}
+
+function isCompleteAuthoritativeState(invoiceReturn: InvoiceReturn): boolean {
+
+    return invoiceReturn.status === "recorded"
+        ? isCompleteRecordedState(invoiceReturn)
+        : isCompleteExecutedState(invoiceReturn);
+
+}
+
+function isCompleteRecordedState(invoiceReturn: InvoiceReturn): boolean {
+
+    return !invoiceReturn.executionCommandId
+        && invoiceReturn.lines.every(line => !line.returnStockMovementId);
+
+}
+
+function isCompleteExecutedState(invoiceReturn: InvoiceReturn): boolean {
+
+    return invoiceReturn.status === "executed"
+        && isNonEmptyString(invoiceReturn.executionCommandId)
+        && invoiceReturn.lines.every(line =>
+            isNonEmptyString(line.returnStockMovementId)
+        );
+
+}
+
+function hasStableRecordedLineIdentities(
+    currentReturn: InvoiceReturn,
+    updatedReturn: InvoiceReturn
+): boolean {
+
+    const currentByInvoiceLine = new Map(
+        currentReturn.lines.map(line => [line.invoiceLineId, line.id])
+    );
+
+    return updatedReturn.lines.every(line => {
+        const currentId = currentByInvoiceLine.get(line.invoiceLineId);
+
+        return currentId === undefined || currentId === line.id;
+    });
 
 }
 

@@ -365,12 +365,14 @@ checks.push({
 });
 
 checks.push({
-    name: "runtime registers no InvoiceReturn capability or transport",
+    name: "runtime registers recorded InvoiceReturn routes but no execute route",
     run: () => {
         const source = readFileSync("src/core/Container.ts", "utf8");
-        truthy(!source.includes('registerSpecific("invoiceReturns"'));
         truthy(!source.includes('register("invoiceReturns"'));
-        truthy(!source.includes("InvoiceReturnSyncOperationTransport"));
+        truthy(source.includes('"createRecorded"'));
+        truthy(source.includes('"updateRecorded"'));
+        truthy(source.includes("InvoiceReturnSyncOperationTransport"));
+        truthy(!source.includes('["execute"]'));
     }
 });
 
